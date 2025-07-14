@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sport-icon';
 import { MatchCard } from '@/components/sports/match-card';
-import { ArrowRight, Trophy } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
@@ -87,7 +87,7 @@ export default function Home() {
                         className="group flex flex-col items-center justify-center gap-2 rounded-lg p-4 bg-secondary hover:bg-primary/10 transition-colors"
                       >
                         <SportIcon sportName={sport.name} className="w-8 h-8 text-primary group-hover:text-accent transition-colors" />
-                        <span className="font-semibold text-center">{sport.name}</span>
+                        <span className="font-semibold text-center text-foreground">{sport.name}</span>
                       </Link>
                     ))}
                   </div>
