@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -34,6 +34,14 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    // Redirect if user is already logged in
+    const user = localStorage.getItem('user');
+    if (user) {
+      router.push('/');
+    }
+  }, [router]);
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -57,6 +65,8 @@ export default function LoginPage() {
       const result = await response.json();
 
       if (result.success && result.data) {
+        localStorage.setItem('user', JSON.stringify(result.data));
+        
         toast({
           title: 'Login Successful',
           description: `Welcome, ${result.data.username}!`,
