@@ -1,4 +1,4 @@
-import type { Sport, Match } from './types';
+import type { Sport, Match, SchoolTeam } from './types';
 
 export const sports: Sport[] = [
   { name: 'Football', slug: 'football' },
@@ -30,3 +30,30 @@ export const matches: Match[] = [
   { id: 10, sport: 'Table Tennis', team1: { name: 'Ping Pong Pros', score: 3 }, team2: { name: 'Paddle Masters', score: 2 }, status: 'finished', date: '2024-08-14' },
   { id: 11, sport: 'Chess', team1: { name: 'Grand Masters', score: 1 }, team2: { name: 'Checkmate Kings', score: 0 }, status: 'finished', date: '2024-08-13' },
 ];
+
+export const schoolTeams: Record<string, SchoolTeam[]> = {
+  football: [
+    { schoolName: 'St. Francis High School' },
+    { schoolName: 'Northwood High' },
+    { schoolName: 'Greenwood Academy' },
+  ],
+  basketball: [
+    { schoolName: 'Lincoln High' },
+    { schoolName: 'Eastwood Collegiate' },
+  ],
+  cricket: [
+    { schoolName: 'Maple Leaf International' },
+    { schoolName: 'Oakridge Secondary' },
+    { schoolName: 'Westmount Public' },
+  ],
+  chess: [
+    { schoolName: 'Riverdale High' },
+    { schoolName: 'King\'s College' },
+  ],
+  // Add other sports here as needed
+  volleyball: [],
+  badminton: [],
+  'table-tennis': [],
+  kabaddi: [],
+  athletics: [],
+};

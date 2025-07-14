@@ -12,3 +12,7 @@ export interface Match {
   time?: string;
   date?: string;
 }
+
+export interface SchoolTeam {
+  schoolName: string;
+}

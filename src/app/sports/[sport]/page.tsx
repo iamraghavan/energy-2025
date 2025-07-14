@@ -1,10 +1,20 @@
 import { notFound } from 'next/navigation';
-import { sports, matches } from '@/lib/data';
+import { sports, matches, schoolTeams } from '@/lib/data';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sport-icon';
 import { MatchCard } from '@/components/sports/match-card';
-import { PredictionTool } from '@/components/sports/prediction-tool';
 import { Separator } from '@/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users } from 'lucide-react';
+
 
 export async function generateStaticParams() {
   return sports.map((sport) => ({
@@ -23,6 +33,8 @@ export default function SportPage({ params }: { params: { sport: string } }) {
   const upcomingMatches = matches.filter((m) => m.sport === sportData.name && m.status === 'upcoming');
   const finishedMatches = matches.filter((m) => m.sport === sportData.name && m.status === 'finished');
 
+  const participatingTeams = schoolTeams[sportData.name.toLowerCase() as keyof typeof schoolTeams] || [];
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -34,8 +46,7 @@ export default function SportPage({ params }: { params: { sport: string } }) {
           </h1>
         </section>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-8">
             <section id="live-matches">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Live</h2>
               <div className="space-y-4">
@@ -72,10 +83,41 @@ export default function SportPage({ params }: { params: { sport: string } }) {
                 )}
               </div>
             </section>
-          </div>
-          <aside className="lg:col-span-1">
-            <PredictionTool sport={sportData.name} />
-          </aside>
+
+            <Separator />
+
+            <section id="participating-schools">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-3xl font-bold tracking-tight">
+                    <Users className="w-8 h-8 text-accent" />
+                    Participating Schools
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {participatingTeams.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[100px]">#</TableHead>
+                          <TableHead>School Name</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {participatingTeams.map((team, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{index + 1}</TableCell>
+                            <TableCell>{team.schoolName}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                     <p className="text-muted-foreground text-center">No participating schools listed for {sportData.name} yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
         </div>
       </main>
     </div>
