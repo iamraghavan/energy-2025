@@ -1,5 +1,4 @@
 import {
-  SoccerBall,
   Dribbble,
   Swords,
   Volleyball,
@@ -14,6 +13,35 @@ import type { LucideProps } from 'lucide-react';
 interface SportIconProps extends LucideProps {
   sportName: string;
 }
+
+const SoccerBallIcon = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 18.2a4.93 4.93 0 0 1-4.82-3.6" />
+    <path d="M12 5.8a4.93 4.93 0 0 1 4.82 3.6" />
+    <path d="M18.18 12a4.93 4.93 0 0 1-3.58-4.82" />
+    <path d="M5.82 12a4.93 4.93 0 0 1 3.58 4.82" />
+    <path d="M12 12l4.82 3.6" />
+    <path d="M12 12l-4.82-3.6" />
+    <path d="M12 12l-3.6 4.82" />
+    <path d="M12 12l3.6-4.82" />
+    <path d="M15.58 7.38l-3.58 4.82" />
+    <path d="M8.42 16.62l3.58-4.82" />
+    <path d="M16.62 15.58l-4.82-3.58" />
+    <path d="M7.38 8.42l4.82 3.58" />
+  </svg>
+)
 
 // A component to render a placeholder for an icon that doesn't exist in lucide-react
 const PlaceholderIcon = (props: LucideProps) => (
@@ -41,7 +69,7 @@ export function SportIcon({ sportName, ...props }: SportIconProps) {
   const IconComponent: Icon = (() => {
     switch (sportName.toLowerCase()) {
       case 'football':
-        return SoccerBall;
+        return SoccerBallIcon;
       case 'basketball':
         return Dribbble;
       case 'cricket':
