@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { BrainCircuit, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,10 +60,13 @@ export function PredictionTool({ sport }: PredictionToolProps) {
   };
 
   return (
-    <Card className="sticky top-20">
+    <Card className="sticky top-24 shadow-lg border-primary/20">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">AI Match Predictor</CardTitle>
-        <CardDescription>Enter match details to predict the outcome.</CardDescription>
+        <CardTitle className="text-2xl font-bold flex items-center gap-2">
+            <BrainCircuit className="text-accent" />
+            AI Match Predictor
+        </CardTitle>
+        <CardDescription>Enter match details to predict the outcome for any {sport} match.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -126,7 +129,7 @@ export function PredictionTool({ sport }: PredictionToolProps) {
       </CardContent>
       {prediction && (
         <CardFooter className="flex-col items-start gap-4">
-            <h3 className="font-headline text-xl">Prediction Result</h3>
+            <h3 className="font-bold text-xl">Prediction Result</h3>
             <div className="w-full space-y-4">
                 <div>
                     <div className="flex justify-between mb-1">
@@ -143,8 +146,8 @@ export function PredictionTool({ sport }: PredictionToolProps) {
                     <Progress value={prediction.team2WinProbability * 100} className="h-3 [&>div]:bg-accent" />
                 </div>
             </div>
-          <div className="space-y-1">
-            <h4 className="font-semibold">Explanation</h4>
+          <div className="space-y-1 pt-4">
+            <h4 className="font-semibold">AI Explanation</h4>
             <p className="text-sm text-muted-foreground">{prediction.explanation}</p>
           </div>
         </CardFooter>

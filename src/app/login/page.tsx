@@ -15,10 +15,10 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
        <Header />
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1 flex items-center justify-center p-4">
         <Card className="mx-auto max-w-sm w-full">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline">Login</CardTitle>
+            <CardTitle className="text-2xl">Login</CardTitle>
             <CardDescription>
               Enter your email below to login to your account
             </CardDescription>
@@ -37,7 +37,7 @@ export default function LoginPage() {
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="ml-auto inline-block text-sm underline">
+                  <Link href="#" className="ml-auto inline-block text-sm underline text-muted-foreground hover:text-primary">
                     Forgot your password?
                   </Link>
                 </div>
@@ -49,7 +49,7 @@ export default function LoginPage() {
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{' '}
-              <Link href="#" className="underline">
+              <Link href="#" className="underline text-muted-foreground hover:text-primary">
                 Sign up
               </Link>
             </div>

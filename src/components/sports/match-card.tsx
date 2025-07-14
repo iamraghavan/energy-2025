@@ -12,7 +12,7 @@ export function MatchCard({ match }: MatchCardProps) {
   const { sport, team1, team2, status, time } = match;
 
   return (
-    <Card className="w-full">
+    <Card className="w-full hover:border-primary/50 transition-colors">
       <CardContent className="p-4">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -34,7 +34,7 @@ export function MatchCard({ match }: MatchCardProps) {
             <span className="font-medium text-lg text-right truncate">{team1.name}</span>
           </div>
           <div className="text-center">
-            <span className="font-headline text-3xl">
+            <span className="font-bold text-3xl text-foreground">
               {status !== 'upcoming' ? `${team1.score} - ${team2.score}` : 'vs'}
             </span>
           </div>

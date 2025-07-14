@@ -24,12 +24,12 @@ export default function SportPage({ params }: { params: { sport: string } }) {
   const finishedMatches = matches.filter((m) => m.sport === sportData.name && m.status === 'finished');
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8">
         <section className="flex items-center gap-4 mb-8">
           <SportIcon sportName={sportData.name} className="w-16 h-16 text-primary" />
-          <h1 className="text-5xl md:text-7xl font-headline tracking-wider">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
             {sportData.name}
           </h1>
         </section>
@@ -37,7 +37,7 @@ export default function SportPage({ params }: { params: { sport: string } }) {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <section id="live-matches">
-              <h2 className="text-3xl font-headline mb-4">Live</h2>
+              <h2 className="text-3xl font-bold tracking-tight mb-4">Live</h2>
               <div className="space-y-4">
                 {liveMatches.length > 0 ? (
                   liveMatches.map((match) => <MatchCard key={match.id} match={match} />)
@@ -50,7 +50,7 @@ export default function SportPage({ params }: { params: { sport: string } }) {
             <Separator />
 
             <section id="upcoming-matches">
-              <h2 className="text-3xl font-headline mb-4">Upcoming</h2>
+              <h2 className="text-3xl font-bold tracking-tight mb-4">Upcoming</h2>
               <div className="space-y-4">
                 {upcomingMatches.length > 0 ? (
                   upcomingMatches.map((match) => <MatchCard key={match.id} match={match} />)
@@ -63,7 +63,7 @@ export default function SportPage({ params }: { params: { sport: string } }) {
             <Separator />
 
             <section id="recent-results">
-              <h2 className="text-3xl font-headline mb-4">Recent Results</h2>
+              <h2 className="text-3xl font-bold tracking-tight mb-4">Recent Results</h2>
               <div className="space-y-4">
                 {finishedMatches.length > 0 ? (
                   finishedMatches.map((match) => <MatchCard key={match.id} match={match} />)
