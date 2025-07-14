@@ -18,7 +18,7 @@ export default function Home() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative text-center py-16 md:py-24 bg-gradient-to-r from-primary to-accent">
-          <div className="container mx-auto relative">
+          <div className="container mx-auto relative px-4">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary-foreground">
               Welcome to ScoreCast
             </h1>
@@ -28,9 +28,9 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="container mx-auto py-8 md:py-12">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
+        <div className="container mx-auto py-8 px-4">
+          <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 lg:gap-8">
+            <div className="lg:col-span-2 space-y-8 mt-8 lg:mt-0">
               {/* Live Matches */}
               <section id="live-matches">
                 <h2 className="text-3xl font-bold tracking-tight mb-4 flex items-center">
@@ -79,7 +79,7 @@ export default function Home() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-4">
                     {sports.map((sport) => (
                       <Link
                         href={`/sports/${sport.slug}`}
@@ -98,7 +98,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="bg-primary text-primary-foreground py-6 mt-8">
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto text-center px-4">
           <p>&copy; 2024 ScoreCast. All Rights Reserved.</p>
         </div>
       </footer>
