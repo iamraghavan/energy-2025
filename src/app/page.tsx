@@ -86,7 +86,7 @@ export default function Home() {
                         key={sport.slug}
                         className="group flex flex-col items-center justify-center gap-2 rounded-lg p-4 bg-secondary hover:bg-primary/10 transition-colors"
                       >
-                        <SportIcon sportName={sport.name} className="w-8 h-8 text-primary group-hover:text-accent transition-colors" />
+                        <SportIcon sportName={sport.name} className="w-8 h-8 text-white group-hover:text-accent transition-colors" />
                         <span className="font-semibold text-center text-foreground">{sport.name}</span>
                       </Link>
                     ))}
