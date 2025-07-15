@@ -29,8 +29,13 @@ export const getSports = async (): Promise<SportAPI[]> => {
     allSports.push(...data.data.womenSports);
   }
 
-  // Remove duplicates by sportId to show each sport only once in the dropdown
-  const uniqueSports = Array.from(new Map(allSports.map(sport => [sport.name, sport])).values());
+  // Use a Map to ensure unique sports based on their name, preferring the one from menSports if names are identical.
+  const uniqueSportsMap = new Map<string, SportAPI>();
+  allSports.forEach(sport => {
+    if (!uniqueSportsMap.has(sport.name)) {
+        uniqueSportsMap.set(sport.name, sport);
+    }
+  });
   
-  return uniqueSports;
+  return Array.from(uniqueSportsMap.values());
 };
