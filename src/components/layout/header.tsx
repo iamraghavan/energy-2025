@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,9 +48,20 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="mr-4 flex items-center">
           <Link href="/" className="flex items-center gap-4">
-            <span className="text-xl font-bold tracking-tight text-primary">
-              ScoreCast
-            </span>
+             <Image
+              src="https://storage.googleapis.com/stey-prod-public/deletable/egs-logo.png"
+              alt="EGS Pillay Group of Institutions Logo"
+              width={150}
+              height={40}
+              className="h-10 w-auto"
+            />
+            <Image
+              src="https://storage.googleapis.com/stey-prod-public/deletable/energy-logo-text.png"
+              alt="Energy 2025 Inter-School Sports Meet Logo"
+              width={150}
+              height={40}
+              className="h-10 w-auto"
+            />
           </Link>
         </div>
         <div className="flex items-center gap-2">
