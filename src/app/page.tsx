@@ -16,8 +16,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 
@@ -26,7 +24,7 @@ export default function Home() {
   const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
 
   const plugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
+    Autoplay({ delay: 2000, stopOnInteraction: true })
   );
 
   return (
@@ -135,8 +133,6 @@ export default function Home() {
                             </CarouselItem>
                           ))}
                         </CarouselContent>
-                        <CarouselPrevious className="left-2" />
-                        <CarouselNext className="right-2"/>
                       </Carousel>
                   ) : (
                     <Card>
