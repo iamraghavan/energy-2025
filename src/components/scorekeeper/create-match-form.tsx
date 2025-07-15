@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 import { z } from 'zod';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Select from 'react-select';
+import { Check, ChevronsUpDown } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -27,16 +27,31 @@ import {
 } from '@/components/ui/drawer';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+  } from "@/components/ui/command"
 import { useToast } from '@/hooks/use-toast';
 import { getTeams } from '@/services/team-service';
 import { getSports } from '@/services/sport-service';
 import { createMatch } from '@/services/match-service';
 import type { Team, SportAPI } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 const matchSchema = z.object({
   sportId: z.string({ required_error: 'Please select a sport.' }),
@@ -56,45 +71,10 @@ interface CreateMatchFormProps {
   children: React.ReactNode;
 }
 
-const reactSelectStyles = (isMobile: boolean) => ({
-    control: (provided: any) => ({
-      ...provided,
-      backgroundColor: 'hsl(var(--background))',
-      borderColor: 'hsl(var(--input))',
-      color: 'hsl(var(--foreground))',
-      minHeight: '40px',
-      '&:hover': {
-        borderColor: 'hsl(var(--ring))',
-      },
-    }),
-    menu: (provided: any) => ({
-      ...provided,
-      backgroundColor: 'hsl(var(--background))',
-      zIndex: 100, // Ensure menu is on top
-    }),
-    option: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? 'hsl(var(--primary))' : state.isFocused ? 'hsl(var(--accent))' : 'hsl(var(--background))',
-      color: state.isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-      '&:hover': {
-          backgroundColor: 'hsl(var(--accent))',
-          color: 'hsl(var(--accent-foreground))',
-      }
-    }),
-    singleValue: (provided: any) => ({
-      ...provided,
-      color: 'hsl(var(--foreground))',
-    }),
-    input: (provided: any) => ({
-      ...provided,
-      color: 'hsl(var(--foreground))',
-    }),
-});
-
 export function CreateMatchForm({ open, onOpenChange, onMatchCreated, children }: CreateMatchFormProps) {
   const isMobile = useIsMobile();
   
-  const FormContent = <CreateMatchFormContent onMatchCreated={onMatchCreated} onOpenChange={onOpenChange} isMobile={isMobile} />;
+  const FormContent = <CreateMatchFormContent onMatchCreated={onMatchCreated} onOpenChange={onOpenChange} />;
 
   if (isMobile) {
     return (
@@ -128,7 +108,7 @@ export function CreateMatchForm({ open, onOpenChange, onMatchCreated, children }
   );
 }
 
-function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { onMatchCreated: () => void; onOpenChange: (open: boolean) => void; isMobile: boolean }) {
+function CreateMatchFormContent({ onMatchCreated, onOpenChange }: { onMatchCreated: () => void; onOpenChange: (open: boolean) => void; }) {
     const [allTeams, setAllTeams] = React.useState<Team[]>([]);
     const [sports, setSports] = React.useState<SportAPI[]>([]);
     const [filteredTeams, setFilteredTeams] = React.useState<Team[]>([]);
@@ -165,7 +145,6 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
         if (selectedSportId && allTeams.length > 0) {
             const teamsForSport = allTeams.filter(team => team.sport._id === selectedSportId);
             setFilteredTeams(teamsForSport);
-            // Reset team selections if sport changes
             form.setValue('teamOneId', '');
             form.setValue('teamTwoId', '');
         } else {
@@ -198,83 +177,188 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4">
-            <FormField
-                control={form.control}
-                name="sportId"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Sport</FormLabel>
-                    <Controller
-                        name="sportId"
-                        control={form.control}
-                        render={({ field: controllerField }) => (
-                            <Select
-                                {...controllerField}
-                                options={sportOptions}
-                                value={sportOptions.find(c => c.value === controllerField.value)}
-                                onChange={val => controllerField.onChange(val?.value)}
-                                styles={reactSelectStyles(isMobile)}
-                                placeholder="Select sport"
-                                menuPosition="fixed"
-                            />
-                        )}
-                    />
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-            <FormField
-                control={form.control}
-                name="teamOneId"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Team One</FormLabel>
-                     <Controller
-                        name="teamOneId"
-                        control={form.control}
-                        render={({ field: controllerField }) => (
-                            <Select
-                                {...controllerField}
-                                options={teamOptions}
-                                value={teamOptions.find(c => c.value === controllerField.value)}
-                                onChange={val => controllerField.onChange(val?.value)}
-                                styles={reactSelectStyles(isMobile)}
-                                placeholder="Select team one"
-                                isDisabled={!selectedSportId}
-                                menuPosition="fixed"
-                            />
-                        )}
-                    />
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-            <FormField
-                control={form.control}
-                name="teamTwoId"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Team Two</FormLabel>
-                    <Controller
-                        name="teamTwoId"
-                        control={form.control}
-                        render={({ field: controllerField }) => (
-                            <Select
-                                {...controllerField}
-                                options={teamOptions}
-                                value={teamOptions.find(c => c.value === controllerField.value)}
-                                onChange={val => controllerField.onChange(val?.value)}
-                                styles={reactSelectStyles(isMobile)}
-                                placeholder="Select team two"
-                                isDisabled={!selectedSportId}
-                                menuPosition="fixed"
-                            />
-                        )}
-                    />
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
+                <FormField
+                    control={form.control}
+                    name="sportId"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                        <FormLabel>Sport</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                    "w-full justify-between",
+                                    !field.value && "text-muted-foreground"
+                                )}
+                                >
+                                {field.value
+                                    ? sportOptions.find(
+                                        (option) => option.value === field.value
+                                    )?.label
+                                    : "Select sport"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search sport..." />
+                                <CommandList>
+                                    <CommandEmpty>No sport found.</CommandEmpty>
+                                    <CommandGroup>
+                                        {sportOptions.map((option) => (
+                                        <CommandItem
+                                            value={option.label}
+                                            key={option.value}
+                                            onSelect={() => {
+                                                form.setValue("sportId", option.value)
+                                            }}
+                                        >
+                                            <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                option.value === field.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                            />
+                                            {option.label}
+                                        </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                            </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="teamOneId"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                        <FormLabel>Team One</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                variant="outline"
+                                role="combobox"
+                                disabled={!selectedSportId}
+                                className={cn(
+                                    "w-full justify-between",
+                                    !field.value && "text-muted-foreground"
+                                )}
+                                >
+                                {field.value
+                                    ? teamOptions.find(
+                                        (option) => option.value === field.value
+                                    )?.label
+                                    : "Select team one"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search team..." />
+                                <CommandList>
+                                    <CommandEmpty>No teams found for this sport.</CommandEmpty>
+                                    <CommandGroup>
+                                        {teamOptions.map((option) => (
+                                        <CommandItem
+                                            value={option.label}
+                                            key={option.value}
+                                            onSelect={() => {
+                                                form.setValue("teamOneId", option.value)
+                                            }}
+                                        >
+                                            <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                option.value === field.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                            />
+                                            {option.label}
+                                        </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                            </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="teamTwoId"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                        <FormLabel>Team Two</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                variant="outline"
+                                role="combobox"
+                                disabled={!selectedSportId}
+                                className={cn(
+                                    "w-full justify-between",
+                                    !field.value && "text-muted-foreground"
+                                )}
+                                >
+                                {field.value
+                                    ? teamOptions.find(
+                                        (option) => option.value === field.value
+                                    )?.label
+                                    : "Select team two"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search team..." />
+                                <CommandList>
+                                    <CommandEmpty>No teams found for this sport.</CommandEmpty>
+                                    <CommandGroup>
+                                        {teamOptions.map((option) => (
+                                        <CommandItem
+                                            value={option.label}
+                                            key={option.value}
+                                            onSelect={() => {
+                                                form.setValue("teamTwoId", option.value)
+                                            }}
+                                        >
+                                            <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                option.value === field.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                            />
+                                            {option.label}
+                                        </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                            </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
              <div className="pt-4 md:pt-0 md:flex md:justify-end">
                  <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
                     {isSubmitting ? 'Creating...' : 'Create Match'}
