@@ -45,7 +45,7 @@ export default function Home() {
               </div>
               <div className="relative flex justify-center items-center">
                 <Image
-                  src="https://storage.googleapis.com/stey-prod-public/deletable/energy-logo.png"
+                  src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-logo.png?alt=media&token=49e75a63-950b-4ed2-a0f7-075ba54ace2e"
                   alt="Energy 2025 Logo"
                   width={200}
                   height={200}
@@ -62,13 +62,7 @@ export default function Home() {
             <aside className="lg:w-1/3 lg:sticky top-24 self-start">
               <Card className="bg-secondary">
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Image
-                       src="https://storage.googleapis.com/stey-prod-public/deletable/energy-logo.png"
-                       alt="Energy 2025 Logo"
-                       width={28}
-                       height={28}
-                    />
+                  <CardTitle className="text-2xl font-bold">
                     All Sports
                   </CardTitle>
                 </CardHeader>
