@@ -1,3 +1,8 @@
+'use client';
+
+import * as React from 'react';
+import { School } from 'lucide-react';
+
 import {
   Card,
   CardContent,
@@ -5,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { School } from 'lucide-react';
+import { SchoolsTable } from '@/components/admin/schools-table';
 
 export default function SchoolsPage() {
   return (
@@ -16,13 +21,11 @@ export default function SchoolsPage() {
           <CardTitle className="text-3xl">Manage Schools</CardTitle>
         </div>
         <CardDescription>
-          Add, edit, or remove participating schools from the system.
+          Add, view, edit, or remove participating schools from the system.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-center text-muted-foreground">
-          School management interface will be here.
-        </p>
+        <SchoolsTable />
       </CardContent>
     </Card>
   );

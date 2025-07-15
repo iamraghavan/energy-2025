@@ -22,3 +22,12 @@ export interface Match {
 export interface SchoolTeam {
   schoolName: string;
 }
+
+export interface School {
+  _id: string;
+  schoolId: string;
+  name: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+}
