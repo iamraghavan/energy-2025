@@ -46,7 +46,12 @@ export function PredictionTool({ sport }: PredictionToolProps) {
     setIsLoading(true);
     setPrediction(null);
     try {
-      const result = await handlePrediction({ ...data, sport });
+      const result = await handlePrediction({
+        sport,
+        team1: data.team1,
+        team2: data.team2,
+        matchData: data.matchData
+      });
       setPrediction(result);
     } catch (error) {
       toast({
