@@ -2,9 +2,10 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ClipboardList, PlusCircle, Frown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { getMatches } from '@/services/match-service';
@@ -12,8 +13,11 @@ import type { MatchAPI } from '@/lib/types';
 import { UpdateScoreForm } from '@/components/scorekeeper/update-score-form';
 
 export default function ScorekeeperDashboardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [matches, setMatches] = React.useState<MatchAPI[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [activeTab, setActiveTab] = React.useState(searchParams.get('tab') || 'live');
 
   const { toast } = useToast();
 
@@ -36,10 +40,15 @@ export default function ScorekeeperDashboardPage() {
   React.useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`/scorekeeper-dashboard?tab=${value}`, { scroll: false });
+  };
 
-  const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
+  const scheduledMatches = matches.filter((m) => m.status === 'scheduled');
   const liveMatches = matches.filter((m) => m.status === 'live');
-  const finishedMatches = matches.filter((m) => m.status === 'finished');
+  const completedMatches = matches.filter((m) => m.status === 'completed');
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,20 +68,20 @@ export default function ScorekeeperDashboardPage() {
         </Button>
       </div>
 
-      <Tabs defaultValue="live" className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="live">Live</TabsTrigger>
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          <TabsTrigger value="finished">Finished</TabsTrigger>
+          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
         <TabsContent value="live">
           <MatchList matches={liveMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No live matches right now." />
         </TabsContent>
-        <TabsContent value="upcoming">
-          <MatchList matches={upcomingMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No upcoming matches scheduled." />
+        <TabsContent value="scheduled">
+          <MatchList matches={scheduledMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No matches are scheduled." />
         </TabsContent>
-        <TabsContent value="finished">
-          <MatchList matches={finishedMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No matches have finished yet." />
+        <TabsContent value="completed">
+          <MatchList matches={completedMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No matches have been completed yet." />
         </TabsContent>
       </Tabs>
     </div>

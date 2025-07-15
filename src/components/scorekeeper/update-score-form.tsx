@@ -39,7 +39,7 @@ import { SportIcon } from '../sports/sports-icons';
 const updateScoreSchema = z.object({
   teamOneScore: z.coerce.number().min(0),
   teamTwoScore: z.coerce.number().min(0),
-  status: z.enum(['upcoming', 'live', 'finished']),
+  status: z.enum(['scheduled', 'live', 'completed']),
 });
 
 type UpdateScoreFormValues = z.infer<typeof updateScoreSchema>;
@@ -148,9 +148,9 @@ export function UpdateScoreForm({ match, onMatchUpdated }: UpdateScoreFormProps)
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="upcoming">Upcoming</SelectItem>
+                                <SelectItem value="scheduled">Scheduled</SelectItem>
                                 <SelectItem value="live">Live</SelectItem>
-                                <SelectItem value="finished">Finished</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
                             </SelectContent>
                         </Select>
                     </FormItem>

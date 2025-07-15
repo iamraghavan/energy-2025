@@ -119,15 +119,13 @@ export default function CreateMatchPage() {
   const onFormSubmit = async (values: MatchFormValues) => {
     setIsSubmitting(true);
     
-    const teamA = allTeams.find(t => t._id === values.teamOneId)?.teamId;
     const sportName = sports.find(s => s._id === values.sportId)?.name;
-    const teamB = allTeams.find(t => t._id === values.teamTwoId)?.teamId;
 
-    if (!teamA || !teamB || !sportName) {
+    if (!sportName) {
         toast({
             variant: 'destructive',
             title: 'Invalid Data',
-            description: 'Could not find the necessary ID for the selected sport or teams.',
+            description: 'Could not find the selected sport.',
         });
         setIsSubmitting(false);
         return;
@@ -135,8 +133,8 @@ export default function CreateMatchPage() {
 
     const payload: CreateMatchPayload = {
       sport: sportName,
-      teamA: teamA,
-      teamB: teamB,
+      teamA: values.teamOneId, // Send the MongoDB _id
+      teamB: values.teamTwoId, // Send the MongoDB _id
       scheduledAt: values.scheduledAt.toISOString(),
       venue: values.venue,
       courtNumber: values.courtNumber,
@@ -149,7 +147,7 @@ export default function CreateMatchPage() {
         title: 'Match Created',
         description: 'The new match has been scheduled successfully.',
       });
-      router.push('/scorekeeper-dashboard');
+      router.push('/scorekeeper-dashboard?tab=scheduled');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -232,7 +230,7 @@ export default function CreateMatchPage() {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, 'PPP')
+                                  format(field.value, 'PPP HH:mm')
                                 ) : (
                                   <span>Pick a date</span>
                                 )}
@@ -248,7 +246,6 @@ export default function CreateMatchPage() {
                               disabled={(date) => date < new Date('1900-01-01')}
                               initialFocus
                             />
-                            {/* Simple time picker - can be enhanced */}
                             <div className="p-2 border-t">
                                <Input 
                                 type="time"
@@ -256,7 +253,7 @@ export default function CreateMatchPage() {
                                 onChange={(e) => {
                                     const time = e.target.value;
                                     const [hours, minutes] = time.split(':').map(Number);
-                                    const newDate = new Date(field.value || new Date());
+                                    const newDate = field.value ? new Date(field.value) : new Date();
                                     newDate.setHours(hours, minutes);
                                     field.onChange(newDate);
                                 }}

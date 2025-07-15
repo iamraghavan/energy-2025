@@ -70,7 +70,7 @@ export interface MatchAPI {
   teamTwo: Team;
   teamOneScore: number;
   teamTwoScore: number;
-  status: 'upcoming' | 'live' | 'finished';
+  status: 'scheduled' | 'live' | 'completed';
   date?: string;
   time?: string;
   createdAt: string;
@@ -79,8 +79,8 @@ export interface MatchAPI {
 
 export interface CreateMatchPayload {
   sport: string;
-  teamA: string;
-  teamB: string;
+  teamA: string; // This is the MongoDB _id of the team
+  teamB: string; // This is the MongoDB _id of the team
   scheduledAt: string;
   venue: string;
   courtNumber: string;
@@ -90,5 +90,5 @@ export interface CreateMatchPayload {
 export interface UpdateMatchPayload {
   teamOneScore?: number;
   teamTwoScore?: number;
-  status?: 'upcoming' | 'live' | 'finished';
+  status?: 'scheduled' | 'live' | 'completed';
 }
