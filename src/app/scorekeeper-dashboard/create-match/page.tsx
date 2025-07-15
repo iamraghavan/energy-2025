@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -87,8 +88,8 @@ export default function CreateMatchPage() {
         (team) => team.sport._id === selectedSportId
       );
       setFilteredTeams(teamsForSport);
-      form.resetField('teamOneId');
-      form.resetField('teamTwoId');
+      form.setValue('teamOneId', '');
+      form.setValue('teamTwoId', '');
     } else {
       setFilteredTeams([]);
     }
@@ -117,7 +118,7 @@ export default function CreateMatchPage() {
   const sportOptions = sports.map((s) => ({ value: s._id, label: s.name }));
   const teamOptions = filteredTeams.map((t) => ({
     value: t._id,
-    label: `${t.name} (${t.school.name})`,
+    label: `${t.name} - ${t.school.name} - ${t.school.address || 'N/A'} - ${t.teamId}`,
   }));
 
   return (
@@ -164,7 +165,7 @@ export default function CreateMatchPage() {
                                 </Button>
                             </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" container={undefined}>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                             <Command>
                                 <CommandInput placeholder="Search sport..." />
                                 <CommandList>
@@ -175,7 +176,7 @@ export default function CreateMatchPage() {
                                         value={option.label}
                                         key={option.value}
                                         onSelect={() => {
-                                        form.setValue('sportId', option.value);
+                                          form.setValue('sportId', option.value);
                                         }}
                                     >
                                         <Check
@@ -216,16 +217,18 @@ export default function CreateMatchPage() {
                                     !field.value && 'text-muted-foreground'
                                 )}
                                 >
+                                <span className="truncate">
                                 {field.value
                                     ? teamOptions.find(
                                         (option) => option.value === field.value
                                     )?.label
                                     : 'Select team one'}
+                                </span>
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                             </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" container={undefined}>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                             <Command>
                                 <CommandInput placeholder="Search team..." />
                                 <CommandList>
@@ -236,7 +239,7 @@ export default function CreateMatchPage() {
                                         value={option.label}
                                         key={option.value}
                                         onSelect={() => {
-                                        form.setValue('teamOneId', option.value);
+                                          form.setValue('teamOneId', option.value);
                                         }}
                                     >
                                         <Check
@@ -247,7 +250,7 @@ export default function CreateMatchPage() {
                                             : 'opacity-0'
                                         )}
                                         />
-                                        {option.label}
+                                        <span className="truncate">{option.label}</span>
                                     </CommandItem>
                                     ))}
                                 </CommandGroup>
@@ -277,16 +280,18 @@ export default function CreateMatchPage() {
                                     !field.value && 'text-muted-foreground'
                                 )}
                                 >
+                                <span className="truncate">
                                 {field.value
                                     ? teamOptions.find(
                                         (option) => option.value === field.value
                                     )?.label
                                     : 'Select team two'}
+                                </span>
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                             </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" container={undefined}>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                             <Command>
                                 <CommandInput placeholder="Search team..." />
                                 <CommandList>
@@ -297,7 +302,7 @@ export default function CreateMatchPage() {
                                         value={option.label}
                                         key={option.value}
                                         onSelect={() => {
-                                        form.setValue('teamTwoId', option.value);
+                                          form.setValue('teamTwoId', option.value);
                                         }}
                                     >
                                         <Check
@@ -308,7 +313,7 @@ export default function CreateMatchPage() {
                                             : 'opacity-0'
                                         )}
                                         />
-                                        {option.label}
+                                        <span className="truncate">{option.label}</span>
                                     </CommandItem>
                                     ))}
                                 </CommandGroup>
@@ -336,3 +341,5 @@ export default function CreateMatchPage() {
     </div>
   );
 }
+
+    

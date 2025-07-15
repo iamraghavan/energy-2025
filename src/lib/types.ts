@@ -1,3 +1,4 @@
+
 export interface Sport {
   name: string;
   slug: string;
@@ -28,7 +29,7 @@ export interface School {
   _id: string;
   schoolId: string;
   name: string;
-  address: string;
+  address?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,3 +88,5 @@ export interface UpdateMatchPayload {
   teamTwoScore?: number;
   status?: 'upcoming' | 'live' | 'finished';
 }
+
+    
