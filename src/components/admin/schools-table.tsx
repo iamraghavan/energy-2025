@@ -65,7 +65,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { getSchools, createSchool, updateSchool, deleteSchool } from '@/services/school-service';
 import type { School } from '@/lib/types';
-import { AddressAutocomplete } from './address-autocomplete';
 
 const schoolSchema = z.object({
   name: z.string().min(3, { message: 'School name must be at least 3 characters long.' }),
@@ -73,8 +72,6 @@ const schoolSchema = z.object({
 });
 
 type SchoolFormValues = z.infer<typeof schoolSchema>;
-
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 export function SchoolsTable() {
   const [data, setData] = React.useState<School[]>([]);
@@ -294,15 +291,9 @@ export function SchoolsTable() {
                                 <FormItem>
                                     <FormLabel>Address</FormLabel>
                                     <FormControl>
-                                        <AddressAutocomplete
-                                          googleMapsApiKey={GOOGLE_MAPS_API_KEY}
-                                          value={field.value}
-                                          onValueChange={field.onChange}
-                                          onPlaceSelected={(place) => {
-                                            if (place.formatted_address) {
-                                                form.setValue('address', place.formatted_address);
-                                            }
-                                          }}
+                                        <Input
+                                            placeholder="Enter the full school address"
+                                            {...field}
                                         />
                                     </FormControl>
                                     <FormMessage />
