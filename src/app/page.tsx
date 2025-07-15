@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { sports, matches } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,14 +18,21 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative text-center py-16 md:py-24 bg-gradient-to-r from-primary to-accent">
-          <div className="container mx-auto relative px-4">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary-foreground text-balance">
-              EGS Pillay Group of Institutions Presents Energy 2025
-            </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/80 mt-4 max-w-3xl mx-auto text-balance">
-              Your ultimate destination for live scores, match schedules, and results for the inter-departmental sports fest.
-            </p>
+        <section className="relative w-full bg-gradient-to-r from-[#001b70] to-[#af005f] text-white overflow-hidden">
+          <div className="container mx-auto px-4 py-16 md:py-24">
+             <div className="grid md:grid-cols-2 gap-8 items-center">
+                <div className="text-center md:text-left">
+                  <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-balance">
+                    EGS Pillay Group of Institutions Presents Energy 2025
+                  </h1>
+                  <p className="text-lg md:text-xl text-white/80 mt-4 max-w-2xl mx-auto md:mx-0 text-balance">
+                    Your ultimate destination for live scores, match schedules, and results for the inter-departmental sports fest.
+                  </p>
+                </div>
+                <div className="relative flex justify-center items-center">
+                   <Trophy className="w-48 h-48 text-white/20" strokeWidth={1} />
+                </div>
+              </div>
           </div>
         </section>
 
@@ -71,12 +79,12 @@ export default function Home() {
 
             {/* All Sports */}
             <aside className="lg:col-span-1 space-y-6">
-               <Card>
+               <Card className="bg-secondary">
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Trophy className="text-accent-foreground"/>
+                    <Trophy className="text-primary"/>
                     All Sports
-                  </CardTitle>
+                  </a-CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-4">
@@ -84,11 +92,11 @@ export default function Home() {
                       <Link
                         href={`/sports/${sport.slug}`}
                         key={sport.slug}
-                        className="group flex flex-col items-center justify-center gap-2 rounded-lg p-4 bg-secondary hover:bg-accent transition-colors"
+                        className="group flex flex-col items-center justify-center gap-2 rounded-lg p-4 bg-card hover:bg-card/90 hover:shadow-md transition-all"
                       >
-                        <SportIcon sportName={sport.name} className="w-8 h-8 text-accent-foreground group-hover:text-primary transition-colors" />
+                        <SportIcon sportName={sport.name} className="w-8 h-8 text-primary group-hover:text-primary/80 transition-colors" />
                         <span className="font-semibold text-center text-foreground">{sport.name}</span>
-                      </Link>
+                      </a-Link>
                     ))}
                   </div>
                 </CardContent>
