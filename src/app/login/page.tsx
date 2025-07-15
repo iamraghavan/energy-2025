@@ -77,6 +77,8 @@ export default function LoginPage() {
           router.push('/super-admin-dashboard');
         } else if (result.data.role === 'lv2admin') {
           router.push('/lv2-admin-dashboard');
+        } else if (result.data.role === 'scorekeeper') {
+          router.push('/scorekeeper-dashboard');
         } else {
           // Fallback redirect for other roles or no role
           router.push('/');

@@ -1,4 +1,4 @@
-import type { Sport, Match, SchoolTeam } from './types';
+import type { Sport, UIMatch, SchoolTeam } from './types';
 
 export const sports: Sport[] = [
   { name: 'Football', slug: 'football' },
@@ -12,7 +12,7 @@ export const sports: Sport[] = [
   { name: 'Chess', slug: 'chess' },
 ];
 
-export const matches: Match[] = [
+export const matches: UIMatch[] = [
   // Live Matches
   { id: 1, sport: 'Football', team1: { name: 'Red Dragons', score: 2, logo: 'https://placehold.co/100x100.png' }, team2: { name: 'Blue Eagles', score: 1, logo: 'https://placehold.co/100x100.png' }, status: 'live' },
   { id: 2, sport: 'Basketball', team1: { name: 'Hoop Masters', score: 88, logo: 'https://placehold.co/100x100.png' }, team2: { name: 'Dunk Dynamos', score: 92, logo: 'https://placehold.co/100x100.png' }, status: 'live' },

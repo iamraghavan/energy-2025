@@ -5,7 +5,7 @@ import * as React from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 
-import { sports, matches } from '@/lib/data';
+import { sports, matches as mockMatches } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sports-icons';
@@ -20,8 +20,8 @@ import {
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
-  const liveMatches = matches.filter((m) => m.status === 'live');
-  const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
+  const liveMatches = mockMatches.filter((m) => m.status === 'live');
+  const upcomingMatches = mockMatches.filter((m) => m.status === 'upcoming');
 
   const plugin = React.useRef(
     Autoplay({ delay: 2000, stopOnInteraction: true })

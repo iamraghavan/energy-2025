@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { sports, matches, schoolTeams } from '@/lib/data';
+import { sports, matches as mockMatches, schoolTeams } from '@/lib/data';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
@@ -29,9 +29,9 @@ export default function SportPage({ params }: { params: { sport: string } }) {
     notFound();
   }
 
-  const liveMatches = matches.filter((m) => m.sport === sportData.name && m.status === 'live');
-  const upcomingMatches = matches.filter((m) => m.sport === sportData.name && m.status === 'upcoming');
-  const finishedMatches = matches.filter((m) => m.sport === sportData.name && m.status === 'finished');
+  const liveMatches = mockMatches.filter((m) => m.sport === sportData.name && m.status === 'live');
+  const upcomingMatches = mockMatches.filter((m) => m.sport === sportData.name && m.status === 'upcoming');
+  const finishedMatches = mockMatches.filter((m) => m.sport === sportData.name && m.status === 'finished');
 
   const participatingTeams = schoolTeams[sportData.name.toLowerCase() as keyof typeof schoolTeams] || [];
 

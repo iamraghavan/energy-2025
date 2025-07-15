@@ -1,12 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Match } from '@/lib/types';
+import type { UIMatch } from '@/lib/types';
 import { SportIcon } from './sports-icons';
 import { Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface MatchCardProps {
-  match: Match;
+  match: UIMatch;
 }
 
 export function MatchCard({ match }: MatchCardProps) {

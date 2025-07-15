@@ -9,7 +9,8 @@ export interface TeamSummary {
   logo?: string;
 }
 
-export interface Match {
+// This type is based on mock data and used on the public-facing pages.
+export interface UIMatch {
   id: number;
   sport: string;
   team1: TeamSummary;
@@ -57,4 +58,32 @@ export interface TeamPayload {
     sportId: string;
     schoolId: string;
     gender: 'M' | 'F';
+}
+
+// Types for the Match API
+export interface MatchAPI {
+  _id: string;
+  matchId: string;
+  sport: SportAPI;
+  teamOne: Team;
+  teamTwo: Team;
+  teamOneScore: number;
+  teamTwoScore: number;
+  status: 'upcoming' | 'live' | 'finished';
+  date?: string;
+  time?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMatchPayload {
+  sportId: string;
+  teamOneId: string;
+  teamTwoId: string;
+}
+
+export interface UpdateMatchPayload {
+  teamOneScore?: number;
+  teamTwoScore?: number;
+  status?: 'upcoming' | 'live' | 'finished';
 }
