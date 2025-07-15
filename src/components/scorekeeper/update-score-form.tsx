@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -91,7 +92,9 @@ export function UpdateScoreForm({ match, onMatchUpdated }: UpdateScoreFormProps)
                     {match.sport.name}
                 </CardTitle>
                 <CardDescription>
-                  {match.teamOne.school.name} vs {match.teamTwo.school.name}
+                  {match.teamOne?.school?.name && match.teamTwo?.school?.name 
+                    ? `${match.teamOne.school.name} vs ${match.teamTwo.school.name}`
+                    : 'Team details unavailable'}
                 </CardDescription>
               </div>
                <Badge variant={match.status === 'live' ? 'destructive' : 'secondary'}>
@@ -102,13 +105,13 @@ export function UpdateScoreForm({ match, onMatchUpdated }: UpdateScoreFormProps)
           <CardContent className="grid grid-cols-2 gap-4">
             {/* Team One */}
             <div className="space-y-2">
-              <p className="font-semibold">{match.teamOne.name}</p>
+              <p className="font-semibold">{match.teamOne?.name || 'Team 1'}</p>
               <FormField
                 control={form.control}
                 name="teamOneScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="sr-only">Score for {match.teamOne.name}</FormLabel>
+                    <FormLabel className="sr-only">Score for {match.teamOne?.name}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -119,13 +122,13 @@ export function UpdateScoreForm({ match, onMatchUpdated }: UpdateScoreFormProps)
 
             {/* Team Two */}
             <div className="space-y-2">
-              <p className="font-semibold">{match.teamTwo.name}</p>
+              <p className="font-semibold">{match.teamTwo?.name || 'Team 2'}</p>
               <FormField
                 control={form.control}
                 name="teamTwoScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="sr-only">Score for {match.teamTwo.name}</FormLabel>
+                    <FormLabel className="sr-only">Score for {match.teamTwo?.name}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
