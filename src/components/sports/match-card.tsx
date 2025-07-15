@@ -9,17 +9,33 @@ interface MatchCardProps {
   match: Match;
 }
 
-const TeamDisplay = ({ name, logo }: { name: string; logo?: string }) => (
-  <div className="flex items-center gap-4">
-    <Avatar className="w-12 h-12 border">
-      {logo && <AvatarImage src={logo} alt={name} data-ai-hint="logo" />}
-      <AvatarFallback>{name.substring(0, 2).toUpperCase()}</AvatarFallback>
-    </Avatar>
-    <span className="font-semibold text-lg text-foreground truncate">
-      {name}
-    </span>
-  </div>
-);
+const TeamDisplay = ({ 
+  name, 
+  logo, 
+  score, 
+  alignment = 'left' 
+}: { 
+  name: string; 
+  logo?: string; 
+  score: number;
+  alignment?: 'left' | 'right' 
+}) => {
+  const textAlignClass = alignment === 'left' ? 'text-left' : 'text-right';
+  const flexDirectionClass = alignment === 'left' ? 'flex-row' : 'flex-row-reverse';
+
+  return (
+    <div className={`flex items-center gap-3 ${flexDirectionClass}`}>
+      <Avatar className="w-10 h-10 border">
+        {logo && <AvatarImage src={logo} alt={name} data-ai-hint="logo" />}
+        <AvatarFallback>{name.substring(0, 2).toUpperCase()}</AvatarFallback>
+      </Avatar>
+      <div className={`flex-1 ${textAlignClass}`}>
+        <p className="font-semibold text-base text-foreground truncate">{name}</p>
+        <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{score}</p>
+      </div>
+    </div>
+  );
+};
 
 export function MatchCard({ match }: MatchCardProps) {
   const { sport, team1, team2, status, time } = match;
@@ -33,12 +49,12 @@ export function MatchCard({ match }: MatchCardProps) {
             <span>{sport}</span>
           </div>
           {status === 'live' && (
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
-              </span>
-              <span className="text-xs font-semibold text-destructive">LIVE</span>
+             <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+                </span>
+                <span className="text-xs font-semibold text-destructive uppercase">Live</span>
             </div>
           )}
           {status === 'finished' && <Badge variant="secondary">Finished</Badge>}
@@ -50,32 +66,39 @@ export function MatchCard({ match }: MatchCardProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-10 items-center gap-4">
-          <div className="col-span-4">
-            <TeamDisplay name={team1.name} logo={team1.logo} />
+        <div className="grid grid-cols-11 items-center gap-2">
+          {/* Team 1 */}
+          <div className="col-span-5">
+             <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10 border">
+                  {team1.logo && <AvatarImage src={team1.logo} alt={team1.name} data-ai-hint="logo" />}
+                  <AvatarFallback>{team1.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="text-left">
+                  <p className="font-semibold text-base text-foreground truncate">{team1.name}</p>
+                  {status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{team1.score}</p>}
+                </div>
+            </div>
           </div>
           
-          <div className="col-span-2 text-center">
-            {status !== 'upcoming' ? (
-              <div className="flex items-center justify-center gap-2">
-                  <span className="font-bold text-3xl text-foreground tabular-nums tracking-tight">{team1.score}</span>
-                  <span className="font-bold text-2xl text-muted-foreground">-</span>
-                  <span className="font-bold text-3xl text-foreground tabular-nums tracking-tight">{team2.score}</span>
-              </div>
-            ) : (
-               <span className="font-semibold text-xl text-muted-foreground">vs</span>
-            )}
+          {/* Separator */}
+          <div className="col-span-1 text-center">
+            <span className="font-semibold text-lg text-muted-foreground">
+              {status === 'upcoming' ? 'vs' : '-'}
+            </span>
           </div>
 
-          <div className="col-span-4 flex justify-end">
-            <div className="flex items-center gap-4 flex-row-reverse">
-                <Avatar className="w-12 h-12 border">
-                {team2.logo && <AvatarImage src={team2.logo} alt={team2.name} data-ai-hint="logo" />}
-                <AvatarFallback>{team2.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+          {/* Team 2 */}
+          <div className="col-span-5">
+            <div className="flex items-center gap-3 flex-row-reverse">
+                <Avatar className="w-10 h-10 border">
+                    {team2.logo && <AvatarImage src={team2.logo} alt={team2.name} data-ai-hint="logo" />}
+                    <AvatarFallback>{team2.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <span className="font-semibold text-lg text-foreground truncate text-right">
-                {team2.name}
-                </span>
+                 <div className="text-right">
+                  <p className="font-semibold text-base text-foreground truncate">{team2.name}</p>
+                   {status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{team2.score}</p>}
+                </div>
             </div>
           </div>
         </div>
