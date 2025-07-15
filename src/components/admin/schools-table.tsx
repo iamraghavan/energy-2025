@@ -172,14 +172,19 @@ export function SchoolsTable() {
 
   const columns: ColumnDef<School>[] = [
     {
+      accessorKey: 'schoolId',
+      header: 'School ID',
+      cell: ({ row }) => <div>{row.getValue('schoolId')}</div>,
+    },
+    {
       accessorKey: 'name',
       header: 'School Name',
-      cell: ({ row }) => <div className="capitalize">{row.getValue('name')}</div>,
+      cell: ({ row }) => <div className="capitalize font-medium">{row.getValue('name')}</div>,
     },
     {
       accessorKey: 'address',
       header: 'Address',
-      cell: ({ row }) => <div>{row.getValue('address')}</div>,
+      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue('address')}</div>,
     },
     {
       accessorKey: 'createdAt',
