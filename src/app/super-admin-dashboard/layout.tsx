@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { School, Users, Home, PanelLeft } from 'lucide-react';
+import { School, Users, Home } from 'lucide-react';
 import Image from 'next/image';
 
 import {
@@ -14,13 +14,12 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarInset,
   SidebarHeader,
   SidebarFooter,
   SidebarTrigger,
+  SidebarInset,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 
 export default function SuperAdminLayout({
   children,
@@ -35,24 +34,24 @@ export default function SuperAdminLayout({
     <SidebarProvider>
       <div className="flex min-h-screen">
         <Sidebar collapsible="offcanvas">
-          <SidebarContent>
+           <SidebarContent className="flex flex-col">
             <SidebarHeader>
-              <Link href="/" className="flex items-center gap-2">
+              <Link href="/" className="flex items-center justify-center p-2">
                  <Image 
                     src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-egspgoi-logo.png?alt=media&token=b401f7dd-c3ed-4a30-84b7-8222ba965250"
                     alt="ScoreCast Logo"
-                    width={32}
-                    height={32}
+                    width={40}
+                    height={40}
                  />
-                 <span className="font-semibold text-lg">ScoreCast</span>
               </Link>
             </SidebarHeader>
 
-            <SidebarMenu>
+            <SidebarMenu className="flex-1">
                <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/super-admin-dashboard')}
+                  className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
                   tooltip={{
                     children: 'Dashboard',
                   }}
@@ -67,6 +66,7 @@ export default function SuperAdminLayout({
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/super-admin-dashboard/schools')}
+                  className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
                   tooltip={{
                     children: 'Schools',
                   }}
@@ -81,6 +81,7 @@ export default function SuperAdminLayout({
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/super-admin-dashboard/teams')}
+                  className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
                   tooltip={{
                     children: 'Teams',
                   }}
@@ -93,7 +94,7 @@ export default function SuperAdminLayout({
               </SidebarMenuItem>
             </SidebarMenu>
             <SidebarFooter>
-                <span className="text-xs text-muted-foreground">v1.0.0</span>
+                <span className="text-xs text-muted-foreground text-center">v1.0.0</span>
             </SidebarFooter>
           </SidebarContent>
           <SidebarRail />
