@@ -292,26 +292,25 @@ function OptionList({ options, onSelect, setOpen, searchPlaceholder, emptyMessag
     return (
         <Command>
             <CommandInput placeholder={searchPlaceholder} />
-            <CommandEmpty>{emptyMessage}</CommandEmpty>
-            <CommandGroup>
-                <ScrollArea className="h-auto max-h-64">
-                    <CommandList>
+            <ScrollArea className="h-auto max-h-64">
+                <CommandEmpty>{emptyMessage}</CommandEmpty>
+                <CommandList>
+                    <CommandGroup>
                         {options.map((option) => (
                             <CommandItem
                                 value={option.label}
                                 key={option.value}
-                                onSelect={(currentValue) => {
-                                    const selectedValue = options.find(o => o.label.toLowerCase() === currentValue.toLowerCase())?.value || "";
-                                    onSelect(selectedValue)
-                                    setOpen(false)
+                                onSelect={() => {
+                                    onSelect(option.value);
+                                    setOpen(false);
                                 }}
                             >
                                 {option.label}
                             </CommandItem>
                         ))}
-                    </CommandList>
-                </ScrollArea>
-            </CommandGroup>
+                    </CommandGroup>
+                </CommandList>
+            </ScrollArea>
         </Command>
     )
 }

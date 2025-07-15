@@ -141,7 +141,7 @@ export function TeamsTable() {
     setSelectedTeam(team);
     form.reset({ 
         name: team.name,
-        schoolId: team.school._id, // The API needs mongo _id for linking
+        schoolId: team.school._id,
         sportId: team.sport._id,
         gender: team.gender,
      });
@@ -160,10 +160,8 @@ export function TeamsTable() {
   };
 
   const onFormSubmit = async (values: TeamFormValues) => {
-    // Map form values to the payload expected by the API
     const payload: TeamPayload = {
         name: values.name,
-        // The API expects sportId (custom) and schoolId (custom)
         sportId: sports.find(s => s._id === values.sportId)?.sportId || '',
         schoolId: schools.find(s => s._id === values.schoolId)?.schoolId || '',
         gender: values.gender,
@@ -180,7 +178,6 @@ export function TeamsTable() {
 
     try {
       if (selectedTeam) {
-        // The update endpoint uses the mongo _id
         await updateTeam(selectedTeam._id, payload);
         toast({ title: 'Team Updated', description: `${values.name} has been successfully updated.` });
       } else {
@@ -355,14 +352,14 @@ export function TeamsTable() {
                                     <Command>
                                         <CommandInput placeholder="Search school..." />
                                         <CommandEmpty>No school found.</CommandEmpty>
-                                        <CommandGroup>
-                                            <CommandList>
+                                        <CommandList>
+                                            <CommandGroup>
                                                 {schools.map((school) => (
                                                 <CommandItem
                                                     value={school.name}
                                                     key={school._id}
                                                     onSelect={() => {
-                                                    form.setValue("schoolId", school._id)
+                                                        form.setValue("schoolId", school._id, { shouldValidate: true })
                                                     }}
                                                 >
                                                     <Check
@@ -376,8 +373,8 @@ export function TeamsTable() {
                                                     {school.name}
                                                 </CommandItem>
                                                 ))}
-                                            </CommandList>
-                                        </CommandGroup>
+                                            </CommandGroup>
+                                        </CommandList>
                                     </Command>
                                     </PopoverContent>
                                 </Popover>
@@ -415,14 +412,14 @@ export function TeamsTable() {
                                     <Command>
                                         <CommandInput placeholder="Search sport..." />
                                         <CommandEmpty>No sport found.</CommandEmpty>
-                                        <CommandGroup>
-                                             <CommandList>
+                                        <CommandList>
+                                            <CommandGroup>
                                                 {sports.map((sport) => (
                                                 <CommandItem
                                                     value={sport.name}
                                                     key={sport._id}
                                                     onSelect={() => {
-                                                    form.setValue("sportId", sport._id)
+                                                        form.setValue("sportId", sport._id, { shouldValidate: true })
                                                     }}
                                                 >
                                                     <Check
@@ -436,8 +433,8 @@ export function TeamsTable() {
                                                     {sport.name}
                                                 </CommandItem>
                                                 ))}
-                                            </CommandList>
-                                        </CommandGroup>
+                                            </CommandGroup>
+                                        </CommandList>
                                     </Command>
                                     </PopoverContent>
                                 </Popover>
