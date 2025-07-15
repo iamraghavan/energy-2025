@@ -22,15 +22,15 @@ export const getSports = async (): Promise<SportAPI[]> => {
   
   // The API returns sports grouped by gender, so we need to flatten them.
   const allSports: SportAPI[] = [];
-  if (data.data.male) {
-    allSports.push(...data.data.male);
+  if (data.data.menSports) {
+    allSports.push(...data.data.menSports);
   }
-  if (data.data.female) {
-    allSports.push(...data.data.female);
+   if (data.data.womenSports) {
+    allSports.push(...data.data.womenSports);
   }
 
-  // Remove duplicates by sportId
-  const uniqueSports = Array.from(new Map(allSports.map(sport => [sport.sportId, sport])).values());
+  // Remove duplicates by sportId to show each sport only once in the dropdown
+  const uniqueSports = Array.from(new Map(allSports.map(sport => [sport.name, sport])).values());
   
   return uniqueSports;
 };
