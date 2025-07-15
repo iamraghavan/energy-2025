@@ -221,11 +221,11 @@ function SearchableSelect({ value, onSelect, options, placeholder, searchPlaceho
                 <CommandList>
                     {options.map((option) => (
                     <CommandItem
-                        value={option.label}
+                        value={option.value}
                         key={option.value}
-                        onSelect={() => {
-                            onSelect(option.value);
-                            setPopoverOpen(false);
+                        onSelect={(currentValue) => {
+                            onSelect(currentValue === value ? "" : currentValue)
+                            setPopoverOpen(false)
                         }}
                     >
                         <Check
