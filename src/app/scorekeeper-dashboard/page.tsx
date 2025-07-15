@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { ClipboardList, PlusCircle, Frown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,13 +9,11 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { getMatches } from '@/services/match-service';
 import type { MatchAPI } from '@/lib/types';
-import { CreateMatchForm } from '@/components/scorekeeper/create-match-form';
 import { UpdateScoreForm } from '@/components/scorekeeper/update-score-form';
 
 export default function ScorekeeperDashboardPage() {
   const [matches, setMatches] = React.useState<MatchAPI[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [isCreateModalOpen, setCreateModalOpen] = React.useState(false);
 
   const { toast } = useToast();
 
@@ -52,16 +51,12 @@ export default function ScorekeeperDashboardPage() {
             <p className="text-muted-foreground">Manage live scores and match outcomes.</p>
           </div>
         </div>
-        <CreateMatchForm
-          open={isCreateModalOpen}
-          onOpenChange={setCreateModalOpen}
-          onMatchCreated={fetchMatches}
-        >
-          <Button>
-            <PlusCircle className="mr-2" />
-            Create Match
-          </Button>
-        </CreateMatchForm>
+        <Button asChild>
+            <Link href="/scorekeeper-dashboard/create-match">
+                <PlusCircle className="mr-2" />
+                Create Match
+            </Link>
+        </Button>
       </div>
 
       <Tabs defaultValue="live" className="w-full">
