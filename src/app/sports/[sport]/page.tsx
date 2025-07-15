@@ -75,9 +75,11 @@ export default function SportPage({ params }: { params: { sport: string } }) {
 
             <section id="recent-results">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Recent Results</h2>
-              <div className="space-y-4">
+              <div>
                 {finishedMatches.length > 0 ? (
-                  finishedMatches.map((match) => <MatchCard key={match.id} match={match} />)
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {finishedMatches.map((match) => <MatchCard key={match.id} match={match} />)}
+                  </div>
                 ) : (
                   <p className="text-muted-foreground">No recent results found.</p>
                 )}

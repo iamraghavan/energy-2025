@@ -18,7 +18,7 @@ export function MatchCard({ match }: MatchCardProps) {
         <div className="flex justify-between items-center mb-4 pb-2 border-b">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <SportIcon sportName={sport} className="w-4 h-4" />
-            <span>{sport}</span>
+            <span className="truncate">{sport}</span>
           </div>
           {status === 'live' && (
              <div className="flex items-center gap-2">
@@ -38,18 +38,16 @@ export function MatchCard({ match }: MatchCardProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-11 items-center gap-2">
+        <div className="grid grid-cols-11 items-center gap-2 text-center">
           {/* Team 1 */}
-          <div className="col-span-5">
-             <div className="flex flex-col items-center text-center gap-2">
-                <Avatar className="w-10 h-10 border">
-                  {team1.logo && <AvatarImage src={team1.logo} alt={team1.name} data-ai-hint="logo" />}
-                  <AvatarFallback>{team1.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="text-center">
-                  <p className="font-semibold text-base text-foreground truncate">{team1.name}</p>
-                  {status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{team1.score}</p>}
-                </div>
+          <div className="col-span-5 flex flex-col items-center gap-2">
+            <Avatar className="w-10 h-10 border">
+              {team1.logo && <AvatarImage src={team1.logo} alt={team1.name} data-ai-hint="logo" />}
+              <AvatarFallback>{team1.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="text-center">
+              <p className="font-semibold text-sm text-foreground truncate">{team1.name}</p>
+              {status !== 'upcoming' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{team1.score}</p>}
             </div>
           </div>
           
@@ -61,16 +59,14 @@ export function MatchCard({ match }: MatchCardProps) {
           </div>
 
           {/* Team 2 */}
-          <div className="col-span-5">
-            <div className="flex flex-col items-center text-center gap-2">
-                <Avatar className="w-10 h-10 border">
-                    {team2.logo && <AvatarImage src={team2.logo} alt={team2.name} data-ai-hint="logo" />}
-                    <AvatarFallback>{team2.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                 <div className="text-center">
-                  <p className="font-semibold text-base text-foreground truncate">{team2.name}</p>
-                   {status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{team2.score}</p>}
-                </div>
+          <div className="col-span-5 flex flex-col items-center gap-2">
+            <Avatar className="w-10 h-10 border">
+                {team2.logo && <AvatarImage src={team2.logo} alt={team2.name} data-ai-hint="logo" />}
+                <AvatarFallback>{team2.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="text-center">
+              <p className="font-semibold text-sm text-foreground truncate">{team2.name}</p>
+              {status !== 'upcoming' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{team2.score}</p>}
             </div>
           </div>
         </div>
