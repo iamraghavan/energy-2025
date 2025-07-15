@@ -18,8 +18,16 @@ export function AddressAutocomplete({
 }: AddressAutocompleteProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isScriptLoaded, setIsScriptLoaded] = React.useState(false);
+  const [scriptError, setScriptError] = React.useState(false);
 
   React.useEffect(() => {
+    // If the API key is missing, don't attempt to load the script.
+    if (!googleMapsApiKey) {
+      console.error("Google Maps API key is missing.");
+      setScriptError(true);
+      return;
+    }
+
     const scriptId = 'google-maps-script';
     if (document.getElementById(scriptId) || window.google?.maps?.places) {
       setIsScriptLoaded(true);
@@ -32,19 +40,16 @@ export function AddressAutocomplete({
     script.async = true;
     script.defer = true;
     script.onload = () => setIsScriptLoaded(true);
+    script.onerror = () => {
+        console.error("Failed to load Google Maps script. Please check your API key and network connection.");
+        setScriptError(true);
+    }
     document.head.appendChild(script);
 
-    return () => {
-        // Clean up script
-        const existingScript = document.getElementById(scriptId);
-        if (existingScript) {
-            // document.head.removeChild(existingScript);
-        }
-    }
   }, [googleMapsApiKey]);
 
   React.useEffect(() => {
-    if (isScriptLoaded && inputRef.current && window.google) {
+    if (isScriptLoaded && !scriptError && inputRef.current && window.google) {
       const autocomplete = new window.google.maps.places.Autocomplete(
         inputRef.current,
         {
@@ -61,14 +66,25 @@ export function AddressAutocomplete({
         onPlaceSelected(place);
       });
     }
-  }, [isScriptLoaded, onValueChange, onPlaceSelected]);
+  }, [isScriptLoaded, scriptError, onValueChange, onPlaceSelected]);
+
+  // If the script fails to load or there's an error, fall back to a regular input
+  if (scriptError) {
+    return (
+        <Input
+            value={value}
+            onChange={(e) => onValueChange(e.target.value)}
+            placeholder="Enter address manually"
+        />
+    );
+  }
 
   return (
     <Input
       ref={inputRef}
       value={value}
       onChange={(e) => onValueChange(e.target.value)}
-      placeholder="Start typing an address..."
+      placeholder="Start typing an address for autocomplete..."
     />
   );
 }
