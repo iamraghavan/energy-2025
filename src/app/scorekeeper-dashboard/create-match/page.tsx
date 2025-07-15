@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, ChevronsUpDown } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -128,96 +128,99 @@ export default function CreateMatchPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/scorekeeper-dashboard">
-            <ArrowLeft />
-            <span className="sr-only">Back</span>
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create a New Match</h1>
-          <p className="text-muted-foreground">Select the sport and teams to schedule a match.</p>
+    <div className="flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+         <div className="flex items-center gap-4 mb-6">
+            <Button variant="outline" size="icon" asChild>
+                <Link href="/scorekeeper-dashboard">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                </Link>
+            </Button>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Create a New Match</h1>
+                <p className="text-muted-foreground">Select the sport and teams to schedule a match.</p>
+            </div>
         </div>
-      </div>
-      <Card>
-        <CardContent className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="sportId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sport</FormLabel>
-                    <FormControl>
-                      <Autocomplete
-                        options={sportOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select sport"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="teamOneId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Team One</FormLabel>
-                    <FormControl>
-                      <Autocomplete
-                        options={teamOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select team one"
-                        disabled={!selectedSportId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="teamTwoId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Team Two</FormLabel>
-                    <FormControl>
-                      <Autocomplete
-                        options={teamOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select team two"
-                        disabled={!selectedSportId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <Card>
+          <CardContent className="p-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="sportId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sport</FormLabel>
+                      <FormControl>
+                        <Autocomplete
+                          options={sportOptions}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Type to search for a sport..."
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="teamOneId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Team One</FormLabel>
+                      <FormControl>
+                        <Autocomplete
+                          options={teamOptions}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select team one"
+                          disabled={!selectedSportId}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="teamTwoId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Team Two</FormLabel>
+                      <FormControl>
+                        <Autocomplete
+                          options={teamOptions}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select team two"
+                          disabled={!selectedSportId}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex justify-end pt-4">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full md:w-auto"
-                >
-                  {isSubmitting ? 'Creating...' : 'Create Match'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                <div className="flex justify-end pt-4">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full md:w-auto"
+                  >
+                    {isSubmitting ? 'Creating...' : 'Create Match'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+
 
 // Reusable Autocomplete Component
 interface AutocompleteProps {
@@ -240,46 +243,44 @@ function Autocomplete({ options, value, onChange, placeholder, disabled }: Autoc
     setInputValue(selectedLabel);
   }, [selectedLabel]);
 
-  const showSuggestions = inputValue.length >= 2;
+  const showSuggestions = open && inputValue.length >= 2;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={showSuggestions} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative">
-          <Input
-            placeholder={placeholder}
-            value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-              if (e.target.value !== selectedLabel) {
-                onChange('');
-              }
-              if (e.target.value.length >= 2) {
-                setOpen(true);
-              } else {
+        <Input
+          placeholder={placeholder}
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            if (e.target.value !== selectedLabel) {
+              onChange('');
+            }
+            if (e.target.value.length >= 2) {
+              setOpen(true);
+            } else {
+              setOpen(false);
+            }
+          }}
+          onBlur={() => {
+              setTimeout(() => {
+                const currentOption = options.find(opt => opt.label.toLowerCase() === inputValue.toLowerCase());
+                if (!currentOption) {
+                  setInputValue(selectedLabel || '');
+                }
                 setOpen(false);
-              }
-            }}
-            onBlur={() => {
-                // To prevent the popover from closing immediately on blur,
-                // we use a small timeout to allow click events on the popover content
-                setTimeout(() => {
-                    const currentOption = options.find(opt => opt.label.toLowerCase() === inputValue.toLowerCase());
-                    if (!currentOption) {
-                      setInputValue(selectedLabel || '');
-                    }
-                }, 150);
-            }}
-            disabled={disabled}
-            className="w-full"
-            role="combobox"
-          />
-          <ChevronsUpDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 opacity-50" />
-        </div>
+              }, 150);
+          }}
+          disabled={disabled}
+          className="w-full"
+          role="combobox"
+        />
       </PopoverTrigger>
       {showSuggestions && (
-        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-          <Command>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()} // Prevents focus shift
+        >
+          <Command shouldFilter={false}>
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
