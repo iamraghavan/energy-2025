@@ -41,8 +41,11 @@ export default function Home() {
             <div className="lg:col-span-2 space-y-8 mt-8 lg:mt-0">
               {/* Live Matches */}
               <section id="live-matches">
-                <h2 className="text-3xl font-bold tracking-tight mb-4 flex items-center">
-                  <Badge variant="destructive" className="mr-3 animate-pulse text-lg">LIVE</Badge>
+                <h2 className="text-3xl font-bold tracking-tight mb-4 flex items-center gap-3">
+                   <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
+                    </span>
                   Live Matches
                 </h2>
                 <div className="space-y-4">

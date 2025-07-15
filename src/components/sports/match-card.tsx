@@ -19,13 +19,22 @@ export function MatchCard({ match }: MatchCardProps) {
             <SportIcon sportName={sport} className="w-4 h-4" />
             <span>{sport}</span>
           </div>
-          {status === 'live' && <Badge variant="destructive" className="animate-pulse">LIVE</Badge>}
+          {status === 'live' && (
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+              </span>
+              <span className="text-xs font-semibold text-destructive">LIVE</span>
+            </div>
+          )}
           {status === 'finished' && <Badge variant="secondary">Finished</Badge>}
           {status === 'upcoming' && time && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Clock className="w-4 h-4" />
               <span>{time}</span>
             </div>
+
           )}
         </div>
 
