@@ -85,6 +85,9 @@ const GenericSportIcon = (props: LucideProps) => (
 
 export function SportIcon({ sportName, ...props }: SportIconProps) {
   const IconComponent = (() => {
+    if (typeof sportName !== 'string') {
+      return GenericSportIcon;
+    }
     switch (sportName.toLowerCase()) {
       case 'football': return FootballIcon;
       case 'basketball': return BasketballIcon;
