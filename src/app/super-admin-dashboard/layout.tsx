@@ -40,8 +40,8 @@ export default function SuperAdminLayout({
                  <Image 
                     src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-egspgoi-logo.png?alt=media&token=b401f7dd-c3ed-4a30-84b7-8222ba965250"
                     alt="ScoreCast Logo"
-                    width={40}
-                    height={40}
+                    width={80}
+                    height={80}
                  />
               </Link>
             </SidebarHeader>
