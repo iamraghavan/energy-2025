@@ -33,24 +33,22 @@ export default function Home() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative w-full bg-gradient-to-r from-[#001b70] to-[#af005f] text-white overflow-hidden">
-          <div className="container mx-auto px-4 py-16 md:py-24">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="text-center md:text-left">
-                <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-balance">
+          <div className="container mx-auto px-4 py-16 md:py-24 text-center">
+            <div className="flex flex-col items-center gap-6">
+              <Image
+                src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-logo.png?alt=media&token=49e75a63-950b-4ed2-a0f7-075ba54ace2e"
+                alt="Energy 2025 Logo"
+                width={200}
+                height={200}
+                className="w-40 h-40 md:w-48 md:h-48 text-white/20"
+              />
+              <div className="max-w-3xl">
+                 <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-balance">
                   EGS Pillay Group of Institutions Presents Energy 2025
                 </h1>
-                <p className="text-lg md:text-xl text-white/80 mt-4 max-w-2xl mx-auto md:mx-0 text-balance">
+                <p className="text-lg md:text-xl text-white/80 mt-4 text-balance">
                   Your ultimate destination for live scores, match schedules, and results for the inter-departmental sports fest.
                 </p>
-              </div>
-              <div className="relative flex justify-center items-center">
-                <Image
-                  src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-logo.png?alt=media&token=49e75a63-950b-4ed2-a0f7-075ba54ace2e"
-                  alt="Energy 2025 Logo"
-                  width={200}
-                  height={200}
-                  className="w-48 h-48 text-white/20"
-                />
               </div>
             </div>
           </div>
