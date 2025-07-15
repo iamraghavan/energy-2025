@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
-import { ThemeToggle } from './theme-toggle';
 
 interface UserData {
   username: string;
@@ -66,7 +65,6 @@ export function Header() {
           </Link>
         </div>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <nav className="flex items-center gap-4">
             {user ? (
               <DropdownMenu>

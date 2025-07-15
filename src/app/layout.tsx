@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
-import { Jost } from 'next/font/google';
-import { ThemeProvider } from '@/components/layout/theme-provider';
+import { Inter } from 'next/font/google';
 
-const jost = Jost({ subsets: ['latin'], variable: '--font-jost' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: 'ScoreCast | Live Sports Scores & Predictions',
@@ -18,16 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${jost.variable} font-sans antialiased`} suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+        {children}
+        <Toaster />
       </body>
     </html>
   );

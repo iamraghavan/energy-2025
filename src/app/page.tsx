@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { sports, matches } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
-import { SportIcon } from '@/components/sports/sport-icon';
+import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
 import { Trophy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -19,11 +19,11 @@ export default function Home() {
         {/* Hero Section */}
         <section className="relative text-center py-16 md:py-24 bg-gradient-to-r from-primary to-accent">
           <div className="container mx-auto relative px-4">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary-foreground">
-              Welcome to ScoreCast
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary-foreground text-balance">
+              EGS Pillay Group of Institutions Presents Energy 2025
             </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/80 mt-4 max-w-3xl mx-auto">
-              Your ultimate destination for live scores, match schedules, and AI-powered predictions across your favorite sports.
+            <p className="text-lg md:text-xl text-primary-foreground/80 mt-4 max-w-3xl mx-auto text-balance">
+              Your ultimate destination for live scores, match schedules, and results for the inter-departmental sports fest.
             </p>
           </div>
         </section>
@@ -74,7 +74,7 @@ export default function Home() {
                <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Trophy className="text-accent"/>
+                    <Trophy className="text-accent-foreground"/>
                     All Sports
                   </CardTitle>
                 </CardHeader>
@@ -84,9 +84,9 @@ export default function Home() {
                       <Link
                         href={`/sports/${sport.slug}`}
                         key={sport.slug}
-                        className="group flex flex-col items-center justify-center gap-2 rounded-lg p-4 bg-secondary hover:bg-primary/10 transition-colors"
+                        className="group flex flex-col items-center justify-center gap-2 rounded-lg p-4 bg-secondary hover:bg-accent transition-colors"
                       >
-                        <SportIcon sportName={sport.name} className="w-8 h-8 text-white group-hover:text-accent transition-colors" />
+                        <SportIcon sportName={sport.name} className="w-8 h-8 text-accent-foreground group-hover:text-primary transition-colors" />
                         <span className="font-semibold text-center text-foreground">{sport.name}</span>
                       </Link>
                     ))}
@@ -99,7 +99,7 @@ export default function Home() {
       </main>
       <footer className="bg-primary text-primary-foreground py-6 mt-8">
         <div className="container mx-auto text-center px-4">
-          <p>&copy; 2024 ScoreCast. All Rights Reserved.</p>
+          <p>&copy; 2024 Energy 2025. All Rights Reserved.</p>
         </div>
       </footer>
     </div>

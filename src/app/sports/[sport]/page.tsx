@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { sports, matches, schoolTeams } from '@/lib/data';
 import { Header } from '@/components/layout/header';
-import { SportIcon } from '@/components/sports/sport-icon';
+import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -90,7 +90,7 @@ export default function SportPage({ params }: { params: { sport: string } }) {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-                    <Users className="w-8 h-8 text-accent" />
+                    <Users className="w-8 h-8 text-accent-foreground" />
                     Participating Schools
                   </CardTitle>
                 </CardHeader>
