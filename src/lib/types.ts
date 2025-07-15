@@ -3,7 +3,7 @@ export interface Sport {
   slug: string;
 }
 
-export interface Team {
+export interface TeamSummary {
   name: string;
   score: number;
   logo?: string;
@@ -12,8 +12,8 @@ export interface Team {
 export interface Match {
   id: number;
   sport: string;
-  team1: Team;
-  team2: Team;
+  team1: TeamSummary;
+  team2: TeamSummary;
   status: 'live' | 'upcoming' | 'finished';
   time?: string;
   date?: string;
@@ -30,4 +30,31 @@ export interface School {
   address: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SportAPI {
+    _id: string;
+    sportId: string;
+    name: string;
+    gender: 'M' | 'F';
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Team {
+    _id: string;
+    teamId: string;
+    name: string;
+    sport: SportAPI;
+    school: School;
+    gender: 'M' | 'F';
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface TeamPayload {
+    name: string;
+    sportId: string;
+    schoolId: string;
+    gender: 'M' | 'F';
 }

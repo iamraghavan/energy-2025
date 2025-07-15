@@ -1,29 +1,22 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+'use client';
+
+import * as React from 'react';
 import { Users } from 'lucide-react';
+import { TeamsTable } from '@/components/admin/teams-table';
 
 export default function TeamsPage() {
   return (
-    <Card>
-      <CardHeader>
-         <div className="flex items-center gap-3">
-          <Users className="w-8 h-8 text-primary" />
-          <CardTitle className="text-3xl">Manage Teams</CardTitle>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-3">
+        <Users className="w-8 h-8 text-primary" />
+        <div>
+           <h1 className="text-3xl font-bold tracking-tight">Manage Teams</h1>
+            <p className="text-muted-foreground">
+                Add, view, edit, or remove teams for each school and sport.
+            </p>
         </div>
-        <CardDescription>
-          View and manage teams for each school and sport.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-center text-muted-foreground">
-          Team management interface will be here.
-        </p>
-      </CardContent>
-    </Card>
+      </div>
+      <TeamsTable />
+    </div>
   );
 }
