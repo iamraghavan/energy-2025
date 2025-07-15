@@ -13,9 +13,9 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import {
   Form,
@@ -61,9 +61,17 @@ export default function CreateMatchPage() {
 
   const form = useForm<MatchFormValues>({
     resolver: zodResolver(matchSchema),
+    defaultValues: {
+      sportId: '',
+      teamOneId: '',
+      teamTwoId: '',
+    }
   });
 
   const selectedSportId = form.watch('sportId');
+  const selectedTeamOneId = form.watch('teamOneId');
+  const selectedTeamTwoId = form.watch('teamTwoId');
+
 
   React.useEffect(() => {
     async function fetchData() {
@@ -91,8 +99,8 @@ export default function CreateMatchPage() {
         (team) => team.sport._id === selectedSportId
       );
       setFilteredTeams(teamsForSport);
-      form.resetField('teamOneId');
-      form.resetField('teamTwoId');
+      form.resetField('teamOneId', { defaultValue: '' });
+      form.resetField('teamTwoId', { defaultValue: '' });
     } else {
       setFilteredTeams([]);
     }
@@ -119,13 +127,13 @@ export default function CreateMatchPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-muted/40 p-4">
       <div className="w-full max-w-2xl">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="icon" asChild>
             <Link href="/scorekeeper-dashboard">
               <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">Back to Dashboard</span>
             </Link>
           </Button>
           <div>
@@ -179,7 +187,7 @@ export default function CreateMatchPage() {
                       <FormLabel>Team One</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!selectedSportId}
                       >
                         <FormControl>
@@ -188,11 +196,13 @@ export default function CreateMatchPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {filteredTeams.map((team) => (
-                            <SelectItem key={team._id} value={team._id}>
-                              {`${team.name} - ${team.school.name} - ${team.school.address || 'N/A'} - ${team.teamId}`}
-                            </SelectItem>
-                          ))}
+                           {filteredTeams
+                            .filter(team => team._id !== selectedTeamTwoId)
+                            .map((team) => (
+                                <SelectItem key={team._id} value={team._id}>
+                                {`${team.name} - ${team.school.name} - ${team.school.address || 'N/A'} - ${team.teamId}`}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -207,7 +217,7 @@ export default function CreateMatchPage() {
                       <FormLabel>Team Two</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!selectedSportId}
                       >
                         <FormControl>
@@ -216,11 +226,13 @@ export default function CreateMatchPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {filteredTeams.map((team) => (
-                            <SelectItem key={team._id} value={team._id}>
-                             {`${team.name} - ${team.school.name} - ${team.school.address || 'N/A'} - ${team.teamId}`}
-                            </SelectItem>
-                          ))}
+                           {filteredTeams
+                            .filter(team => team._id !== selectedTeamOneId)
+                            .map((team) => (
+                                <SelectItem key={team._id} value={team._id}>
+                                {`${team.name} - ${team.school.name} - ${team.school.address || 'N/A'} - ${team.teamId}`}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
