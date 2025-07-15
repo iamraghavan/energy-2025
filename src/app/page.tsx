@@ -84,7 +84,7 @@ export default function Home() {
                   <CardTitle className="text-2xl font-bold flex items-center gap-2">
                     <Trophy className="text-primary"/>
                     All Sports
-                  </a-CardTitle>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-4">
@@ -96,7 +96,7 @@ export default function Home() {
                       >
                         <SportIcon sportName={sport.name} className="w-8 h-8 text-primary group-hover:text-primary/80 transition-colors" />
                         <span className="font-semibold text-center text-foreground">{sport.name}</span>
-                      </a-Link>
+                      </Link>
                     ))}
                   </div>
                 </CardContent>
