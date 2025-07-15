@@ -78,9 +78,13 @@ export interface MatchAPI {
 }
 
 export interface CreateMatchPayload {
-  sportId: string;
-  teamOneId: string;
-  teamTwoId: string;
+  sport: string;
+  teamA: string;
+  teamB: string;
+  scheduledAt: string;
+  venue: string;
+  courtNumber: string;
+  refereeName: string;
 }
 
 export interface UpdateMatchPayload {
@@ -88,5 +92,3 @@ export interface UpdateMatchPayload {
   teamTwoScore?: number;
   status?: 'upcoming' | 'live' | 'finished';
 }
-
-    
