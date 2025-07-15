@@ -3,18 +3,21 @@
 import Link from 'next/link';
 import * as React from 'react';
 import Autoplay from 'embla-carousel-autoplay';
+import Image from 'next/image';
 
 import { sports, matches } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
-import { Trophy, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 
@@ -43,7 +46,13 @@ export default function Home() {
                 </p>
               </div>
               <div className="relative flex justify-center items-center">
-                <Trophy className="w-48 h-48 text-white/20" strokeWidth={1} />
+                <Image
+                  src="https://storage.googleapis.com/stey-prod-public/deletable/energy-logo.png"
+                  alt="Energy 2025 Logo"
+                  width={200}
+                  height={200}
+                  className="w-48 h-48 text-white/20"
+                />
               </div>
             </div>
           </div>
@@ -52,11 +61,16 @@ export default function Home() {
         <div className="container mx-auto py-8 px-4">
           <div className="flex flex-col lg:flex-row-reverse lg:gap-8">
             {/* All Sports */}
-            <aside className="lg:col-span-1 lg:w-1/3 space-y-6">
+            <aside className="lg:w-1/3 lg:sticky top-24 self-start">
               <Card className="bg-secondary">
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Trophy className="text-primary" />
+                    <Image
+                       src="https://storage.googleapis.com/stey-prod-public/deletable/energy-logo.png"
+                       alt="Energy 2025 Logo"
+                       width={28}
+                       height={28}
+                    />
                     All Sports
                   </CardTitle>
                 </CardHeader>
@@ -82,7 +96,7 @@ export default function Home() {
               </Card>
             </aside>
 
-            <div className="lg:col-span-2 lg:w-2/3 space-y-8 mt-8 lg:mt-0">
+            <div className="lg:w-2/3 space-y-8 mt-8 lg:mt-0">
               {/* Live Matches */}
               <section id="live-matches">
                 <div className="flex justify-between items-center mb-4">
@@ -102,28 +116,27 @@ export default function Home() {
                 </div>
                 <div>
                   {liveMatches.length > 0 ? (
-                    liveMatches.length > 3 ? (
                       <Carousel
                         plugins={[plugin.current]}
                         className="w-full"
                         onMouseEnter={plugin.current.stop}
                         onMouseLeave={plugin.current.reset}
+                        opts={{
+                          loop: true,
+                        }}
                       >
                         <CarouselContent>
                           {liveMatches.map((match) => (
-                            <CarouselItem key={match.id} className="md:basis-1/2 lg:basis-1/3">
+                            <CarouselItem key={match.id} className="md:basis-1/2 lg:basis-full">
                                <div className="p-1">
                                 <MatchCard match={match} />
                                </div>
                             </CarouselItem>
                           ))}
                         </CarouselContent>
+                        <CarouselPrevious className="left-2" />
+                        <CarouselNext className="right-2"/>
                       </Carousel>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                         {liveMatches.map((match) => <MatchCard key={match.id} match={match} />)}
-                      </div>
-                    )
                   ) : (
                     <Card>
                       <CardContent className="p-6">
