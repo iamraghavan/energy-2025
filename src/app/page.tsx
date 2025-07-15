@@ -123,11 +123,12 @@ export default function Home() {
                         onMouseLeave={plugin.current.reset}
                         opts={{
                           loop: true,
+                          align: "start"
                         }}
                       >
                         <CarouselContent>
                           {liveMatches.map((match) => (
-                            <CarouselItem key={match.id} className="md:basis-1/2 lg:basis-full">
+                            <CarouselItem key={match.id} className="md:basis-1/2">
                                <div className="p-1">
                                 <MatchCard match={match} />
                                </div>

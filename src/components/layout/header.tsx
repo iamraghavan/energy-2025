@@ -56,8 +56,8 @@ export function Header() {
               className="h-10 w-auto"
             />
             <Image
-              src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-logo.png?alt=media&token=49e75a63-950b-4ed2-a0f7-075ba54ace2e"
-              alt="Energy 2025 Logo"
+              src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Finter-school-logo.png?alt=media&token=4289a3f2-1490-410a-86e3-51253c30b83b"
+              alt="Energy 2025 Inter-School Sports Meet Logo"
               width={100}
               height={40}
               className="h-10 w-auto"
