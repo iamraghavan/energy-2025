@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -351,7 +350,7 @@ export function TeamsTable() {
                                         </Button>
                                     </FormControl>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" container={undefined}>
                                     <Command>
                                         <CommandInput placeholder="Search school..." />
                                         <CommandList>
@@ -411,7 +410,7 @@ export function TeamsTable() {
                                         </Button>
                                     </FormControl>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" container={undefined}>
                                     <Command>
                                         <CommandInput placeholder="Search sport..." />
                                         <CommandList>
