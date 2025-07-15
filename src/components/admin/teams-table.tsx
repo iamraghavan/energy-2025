@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { MoreHorizontal, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Check, ChevronsUpDown } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -62,12 +62,27 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+  } from '@/components/ui/popover';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+  } from '@/components/ui/command';
 import { useToast } from '@/hooks/use-toast';
 import { getTeams, createTeam, updateTeam, deleteTeam } from '@/services/team-service';
 import { getSchools } from '@/services/school-service';
 import { getSports } from '@/services/sport-service';
 import type { Team, School, SportAPI, TeamPayload } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+
 
 const teamSchema = z.object({
   name: z.string().min(3, { message: 'Team name must be at least 3 characters long.' }),
@@ -311,49 +326,125 @@ export function TeamsTable() {
                             )}
                         />
                         <FormField
-                          control={form.control}
-                          name="schoolId"
-                          render={({ field }) => (
-                              <FormItem>
-                              <FormLabel>School</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Select a school" />
-                                  </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                  {schools.map(school => (
-                                      <SelectItem key={school._id} value={school._id}>{school.name}</SelectItem>
-                                  ))}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
-                              </FormItem>
-                          )}
-                          />
-                         <FormField
-                          control={form.control}
-                          name="sportId"
-                          render={({ field }) => (
-                              <FormItem>
-                              <FormLabel>Sport</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                  <SelectTrigger>
-                                      <SelectValue placeholder="Select a sport" />
-                                  </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                  {sports.map(sport => (
-                                      <SelectItem key={sport._id} value={sport._id}>{sport.name}</SelectItem>
-                                  ))}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
-                              </FormItem>
-                          )}
-                          />
+                            control={form.control}
+                            name="schoolId"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                <FormLabel>School</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                    <FormControl>
+                                        <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className={cn(
+                                            "w-full justify-between",
+                                            !field.value && "text-muted-foreground"
+                                        )}
+                                        >
+                                        {field.value
+                                            ? schools.find(
+                                                (school) => school._id === field.value
+                                            )?.name
+                                            : "Select school"}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <Command>
+                                        <CommandInput placeholder="Search school..." />
+                                        <CommandEmpty>No school found.</CommandEmpty>
+                                        <CommandGroup>
+                                            <CommandList>
+                                                {schools.map((school) => (
+                                                <CommandItem
+                                                    value={school.name}
+                                                    key={school._id}
+                                                    onSelect={() => {
+                                                    form.setValue("schoolId", school._id)
+                                                    }}
+                                                >
+                                                    <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        school._id === field.value
+                                                        ? "opacity-100"
+                                                        : "opacity-0"
+                                                    )}
+                                                    />
+                                                    {school.name}
+                                                </CommandItem>
+                                                ))}
+                                            </CommandList>
+                                        </CommandGroup>
+                                    </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="sportId"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                <FormLabel>Sport</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                    <FormControl>
+                                        <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className={cn(
+                                            "w-full justify-between",
+                                            !field.value && "text-muted-foreground"
+                                        )}
+                                        >
+                                        {field.value
+                                            ? sports.find(
+                                                (sport) => sport._id === field.value
+                                            )?.name
+                                            : "Select sport"}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <Command>
+                                        <CommandInput placeholder="Search sport..." />
+                                        <CommandEmpty>No sport found.</CommandEmpty>
+                                        <CommandGroup>
+                                             <CommandList>
+                                                {sports.map((sport) => (
+                                                <CommandItem
+                                                    value={sport.name}
+                                                    key={sport._id}
+                                                    onSelect={() => {
+                                                    form.setValue("sportId", sport._id)
+                                                    }}
+                                                >
+                                                    <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        sport._id === field.value
+                                                        ? "opacity-100"
+                                                        : "opacity-0"
+                                                    )}
+                                                    />
+                                                    {sport.name}
+                                                </CommandItem>
+                                                ))}
+                                            </CommandList>
+                                        </CommandGroup>
+                                    </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                            <FormField
                               control={form.control}
                               name="gender"
