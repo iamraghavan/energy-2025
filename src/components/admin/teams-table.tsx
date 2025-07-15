@@ -112,6 +112,7 @@ const reactSelectStyles = {
     ...provided,
     color: 'hsl(var(--foreground))',
   }),
+  menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
 };
 
 
@@ -364,6 +365,8 @@ export function TeamsTable() {
                                                 onChange={val => controllerField.onChange(val?.value)}
                                                 styles={reactSelectStyles}
                                                 placeholder="Select school"
+                                                menuPortalTarget={null}
+                                                menuPosition="fixed"
                                             />
                                         )}
                                     />
@@ -388,6 +391,8 @@ export function TeamsTable() {
                                             onChange={val => controllerField.onChange(val?.value)}
                                             styles={reactSelectStyles}
                                             placeholder="Select sport"
+                                            menuPortalTarget={null}
+                                            menuPosition="fixed"
                                         />
                                     )}
                                 />

@@ -70,9 +70,8 @@ const reactSelectStyles = (isMobile: boolean) => ({
     menu: (provided: any) => ({
       ...provided,
       backgroundColor: 'hsl(var(--background))',
-      zIndex: 50,
+      zIndex: isMobile ? 100 : 50,
     }),
-    menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
     option: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: state.isSelected ? 'hsl(var(--primary))' : state.isFocused ? 'hsl(var(--accent))' : 'hsl(var(--background))',
@@ -201,7 +200,8 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
                                 onChange={val => controllerField.onChange(val?.value)}
                                 styles={reactSelectStyles(isMobile)}
                                 placeholder="Select sport"
-                                menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                                menuPortalTarget={isMobile ? undefined : null}
+                                menuPosition={isMobile ? 'fixed' : 'absolute'}
                             />
                         )}
                     />
@@ -226,7 +226,8 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
                                 onChange={val => controllerField.onChange(val?.value)}
                                 styles={reactSelectStyles(isMobile)}
                                 placeholder="Select team one"
-                                menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                                menuPortalTarget={isMobile ? undefined : null}
+                                menuPosition={isMobile ? 'fixed' : 'absolute'}
                             />
                         )}
                     />
@@ -251,7 +252,8 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
                                 onChange={val => controllerField.onChange(val?.value)}
                                 styles={reactSelectStyles(isMobile)}
                                 placeholder="Select team two"
-                                menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                                menuPortalTarget={isMobile ? undefined : null}
+                                menuPosition={isMobile ? 'fixed' : 'absolute'}
                             />
                         )}
                     />
