@@ -3,11 +3,17 @@ export interface Sport {
   slug: string;
 }
 
+export interface Team {
+  name: string;
+  score: number;
+  logo?: string;
+}
+
 export interface Match {
   id: number;
   sport: string;
-  team1: { name: string; score: number };
-  team2: { name: string; score: number };
+  team1: Team;
+  team2: Team;
   status: 'live' | 'upcoming' | 'finished';
   time?: string;
   date?: string;
