@@ -70,7 +70,7 @@ const reactSelectStyles = (isMobile: boolean) => ({
     menu: (provided: any) => ({
       ...provided,
       backgroundColor: 'hsl(var(--background))',
-      zIndex: isMobile ? 100 : 50,
+      zIndex: 100, // Ensure menu is on top
     }),
     option: (provided: any, state: any) => ({
       ...provided,
@@ -129,15 +129,18 @@ export function CreateMatchForm({ open, onOpenChange, onMatchCreated, children }
 }
 
 function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { onMatchCreated: () => void; onOpenChange: (open: boolean) => void; isMobile: boolean }) {
-    const [teams, setTeams] = React.useState<Team[]>([]);
+    const [allTeams, setAllTeams] = React.useState<Team[]>([]);
     const [sports, setSports] = React.useState<SportAPI[]>([]);
+    const [filteredTeams, setFilteredTeams] = React.useState<Team[]>([]);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const { toast } = useToast();
   
     const form = useForm<MatchFormValues>({
       resolver: zodResolver(matchSchema),
     });
-  
+    
+    const selectedSportId = form.watch('sportId');
+
     React.useEffect(() => {
       async function fetchData() {
         try {
@@ -145,7 +148,7 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
             getTeams(),
             getSports(),
           ]);
-          setTeams(teamsData);
+          setAllTeams(teamsData);
           setSports(sportsData);
         } catch (error) {
           toast({
@@ -157,6 +160,18 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
       }
       fetchData();
     }, [toast]);
+
+    React.useEffect(() => {
+        if (selectedSportId && allTeams.length > 0) {
+            const teamsForSport = allTeams.filter(team => team.sport._id === selectedSportId);
+            setFilteredTeams(teamsForSport);
+            // Reset team selections if sport changes
+            form.setValue('teamOneId', '');
+            form.setValue('teamTwoId', '');
+        } else {
+            setFilteredTeams([]);
+        }
+    }, [selectedSportId, allTeams, form]);
   
     const onFormSubmit = async (values: MatchFormValues) => {
       setIsSubmitting(true);
@@ -178,7 +193,7 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
     };
 
     const sportOptions = sports.map(s => ({ value: s._id, label: s.name }));
-    const teamOptions = teams.map(t => ({ value: t._id, label: `${t.name} (${t.school.name})` }));
+    const teamOptions = filteredTeams.map(t => ({ value: t._id, label: `${t.name} (${t.school.name})` }));
     
     return (
         <Form {...form}>
@@ -200,8 +215,7 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
                                 onChange={val => controllerField.onChange(val?.value)}
                                 styles={reactSelectStyles(isMobile)}
                                 placeholder="Select sport"
-                                menuPortalTarget={isMobile ? undefined : null}
-                                menuPosition={isMobile ? 'fixed' : 'absolute'}
+                                menuPosition="fixed"
                             />
                         )}
                     />
@@ -226,8 +240,8 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
                                 onChange={val => controllerField.onChange(val?.value)}
                                 styles={reactSelectStyles(isMobile)}
                                 placeholder="Select team one"
-                                menuPortalTarget={isMobile ? undefined : null}
-                                menuPosition={isMobile ? 'fixed' : 'absolute'}
+                                isDisabled={!selectedSportId}
+                                menuPosition="fixed"
                             />
                         )}
                     />
@@ -252,8 +266,8 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { on
                                 onChange={val => controllerField.onChange(val?.value)}
                                 styles={reactSelectStyles(isMobile)}
                                 placeholder="Select team two"
-                                menuPortalTarget={isMobile ? undefined : null}
-                                menuPosition={isMobile ? 'fixed' : 'absolute'}
+                                isDisabled={!selectedSportId}
+                                menuPosition="fixed"
                             />
                         )}
                     />
