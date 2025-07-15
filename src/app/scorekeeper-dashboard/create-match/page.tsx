@@ -232,11 +232,15 @@ function Autocomplete({ options, value, onChange, placeholder, disabled }: Autoc
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
 
-  const selectedLabel = options.find((option) => option.value === value)?.label || '';
+  const selectedLabel = React.useMemo(() => {
+    return options.find((option) => option.value === value)?.label || '';
+  }, [options, value]);
 
   React.useEffect(() => {
     setInputValue(selectedLabel);
   }, [selectedLabel]);
+
+  const showSuggestions = inputValue.length >= 2;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -245,21 +249,26 @@ function Autocomplete({ options, value, onChange, placeholder, disabled }: Autoc
           <Input
             placeholder={placeholder}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onFocus={() => {
-                if(value) {
-                    setInputValue('');
-                }
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              if (e.target.value !== selectedLabel) {
+                onChange('');
+              }
+              if (e.target.value.length >= 2) {
+                setOpen(true);
+              } else {
+                setOpen(false);
+              }
             }}
             onBlur={() => {
-                // If the input is empty or doesn't match an option, reset to selected label
-                const currentOption = options.find(opt => opt.label.toLowerCase() === inputValue.toLowerCase());
-                if(!currentOption && !value) {
-                    setInputValue('');
-                    onChange('');
-                } else if (!currentOption && value) {
-                    setInputValue(selectedLabel);
-                }
+                // To prevent the popover from closing immediately on blur,
+                // we use a small timeout to allow click events on the popover content
+                setTimeout(() => {
+                    const currentOption = options.find(opt => opt.label.toLowerCase() === inputValue.toLowerCase());
+                    if (!currentOption) {
+                      setInputValue(selectedLabel || '');
+                    }
+                }, 150);
             }}
             disabled={disabled}
             className="w-full"
@@ -268,39 +277,41 @@ function Autocomplete({ options, value, onChange, placeholder, disabled }: Autoc
           <ChevronsUpDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 opacity-50" />
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command>
-          <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup>
-              {options
-                .filter(option => option.label.toLowerCase().includes(inputValue.toLowerCase()))
-                .map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label}
-                  onSelect={(currentLabel) => {
-                    const selectedOption = options.find(opt => opt.label.toLowerCase() === currentLabel.toLowerCase());
-                    if (selectedOption) {
-                      onChange(selectedOption.value);
-                      setInputValue(selectedOption.label);
-                    }
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      value === option.value ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
+      {showSuggestions && (
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <Command>
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup>
+                {options
+                  .filter(option => option.label.toLowerCase().includes(inputValue.toLowerCase()))
+                  .map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.label}
+                    onSelect={(currentLabel) => {
+                      const selectedOption = options.find(opt => opt.label.toLowerCase() === currentLabel.toLowerCase());
+                      if (selectedOption) {
+                        onChange(selectedOption.value);
+                        setInputValue(selectedOption.label);
+                      }
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        value === option.value ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      )}
     </Popover>
   );
 }
