@@ -49,11 +49,13 @@ export default function SportPage({ params }: { params: { sport: string } }) {
         <div className="space-y-8">
             <section id="live-matches">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Live</h2>
-              <div className="space-y-4">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {liveMatches.length > 0 ? (
                   liveMatches.map((match) => <MatchCard key={match.id} match={match} />)
                 ) : (
-                  <p className="text-muted-foreground">No live matches right now.</p>
+                  <div className="md:col-span-2">
+                    <p className="text-muted-foreground">No live matches right now.</p>
+                  </div>
                 )}
               </div>
             </section>
@@ -62,11 +64,13 @@ export default function SportPage({ params }: { params: { sport: string } }) {
 
             <section id="upcoming-matches">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Upcoming</h2>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {upcomingMatches.length > 0 ? (
                   upcomingMatches.map((match) => <MatchCard key={match.id} match={match} />)
                 ) : (
-                  <p className="text-muted-foreground">No upcoming matches scheduled.</p>
+                   <div className="md:col-span-2">
+                    <p className="text-muted-foreground">No upcoming matches scheduled.</p>
+                  </div>
                 )}
               </div>
             </section>
