@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 import { z } from 'zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import Select from 'react-select';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -28,32 +27,16 @@ import {
 } from '@/components/ui/drawer';
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { useToast } from '@/hooks/use-toast';
 import { getTeams } from '@/services/team-service';
 import { getSports } from '@/services/sport-service';
 import { createMatch } from '@/services/match-service';
 import type { Team, SportAPI } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const matchSchema = z.object({
   sportId: z.string({ required_error: 'Please select a sport.' }),
@@ -73,9 +56,47 @@ interface CreateMatchFormProps {
   children: React.ReactNode;
 }
 
+const reactSelectStyles = (isMobile: boolean) => ({
+    control: (provided: any) => ({
+      ...provided,
+      backgroundColor: 'hsl(var(--background))',
+      borderColor: 'hsl(var(--input))',
+      color: 'hsl(var(--foreground))',
+      minHeight: '40px',
+      '&:hover': {
+        borderColor: 'hsl(var(--ring))',
+      },
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      backgroundColor: 'hsl(var(--background))',
+      zIndex: 50,
+    }),
+    menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? 'hsl(var(--primary))' : state.isFocused ? 'hsl(var(--accent))' : 'hsl(var(--background))',
+      color: state.isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+      '&:hover': {
+          backgroundColor: 'hsl(var(--accent))',
+          color: 'hsl(var(--accent-foreground))',
+      }
+    }),
+    singleValue: (provided: any) => ({
+      ...provided,
+      color: 'hsl(var(--foreground))',
+    }),
+    input: (provided: any) => ({
+      ...provided,
+      color: 'hsl(var(--foreground))',
+    }),
+});
+
 export function CreateMatchForm({ open, onOpenChange, onMatchCreated, children }: CreateMatchFormProps) {
   const isMobile = useIsMobile();
   
+  const FormContent = <CreateMatchFormContent onMatchCreated={onMatchCreated} onOpenChange={onOpenChange} isMobile={isMobile} />;
+
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
@@ -85,7 +106,7 @@ export function CreateMatchForm({ open, onOpenChange, onMatchCreated, children }
             <DrawerTitle>Create a New Match</DrawerTitle>
             <DrawerDescription>Select the sport and teams to schedule a match.</DrawerDescription>
           </DrawerHeader>
-          <CreateMatchFormContent onMatchCreated={onMatchCreated} onOpenChange={onOpenChange} />
+          <div className="p-4">{FormContent}</div>
           <DrawerFooter className="pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           </DrawerFooter>
@@ -102,13 +123,13 @@ export function CreateMatchForm({ open, onOpenChange, onMatchCreated, children }
           <DialogTitle>Create a New Match</DialogTitle>
           <DialogDescription>Select the sport and teams to schedule a match.</DialogDescription>
         </DialogHeader>
-        <CreateMatchFormContent onMatchCreated={onMatchCreated} onOpenChange={onOpenChange} />
+        {FormContent}
       </DialogContent>
     </Dialog>
   );
 }
 
-function CreateMatchFormContent({ onMatchCreated, onOpenChange }: Pick<CreateMatchFormProps, 'onMatchCreated' | 'onOpenChange'>) {
+function CreateMatchFormContent({ onMatchCreated, onOpenChange, isMobile }: { onMatchCreated: () => void; onOpenChange: (open: boolean) => void; isMobile: boolean }) {
     const [teams, setTeams] = React.useState<Team[]>([]);
     const [sports, setSports] = React.useState<SportAPI[]>([]);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -156,23 +177,33 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange }: Pick<CreateMat
           setIsSubmitting(false);
       }
     };
+
+    const sportOptions = sports.map(s => ({ value: s._id, label: s.name }));
+    const teamOptions = teams.map(t => ({ value: t._id, label: `${t.name} (${t.school.name})` }));
     
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 px-4 md:px-0">
+            <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4">
             <FormField
                 control={form.control}
                 name="sportId"
                 render={({ field }) => (
                 <FormItem>
                     <FormLabel>Sport</FormLabel>
-                    <SearchableSelect
-                        value={field.value}
-                        onSelect={(value) => form.setValue("sportId", value, { shouldValidate: true })}
-                        options={sports.map(s => ({ value: s._id, label: s.name }))}
-                        placeholder="Select sport"
-                        searchPlaceholder="Search sport..."
-                        emptyMessage="No sport found."
+                    <Controller
+                        name="sportId"
+                        control={form.control}
+                        render={({ field: controllerField }) => (
+                            <Select
+                                {...controllerField}
+                                options={sportOptions}
+                                value={sportOptions.find(c => c.value === controllerField.value)}
+                                onChange={val => controllerField.onChange(val?.value)}
+                                styles={reactSelectStyles(isMobile)}
+                                placeholder="Select sport"
+                                menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                            />
+                        )}
                     />
                     <FormMessage />
                 </FormItem>
@@ -184,13 +215,20 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange }: Pick<CreateMat
                 render={({ field }) => (
                 <FormItem>
                     <FormLabel>Team One</FormLabel>
-                    <SearchableSelect
-                        value={field.value}
-                        onSelect={(value) => form.setValue("teamOneId", value, { shouldValidate: true })}
-                        options={teams.map(t => ({ value: t._id, label: `${t.name} (${t.school.name})` }))}
-                        placeholder="Select team one"
-                        searchPlaceholder="Search team..."
-                        emptyMessage="No team found."
+                     <Controller
+                        name="teamOneId"
+                        control={form.control}
+                        render={({ field: controllerField }) => (
+                            <Select
+                                {...controllerField}
+                                options={teamOptions}
+                                value={teamOptions.find(c => c.value === controllerField.value)}
+                                onChange={val => controllerField.onChange(val?.value)}
+                                styles={reactSelectStyles(isMobile)}
+                                placeholder="Select team one"
+                                menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                            />
+                        )}
                     />
                     <FormMessage />
                 </FormItem>
@@ -202,13 +240,20 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange }: Pick<CreateMat
                 render={({ field }) => (
                 <FormItem>
                     <FormLabel>Team Two</FormLabel>
-                    <SearchableSelect
-                        value={field.value}
-                        onSelect={(value) => form.setValue("teamTwoId", value, { shouldValidate: true })}
-                        options={teams.map(t => ({ value: t._id, label: `${t.name} (${t.school.name})` }))}
-                        placeholder="Select team two"
-                        searchPlaceholder="Search team..."
-                        emptyMessage="No team found."
+                    <Controller
+                        name="teamTwoId"
+                        control={form.control}
+                        render={({ field: controllerField }) => (
+                            <Select
+                                {...controllerField}
+                                options={teamOptions}
+                                value={teamOptions.find(c => c.value === controllerField.value)}
+                                onChange={val => controllerField.onChange(val?.value)}
+                                styles={reactSelectStyles(isMobile)}
+                                placeholder="Select team two"
+                                menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                            />
+                        )}
                     />
                     <FormMessage />
                 </FormItem>
@@ -221,96 +266,5 @@ function CreateMatchFormContent({ onMatchCreated, onOpenChange }: Pick<CreateMat
             </div>
           </form>
         </Form>
-    )
-}
-
-interface SearchableSelectProps {
-    value?: string;
-    onSelect: (value: string) => void;
-    options: { value: string; label: string }[];
-    placeholder: string;
-    searchPlaceholder: string;
-    emptyMessage: string;
-}
-
-function SearchableSelect({ value, onSelect, options, placeholder, searchPlaceholder, emptyMessage }: SearchableSelectProps) {
-    const [open, setOpen] = React.useState(false);
-    const isMobile = useIsMobile();
-    const selectedLabel = options.find((option) => option.value === value)?.label;
-
-    if (isMobile) {
-        return (
-            <Drawer open={open} onOpenChange={setOpen}>
-                <DrawerTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between">
-                        {selectedLabel || placeholder}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                </DrawerTrigger>
-                <DrawerContent>
-                    <div className="mt-4 border-t">
-                        <OptionList 
-                            options={options} 
-                            onSelect={onSelect} 
-                            setOpen={setOpen} 
-                            searchPlaceholder={searchPlaceholder} 
-                            emptyMessage={emptyMessage}
-                        />
-                    </div>
-                </DrawerContent>
-            </Drawer>
-        );
-    }
-    
-    return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-between"
-                >
-                    {selectedLabel || placeholder}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                 <OptionList 
-                    options={options} 
-                    onSelect={onSelect} 
-                    setOpen={setOpen} 
-                    searchPlaceholder={searchPlaceholder} 
-                    emptyMessage={emptyMessage}
-                />
-            </PopoverContent>
-        </Popover>
-    )
-}
-
-function OptionList({ options, onSelect, setOpen, searchPlaceholder, emptyMessage }: Omit<SearchableSelectProps, 'value' | 'placeholder'> & { setOpen: (open: boolean) => void }) {
-    return (
-        <Command>
-            <CommandInput placeholder={searchPlaceholder} />
-            <ScrollArea className="h-auto max-h-64">
-                <CommandEmpty>{emptyMessage}</CommandEmpty>
-                <CommandList>
-                    <CommandGroup>
-                        {options.map((option) => (
-                            <CommandItem
-                                value={option.label}
-                                key={option.value}
-                                onSelect={() => {
-                                    onSelect(option.value);
-                                    setOpen(false);
-                                }}
-                            >
-                                {option.label}
-                            </CommandItem>
-                        ))}
-                    </CommandGroup>
-                </CommandList>
-            </ScrollArea>
-        </Command>
     )
 }
