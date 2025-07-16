@@ -3,53 +3,49 @@
 
 import * as React from 'react';
 import { format } from 'date-fns';
-import { motion } from 'framer-motion';
+import { Clock, Loader2, Trophy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-import type { MatchAPI, Team } from '@/lib/types';
 import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
+import type { MatchAPI, Team } from '@/lib/types';
 import { socket } from '@/services/socket';
-import { SportIcon } from '@/components/sports/sports-icons';
-import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
+import { SportIcon } from '../sports/sports-icons';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface SportQuadrantProps {
   sportName: string;
 }
 
+interface PopulatedMatch extends MatchAPI {
+  teamOne: Team | undefined;
+  teamTwo: Team | undefined;
+}
+
 export function SportQuadrant({ sportName }: SportQuadrantProps) {
-  const [matches, setMatches] = React.useState<MatchAPI[]>([]);
-  const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
+  const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     async function fetchData() {
-      setIsLoading(true);
-      setError(null);
       try {
         const [fetchedMatches, fetchedTeams] = await Promise.all([
           getMatches(),
           getTeams(),
         ]);
 
-        const teamsMap = new Map<string, Team>(
-          fetchedTeams.map((team) => [team._id, team])
-        );
-        setTeams(teamsMap);
-
-        const filteredMatches = fetchedMatches
+        const teamsMap = new Map<string, Team>(fetchedTeams.map((t) => [t._id, t]));
+        const sportMatches = fetchedMatches
           .filter((m) => m.sport.toLowerCase() === sportName.toLowerCase())
-          .sort(
-            (a, b) =>
-              new Date(a.scheduledAt).getTime() -
-              new Date(b.scheduledAt).getTime()
-          );
+          .map((match) => ({
+            ...match,
+            teamOne: teamsMap.get(match.teamA),
+            teamTwo: teamsMap.get(match.teamB),
+          }));
 
-        setMatches(filteredMatches);
-      } catch (err) {
-        console.error(`Failed to fetch data for ${sportName}:`, err);
-        setError(`Could not load data for ${sportName}.`);
+        setMatches(sportMatches);
+      } catch (error) {
+        console.error(`Failed to fetch data for ${sportName}:`, error);
       } finally {
         setIsLoading(false);
       }
@@ -60,13 +56,27 @@ export function SportQuadrant({ sportName }: SportQuadrantProps) {
     socket.connect();
 
     function onScoreUpdate(updatedMatch: MatchAPI) {
-      if (updatedMatch.sport.toLowerCase() === sportName.toLowerCase()) {
-        setMatches((prevMatches) =>
-          prevMatches.map((m) =>
+      setMatches((prevMatches) => {
+        const matchExists = prevMatches.some((m) => m._id === updatedMatch._id);
+        if (matchExists) {
+          // Update existing match
+          return prevMatches.map((m) =>
             m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m
-          )
-        );
-      }
+          );
+        } else {
+          // It's a new match for this sport, add it (unlikely but safe)
+          if (updatedMatch.sport.toLowerCase() === sportName.toLowerCase()) {
+             const newPopulatedMatch = {
+                ...updatedMatch,
+                teamOne: undefined, // We might need to fetch this if it's a new match entirely
+                teamTwo: undefined,
+             };
+             // A full team fetch might be needed here in a more complex scenario
+             return [...prevMatches, newPopulatedMatch];
+          }
+        }
+        return prevMatches;
+      });
     }
 
     socket.on('scoreUpdate', onScoreUpdate);
@@ -77,135 +87,156 @@ export function SportQuadrant({ sportName }: SportQuadrantProps) {
     };
   }, [sportName]);
 
-  const liveMatches = matches.filter((m) => m.status === 'live');
-  const upcomingMatches = matches.filter((m) => m.status === 'scheduled');
+  const liveMatches = matches
+    .filter((m) => m.status === 'live')
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center border-r-2 border-b-2 border-gray-700 bg-gray-800/50 p-4">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+  const upcomingMatches = matches
+    .filter((m) => m.status === 'scheduled')
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+
+  return (
+    <div className="bg-gray-900/50 backdrop-blur-sm border border-primary/20 rounded-lg p-4 flex flex-col h-full overflow-hidden">
+      <div className="flex items-center gap-3 mb-4 text-primary">
+        <SportIcon sportName={sportName} className="w-8 h-8" />
+        <h2 className="text-3xl font-bold uppercase tracking-wider">{sportName}</h2>
       </div>
-    );
-  }
-  
-  if (error) {
-      return (
-           <div className="flex flex-col items-center justify-center border-r-2 border-b-2 border-gray-700 bg-red-900/50 p-4">
-                <h2 className="text-2xl font-bold text-red-300">{error}</h2>
+
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2">
+          {/* Live Matches */}
+          <div>
+            <h3 className="text-xl font-semibold text-destructive mb-2 flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
+              </span>
+              LIVE
+            </h3>
+            <div className="space-y-3">
+              <AnimatePresence>
+                {liveMatches.length > 0 ? (
+                  liveMatches.map((match) => (
+                    <motion.div
+                      key={match._id}
+                      layout
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -50 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <LiveMatchCard match={match} />
+                    </motion.div>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-400 py-4">No live matches.</p>
+                )}
+              </AnimatePresence>
             </div>
-      )
-  }
+          </div>
 
-  return (
-    <div className="flex flex-col border-r-2 border-b-2 border-gray-700 bg-gray-800/50 p-4 lg:p-6 overflow-hidden">
-      <div className="flex items-center gap-4 mb-4">
-        <SportIcon sportName={sportName} className="w-10 h-10 text-indigo-400" />
-        <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight uppercase">
-          {sportName}
-        </h1>
-      </div>
-
-      <div className="flex-grow flex flex-col gap-6">
-        {/* Live Matches Section */}
-        <div className="flex-shrink-0">
-          <h2 className="text-2xl font-bold text-red-500 mb-2 flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-            </span>
-            LIVE
-          </h2>
-          <div className="space-y-3">
-            {liveMatches.length > 0 ? (
-              liveMatches.map((match) => (
-                <LiveMatchCard key={match._id} match={match} teams={teams} />
-              ))
-            ) : (
-              <p className="text-lg text-gray-400">No live matches.</p>
-            )}
+          {/* Upcoming Matches */}
+          <div className="mt-4">
+            <h3 className="text-xl font-semibold text-cyan-400 mb-2">UPCOMING</h3>
+            <div className="space-y-3">
+                <AnimatePresence>
+                    {upcomingMatches.length > 0 ? (
+                    upcomingMatches.map((match) => (
+                        <motion.div
+                            key={match._id}
+                            layout
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                             exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
+                        >
+                            <UpcomingMatchCard match={match} />
+                        </motion.div>
+                    ))
+                    ) : (
+                    <p className="text-center text-gray-400 py-4">No upcoming matches.</p>
+                    )}
+                </AnimatePresence>
+            </div>
           </div>
         </div>
-
-        <Separator className="bg-gray-600" />
-
-        {/* Upcoming Matches Section */}
-        <div className="flex-grow overflow-y-auto">
-          <h2 className="text-2xl font-bold text-blue-400 mb-2">UPCOMING</h2>
-          <div className="space-y-3 pr-2">
-             {upcomingMatches.length > 0 ? (
-              upcomingMatches.map((match) => (
-                <UpcomingMatchCard
-                  key={match._id}
-                  match={match}
-                  teams={teams}
-                />
-              ))
-            ) : (
-              <p className="text-lg text-gray-400">No upcoming matches.</p>
-            )}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
 
-function LiveMatchCard({ match, teams }: { match: MatchAPI, teams: Map<string, Team> }) {
-  const teamOne = teams.get(match.teamA);
-  const teamTwo = teams.get(match.teamB);
+// Sub-component for Live Match display
+function LiveMatchCard({ match }: { match: PopulatedMatch }) {
+  const teamOneName = match.teamOne?.name || 'Team A';
+  const teamTwoName = match.teamTwo?.name || 'Team B';
 
   return (
-    <div className="bg-gray-900 p-4 rounded-lg shadow-lg border border-gray-700">
-      <div className="flex items-center justify-between">
-        <div className="text-center w-2/5">
-          <p className="text-xl lg:text-2xl font-bold truncate">{teamOne?.name || 'Team A'}</p>
+    <div className="bg-black/40 p-3 rounded-md border-l-4 border-destructive">
+      <div className="flex justify-between items-center text-lg">
+        <div className="flex items-center gap-3 font-semibold flex-1 truncate">
+            <Avatar className="w-8 h-8 border-2 border-gray-600">
+                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamOneName} data-ai-hint="logo" />
+                <AvatarFallback>{teamOneName.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="truncate">{teamOneName}</span>
         </div>
-        <div className="text-center w-1/5">
-            <p className="text-lg font-mono text-gray-400">vs</p>
-        </div>
-        <div className="text-center w-2/5">
-          <p className="text-xl lg:text-2xl font-bold truncate">{teamTwo?.name || 'Team B'}</p>
-        </div>
-      </div>
-      <div className="flex items-center justify-between mt-2">
-         <motion.div
+        <AnimatePresence mode="wait">
+            <motion.div
             key={match.pointsA}
-            initial={{ scale: 1.2, opacity: 0.8 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="text-center w-2/5"
-          >
-            <p className="text-5xl lg:text-7xl font-bold text-yellow-400 tabular-nums">{match.pointsA}</p>
-         </motion.div>
-        <div className="text-center w-1/5">
-           <p className="text-4xl text-gray-500">-</p>
-        </div>
-        <motion.div
-            key={match.pointsB}
-            initial={{ scale: 1.2, opacity: 0.8 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className="text-center w-2/5"
-          >
-            <p className="text-5xl lg:text-7xl font-bold text-yellow-400 tabular-nums">{match.pointsB}</p>
-        </motion.div>
+            className="text-3xl font-bold text-white tabular-nums"
+            >
+            {match.pointsA}
+            </motion.div>
+        </AnimatePresence>
       </div>
-      <p className="text-center text-sm text-gray-400 mt-2">{match.venue} ({match.courtNumber})</p>
+      <div className="flex justify-between items-center mt-1 text-lg">
+        <div className="flex items-center gap-3 font-semibold flex-1 truncate">
+             <Avatar className="w-8 h-8 border-2 border-gray-600">
+                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamTwoName} data-ai-hint="logo" />
+                <AvatarFallback>{teamTwoName.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="truncate">{teamTwoName}</span>
+        </div>
+         <AnimatePresence mode="wait">
+            <motion.div
+            key={match.pointsB}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="text-3xl font-bold text-white tabular-nums"
+            >
+            {match.pointsB}
+            </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
 
-function UpcomingMatchCard({ match, teams }: { match: MatchAPI, teams: Map<string, Team> }) {
-  const teamOne = teams.get(match.teamA);
-  const teamTwo = teams.get(match.teamB);
+// Sub-component for Upcoming Match display
+function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
+  const teamOneName = match.teamOne?.name || 'Team A';
+  const teamTwoName = match.teamTwo?.name || 'Team B';
 
   return (
-    <div className="bg-gray-700/50 p-3 rounded-lg flex items-center justify-between text-base">
-      <div className="w-2/5 font-semibold truncate text-left">{teamOne?.name || 'Team A'}</div>
-      <div className="w-1/5 text-center text-indigo-300 font-mono">
-        {format(new Date(match.scheduledAt), 'HH:mm')}
+    <div className="bg-gray-800/50 p-3 rounded-md border-l-4 border-cyan-500">
+        <div className="flex items-center justify-between text-base">
+            <span className="font-medium truncate">{teamOneName}</span>
+            <span className="text-gray-400 mx-2">vs</span>
+            <span className="font-medium truncate text-right">{teamTwoName}</span>
+        </div>
+      <div className="text-sm text-cyan-300 mt-2 flex items-center justify-center gap-2">
+        <Clock className="w-4 h-4" />
+        <span>{format(new Date(match.scheduledAt), 'p')} @ {match.venue}</span>
       </div>
-      <div className="w-2/5 font-semibold truncate text-right">{teamTwo?.name || 'Team B'}</div>
     </div>
   );
 }

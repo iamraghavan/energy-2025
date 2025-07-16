@@ -25,6 +25,7 @@ import { MatchDetailsCard } from '@/components/scorekeeper/match-details-card';
 import { SportIcon } from '@/components/sports/sports-icons';
 import { format } from 'date-fns';
 import { useAuth } from '@/context/auth-context';
+import { socket } from '@/services/socket';
 
 export default function ScorekeeperDashboardPage() {
   const router = useRouter();
@@ -69,6 +70,11 @@ export default function ScorekeeperDashboardPage() {
 
   React.useEffect(() => {
     fetchAndPopulateMatches();
+    socket.connect();
+    
+    return () => {
+        socket.disconnect();
+    }
   }, [fetchAndPopulateMatches]);
   
   const handleTabChange = (value: string) => {
@@ -79,7 +85,8 @@ export default function ScorekeeperDashboardPage() {
   const handleGoLive = async (matchId: string) => {
     setIsUpdating(matchId);
     try {
-      await updateMatch(matchId, { status: 'live' });
+      const updatedMatch = await updateMatch(matchId, { status: 'live' });
+      socket.emit('scoreUpdate', updatedMatch);
       toast({
         title: 'Match is Live!',
         description: 'The match has been moved to the Live tab.',
