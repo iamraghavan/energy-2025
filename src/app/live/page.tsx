@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -8,7 +9,7 @@ import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
 import { LiveMatchCard } from '@/components/sports/live-match-card';
-import { MatchCard } from '@/components/sports/match-card';
+import { UpcomingMatchCard } from '@/components/sports/upcoming-match-card'; // New component
 import { Loader2, RadioTower, Frown, CalendarClock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -50,6 +51,7 @@ export default function LiveMatchesPage() {
       setMatches(prevMatches => {
         const matchIndex = prevMatches.findIndex(m => m._id === updatedMatch._id);
         if (matchIndex > -1) {
+          // If match exists, update it. This handles score updates and status changes (e.g. live -> completed)
           const newMatches = [...prevMatches];
           newMatches[matchIndex] = { ...newMatches[matchIndex], ...updatedMatch };
           return newMatches;
@@ -137,12 +139,11 @@ export default function LiveMatchesPage() {
         ) : upcomingMatches.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {upcomingMatches.map((match) => (
-              <MatchCard
+              <UpcomingMatchCard
                 key={match._id}
                 match={match}
                 teamOne={teams.get(match.teamA)}
                 teamTwo={teams.get(match.teamB)}
-                hideSportIcon={true}
               />
             ))}
           </div>
