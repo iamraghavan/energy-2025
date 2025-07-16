@@ -61,24 +61,30 @@ export interface TeamPayload {
     gender: 'M' | 'F';
 }
 
-// Types for the Match API
+// Type matching the API response for a single match
 export interface MatchAPI {
   _id: string;
   matchId: string;
-  sport: SportAPI;
-  teamOne: Team;
-  teamTwo: Team;
+  sport: string;
+  teamA: string; // Team ID
+  teamB: string; // Team ID
   teamOneScore: number;
   teamTwoScore: number;
   status: 'scheduled' | 'live' | 'completed';
-  date?: string;
-  time?: string;
+  scheduledAt: string;
   venue: string;
   courtNumber: string;
   refereeName: string;
   createdAt: string;
   updatedAt: string;
 }
+
+// Type used on the frontend after populating team details
+export interface PopulatedMatch extends Omit<MatchAPI, 'teamA' | 'teamB'> {
+  teamOne: Team;
+  teamTwo: Team;
+}
+
 
 export interface CreateMatchPayload {
   sport: string;

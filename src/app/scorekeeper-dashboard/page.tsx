@@ -4,13 +4,15 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ClipboardList, PlusCircle, Frown } from 'lucide-react';
+import { format } from 'date-fns';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
-import type { MatchAPI, Team } from '@/lib/types';
+import type { MatchAPI, Team, PopulatedMatch } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -25,27 +27,29 @@ import { SportIcon } from '@/components/sports/sports-icons';
 export default function ScorekeeperDashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [matches, setMatches] = React.useState<MatchAPI[]>([]);
+  const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [activeTab, setActiveTab] = React.useState(searchParams.get('tab') || 'live');
 
   const { toast } = useToast();
 
-  const fetchMatches = React.useCallback(async () => {
+  const fetchAndPopulateMatches = React.useCallback(async () => {
     setIsLoading(true);
     try {
+      // Fetch both matches and teams at the same time
       const [fetchedMatches, allTeams] = await Promise.all([
         getMatches(),
         getTeams()
       ]);
 
+      // Create a Map for quick team lookups by their _id
       const teamsMap = new Map<string, Team>(allTeams.map(team => [team._id, team]));
-
+      
+      // Populate the matches with full team objects
       const populatedMatches = fetchedMatches.map(match => ({
         ...match,
-        // The API returns teamOne/teamTwo as string IDs, so we populate them here.
-        teamOne: teamsMap.get(match.teamOne as any)!,
-        teamTwo: teamsMap.get(match.teamTwo as any)!,
+        teamOne: teamsMap.get(match.teamA)!,
+        teamTwo: teamsMap.get(match.teamB)!,
       }));
       
       setMatches(populatedMatches);
@@ -61,8 +65,8 @@ export default function ScorekeeperDashboardPage() {
   }, [toast]);
 
   React.useEffect(() => {
-    fetchMatches();
-  }, [fetchMatches]);
+    fetchAndPopulateMatches();
+  }, [fetchAndPopulateMatches]);
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -112,7 +116,7 @@ export default function ScorekeeperDashboardPage() {
 }
 
 interface MatchListProps {
-  matches: MatchAPI[];
+  matches: PopulatedMatch[];
   isLoading: boolean;
   emptyMessage: string;
   isLiveTab?: boolean;
@@ -151,18 +155,18 @@ function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false }: Matc
                       <DialogContent className="sm:max-w-md">
                           <DialogHeader>
                               <DialogTitle className="flex items-center gap-2">
-                                <SportIcon sportName={match.sport?.name} className="w-6 h-6" />
+                                <SportIcon sportName={match.sport} className="w-6 h-6" />
                                 Match Details
                               </DialogTitle>
                               <DialogDescription>
-                                Reviewing the details for the {match.sport?.name} match.
+                                Reviewing the details for the {match.sport} match.
                               </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4 text-sm">
                             <p><strong>Team One:</strong> {match.teamOne?.name || 'N/A'}</p>
                             <p><strong>Team Two:</strong> {match.teamTwo?.name || 'N/A'}</p>
                             <p><strong>Score:</strong> {match.teamOneScore} - {match.teamTwoScore}</p>
-                             <p><strong>Date:</strong> {match.date ? format(new Date(match.date), 'PPP') : 'N/A'}</p>
+                             <p><strong>Date:</strong> {match.scheduledAt ? format(new Date(match.scheduledAt), 'PPP p') : 'N/A'}</p>
                             <p><strong>Venue:</strong> {match.venue}</p>
                             <p><strong>Court:</strong> {match.courtNumber}</p>
                             <p><strong>Referee:</strong> {match.refereeName}</p>
