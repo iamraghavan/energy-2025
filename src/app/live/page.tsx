@@ -7,93 +7,15 @@ import type { MatchAPI, Team } from '@/lib/types';
 import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
-import { Loader2, RadioTower, Frown, CalendarClock, Clock } from 'lucide-react';
+import { Loader2, RadioTower, Frown, CalendarClock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { format } from 'date-fns';
+import { BigScreenLiveCard } from '@/components/big-screen/big-screen-live-card';
+import { BigScreenUpcomingCard } from '@/components/big-screen/big-screen-upcoming-card';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne: Team | undefined;
   teamTwo: Team | undefined;
 }
-
-// Sub-component for Live Match display, defined directly in this file
-function LiveMatchCard({ match }: { match: PopulatedMatch }) {
-  const teamOneName = match.teamOne?.name || 'Team A';
-  const teamTwoName = match.teamTwo?.name || 'Team B';
-
-  return (
-    <div className="bg-black/40 p-3 rounded-md border-l-4 border-destructive">
-       <div className="flex items-center justify-between mb-2 text-sm text-gray-400">
-        <span>{match.sport}</span>
-        <span>{match.venue} - {match.courtNumber}</span>
-       </div>
-      <div className="flex justify-between items-center text-lg">
-        <div className="flex items-center gap-3 font-semibold flex-1 truncate text-white">
-            <Avatar className="w-8 h-8 border-2 border-gray-600">
-                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamOneName} data-ai-hint="logo" />
-                <AvatarFallback>{teamOneName.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <span className="truncate">{teamOneName}</span>
-        </div>
-        <AnimatePresence mode="wait">
-            <motion.div
-            key={match.pointsA}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2 }}
-            className="text-3xl font-bold text-white tabular-nums"
-            >
-            {match.pointsA}
-            </motion.div>
-        </AnimatePresence>
-      </div>
-      <div className="flex justify-between items-center mt-1 text-lg">
-        <div className="flex items-center gap-3 font-semibold flex-1 truncate text-white">
-             <Avatar className="w-8 h-8 border-2 border-gray-600">
-                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamTwoName} data-ai-hint="logo" />
-                <AvatarFallback>{teamTwoName.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <span className="truncate">{teamTwoName}</span>
-        </div>
-         <AnimatePresence mode="wait">
-            <motion.div
-            key={match.pointsB}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2 }}
-            className="text-3xl font-bold text-white tabular-nums"
-            >
-            {match.pointsB}
-            </motion.div>
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-// Sub-component for Upcoming Match display, defined directly in this file
-function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
-  const teamOneName = match.teamOne?.name || 'Team A';
-  const teamTwoName = match.teamTwo?.name || 'Team B';
-
-  return (
-    <div className="bg-gray-800/50 p-3 rounded-md border-l-4 border-cyan-500 text-white">
-        <div className="flex items-center justify-between text-base">
-            <span className="font-medium truncate">{teamOneName}</span>
-            <span className="text-gray-400 mx-2">vs</span>
-            <span className="font-medium truncate text-right">{teamTwoName}</span>
-        </div>
-      <div className="text-sm text-cyan-300 mt-2 flex items-center justify-center gap-2">
-        <Clock className="w-4 h-4" />
-        <span>{format(new Date(match.scheduledAt), 'p')} @ {match.venue}</span>
-      </div>
-    </div>
-  );
-}
-
 
 export default function LiveMatchesPage() {
   const { toast } = useToast();
@@ -212,7 +134,7 @@ export default function LiveMatchesPage() {
                             exit={{ opacity: 0, x: -50 }}
                             transition={{ duration: 0.5 }}
                             >
-                            <LiveMatchCard match={match} />
+                            <BigScreenLiveCard match={match} />
                             </motion.div>
                         ))
                         ) : (
@@ -248,7 +170,7 @@ export default function LiveMatchesPage() {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
                             >
-                                <UpcomingMatchCard match={match} />
+                                <BigScreenUpcomingCard match={match} />
                             </motion.div>
                         ))
                         ) : (
