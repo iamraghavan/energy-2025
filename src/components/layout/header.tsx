@@ -41,10 +41,11 @@ export function Header() {
   
   const getDashboardLink = () => {
     if (!user) return '/login';
+    const encodedId = btoa(user.id);
     switch (user.role) {
       case 'superadmin': return '/super-admin-dashboard';
       case 'lv2admin': return '/lv2-admin-dashboard';
-      case 'scorekeeper': return '/scorekeeper-dashboard';
+      case 'scorekeeper': return `/scorekeeper-dashboard/${encodedId}`;
       default: return '/';
     }
   }

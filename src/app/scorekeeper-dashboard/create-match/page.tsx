@@ -160,7 +160,7 @@ export default function CreateMatchPage() {
       venue: values.venue,
       courtNumber: values.courtNumber,
       refereeName: values.refereeName,
-      scorekeeperId: user.id, // Use user.id here
+      scorekeeperId: user.id,
     };
 
     try {
@@ -169,7 +169,8 @@ export default function CreateMatchPage() {
         title: 'Match Created',
         description: 'The new match has been scheduled successfully.',
       });
-      router.push('/scorekeeper-dashboard?tab=scheduled');
+      const encodedId = btoa(user.id);
+      router.push(`/scorekeeper-dashboard/${encodedId}?tab=scheduled`);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -181,12 +182,14 @@ export default function CreateMatchPage() {
     }
   };
 
+  const dashboardUrl = user ? `/scorekeeper-dashboard/${btoa(user.id)}` : '/login';
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-muted/40 p-4">
       <div className="w-full max-w-2xl">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="icon" asChild>
-            <Link href="/scorekeeper-dashboard">
+            <Link href={dashboardUrl}>
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back to Dashboard</span>
             </Link>

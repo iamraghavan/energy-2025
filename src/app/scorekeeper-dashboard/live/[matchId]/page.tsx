@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -21,10 +22,12 @@ import { getTeamById } from '@/services/team-service';
 import type { MatchAPI, Team } from '@/lib/types';
 import { SportIcon } from '@/components/sports/sports-icons';
 import { socket } from '@/services/socket';
+import { useAuth } from '@/context/auth-context';
 
 export default function LiveMatchPage() {
   const router = useRouter();
   const params = useParams();
+  const { user } = useAuth();
   const matchId = params.matchId as string;
   
   const [match, setMatch] = React.useState<MatchAPI | null>(null);
@@ -50,7 +53,12 @@ export default function LiveMatchPage() {
           setTeamTwo(fetchedTeamTwo);
       } else {
           toast({ variant: 'destructive', title: 'Match not found' });
-          router.push('/scorekeeper-dashboard');
+          if(user) {
+            const encodedId = btoa(user.id);
+            router.push(`/scorekeeper-dashboard/${encodedId}`);
+          } else {
+             router.push('/login');
+          }
       }
     } catch (error) {
       console.error(error);
@@ -58,7 +66,7 @@ export default function LiveMatchPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [matchId, router, toast]);
+  }, [matchId, router, toast, user]);
 
   React.useEffect(() => {
     if (matchId) {
@@ -78,7 +86,6 @@ export default function LiveMatchPage() {
     
     const updatedField = team === 'A' ? 'pointsA' : 'pointsB';
 
-    // Optimistic UI update
     const previousMatchState = match;
     const newMatchState = { ...match, [updatedField]: newScore };
     setMatch(newMatchState);
@@ -86,27 +93,27 @@ export default function LiveMatchPage() {
     try {
         const payload = { [updatedField]: newScore };
         const updatedMatch = await updateMatch(match._id, payload);
-        socket.emit('scoreUpdate', updatedMatch); // Notify other clients
+        socket.emit('scoreUpdate', updatedMatch); 
     } catch (error: any) {
         toast({
             variant: 'destructive',
             title: 'Update Failed',
             description: 'Could not sync score with the server. Please check your connection.',
         });
-        // Revert on failure
         setMatch(previousMatchState); 
     }
   };
   
   const handleEndMatch = async () => {
-      if (!match) return;
+      if (!match || !user) return;
       setIsSubmitting(true);
       try {
           const payload = { status: 'completed' as const };
           const updatedMatch = await updateMatch(match._id, payload);
           socket.emit('scoreUpdate', updatedMatch);
           toast({ title: 'Match Completed!', description: 'The final scores have been saved.' });
-          router.push(`/scorekeeper-dashboard?tab=completed`);
+          const encodedId = btoa(user.id);
+          router.push(`/scorekeeper-dashboard/${encodedId}?tab=completed`);
       } catch (error: any) {
           toast({
               variant: 'destructive',
@@ -118,6 +125,7 @@ export default function LiveMatchPage() {
       }
   }
 
+  const dashboardUrl = user ? `/scorekeeper-dashboard/${btoa(user.id)}?tab=live` : '/login';
 
   if (isLoading || !match || !teamOne || !teamTwo) {
       return (
@@ -132,7 +140,7 @@ export default function LiveMatchPage() {
     <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" asChild>
-                <Link href="/scorekeeper-dashboard?tab=live">
+                <Link href={dashboardUrl}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back to Dashboard</span>
                 </Link>

@@ -5,10 +5,9 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
-  id: string; // Changed from _id to id to match API response
+  id: string; 
   username: string;
   role: 'superadmin' | 'lv2admin' | 'scorekeeper' | 'user';
-  // Add other user properties as needed
 }
 
 interface AuthContextType {
@@ -62,13 +61,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
+        const encodedId = btoa(userData.id); // Base64 encode the user ID
+
         // Role-based redirection
         if (userData.role === 'superadmin') {
           router.push('/super-admin-dashboard');
         } else if (userData.role === 'lv2admin') {
           router.push('/lv2-admin-dashboard');
         } else if (userData.role === 'scorekeeper') {
-          router.push('/scorekeeper-dashboard');
+          router.push(`/scorekeeper-dashboard/${encodedId}`);
         } else {
           router.push('/');
         }
