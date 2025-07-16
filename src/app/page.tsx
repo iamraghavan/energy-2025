@@ -6,8 +6,9 @@ import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 
 import { sports } from '@/lib/data';
-import type { MatchAPI } from '@/lib/types';
+import type { MatchAPI, Team } from '@/lib/types';
 import { getMatches } from '@/services/match-service';
+import { getTeams } from '@/services/team-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sports-icons';
@@ -26,34 +27,45 @@ import { socket } from '@/services/socket';
 export default function Home() {
   const { toast } = useToast();
   const [matches, setMatches] = React.useState<MatchAPI[]>([]);
+  const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    async function fetchMatches() {
+    async function fetchData() {
       try {
-        const fetchedMatches = await getMatches();
+        const [fetchedMatches, fetchedTeams] = await Promise.all([
+          getMatches(),
+          getTeams()
+        ]);
+
+        const teamsMap = new Map<string, Team>(fetchedTeams.map(team => [team._id, team]));
+        setTeams(teamsMap);
+
         setMatches(fetchedMatches.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()));
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: 'Failed to fetch matches',
-          description: 'Could not load match data. Please try again later.',
+          title: 'Failed to fetch data',
+          description: 'Could not load match or team data. Please try again later.',
         });
       } finally {
         setIsLoading(false);
       }
     }
-    fetchMatches();
+    fetchData();
     
     socket.connect();
-    socket.on('scoreUpdate', (updatedMatch: MatchAPI) => {
+    
+    function onScoreUpdate(updatedMatch: MatchAPI) {
         setMatches(prevMatches => 
             prevMatches.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m)
         );
-    });
+    }
+    
+    socket.on('scoreUpdate', onScoreUpdate);
     
     return () => {
-        socket.off('scoreUpdate');
+        socket.off('scoreUpdate', onScoreUpdate);
         socket.disconnect();
     }
 
@@ -157,7 +169,7 @@ export default function Home() {
                           {liveMatches.map((match) => (
                             <CarouselItem key={match._id} className="md:basis-1/2">
                                <div className="p-1">
-                                <MatchCard match={match} />
+                                <MatchCard match={match} teamOne={teams.get(match.teamA)} teamTwo={teams.get(match.teamB)} />
                                </div>
                             </CarouselItem>
                           ))}
@@ -190,7 +202,7 @@ export default function Home() {
                     </div>
                   ) : upcomingMatches.length > 0 ? (
                     upcomingMatches.map((match) => (
-                      <MatchCard key={match._id} match={match} />
+                      <MatchCard key={match._id} match={match} teamOne={teams.get(match.teamA)} teamTwo={teams.get(match.teamB)} />
                     ))
                   ) : (
                     <Card>

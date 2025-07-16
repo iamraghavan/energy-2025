@@ -1,5 +1,14 @@
-import { notFound } from 'next/navigation';
-import { sports, matches as mockMatches, schoolTeams } from '@/lib/data';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
+import * as React from 'react';
+
+import { sports } from '@/lib/data';
+import type { MatchAPI, Team } from '@/lib/types';
+import { getMatches } from '@/services/match-service';
+import { getTeams } from '@/services/team-service';
+import { socket } from '@/services/socket';
+
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
@@ -13,27 +22,104 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-react';
+import { Users, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { PredictionTool } from '@/components/sports/prediction-tool';
 
+export default function SportPage() {
+  const params = useParams();
+  const { toast } = useToast();
+  
+  const [matches, setMatches] = React.useState<MatchAPI[]>([]);
+  const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
+  const [isLoading, setIsLoading] = React.useState(true);
 
-export async function generateStaticParams() {
-  return sports.map((sport) => ({
-    sport: sport.slug,
-  }));
-}
+  const sportSlug = params.sport as string;
+  const sportData = sports.find((s) => s.slug === sportSlug);
 
-export default function SportPage({ params }: { params: { sport: string } }) {
-  const sportData = sports.find((s) => s.slug === params.sport);
+  React.useEffect(() => {
+    async function fetchData() {
+      if (!sportData) return;
+      setIsLoading(true);
+      try {
+        const [fetchedMatches, fetchedTeams] = await Promise.all([
+            getMatches(),
+            getTeams()
+        ]);
+
+        const teamsMap = new Map(fetchedTeams.map(t => [t._id, t]));
+        setTeams(teamsMap);
+        
+        const filteredMatches = fetchedMatches.filter(m => m.sport.toLowerCase() === sportData.name.toLowerCase());
+        setMatches(filteredMatches.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()));
+
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Failed to fetch data',
+          description: 'Could not load data for this sport. Please try again later.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+
+    socket.connect();
+    
+    function onScoreUpdate(updatedMatch: MatchAPI) {
+        setMatches(prevMatches => 
+            prevMatches.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m)
+        );
+    }
+    
+    socket.on('scoreUpdate', onScoreUpdate);
+    
+    return () => {
+        socket.off('scoreUpdate', onScoreUpdate);
+        socket.disconnect();
+    }
+
+  }, [sportData, toast]);
+
 
   if (!sportData) {
     notFound();
   }
+  
+  const liveMatches = matches.filter((m) => m.status === 'live');
+  const upcomingMatches = matches.filter((m) => m.status === 'scheduled' || m.status === 'upcoming');
+  const completedMatches = matches.filter((m) => m.status === 'completed');
+  
+  const participatingTeams = Array.from(teams.values()).filter(team => team.sport.name.toLowerCase() === sportData.name.toLowerCase());
 
-  const liveMatches = mockMatches.filter((m) => m.sport === sportData.name && m.status === 'live');
-  const upcomingMatches = mockMatches.filter((m) => m.sport === sportData.name && m.status === 'upcoming');
-  const finishedMatches = mockMatches.filter((m) => m.sport === sportData.name && m.status === 'finished');
 
-  const participatingTeams = schoolTeams[sportData.name.toLowerCase() as keyof typeof schoolTeams] || [];
+  const renderMatchList = (matchList: MatchAPI[], emptyMessage: string) => {
+    if (isLoading) {
+      return (
+        <div className="md:col-span-2 lg:col-span-4 flex justify-center items-center p-6 bg-card rounded-lg">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Loading matches...</span>
+        </div>
+      );
+    }
+    if (matchList.length === 0) {
+      return (
+        <div className="md:col-span-2 lg:col-span-4">
+          <p className="text-muted-foreground">{emptyMessage}</p>
+        </div>
+      );
+    }
+    return matchList.map((match) => (
+      <MatchCard 
+        key={match._id} 
+        match={match} 
+        teamOne={teams.get(match.teamA)}
+        teamTwo={teams.get(match.teamB)}
+      />
+    ));
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -46,17 +132,12 @@ export default function SportPage({ params }: { params: { sport: string } }) {
           </h1>
         </section>
 
-        <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
             <section id="live-matches">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Live</h2>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {liveMatches.length > 0 ? (
-                  liveMatches.map((match) => <MatchCard key={match.id} match={match} />)
-                ) : (
-                  <div className="md:col-span-2">
-                    <p className="text-muted-foreground">No live matches right now.</p>
-                  </div>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderMatchList(liveMatches, 'No live matches right now.')}
               </div>
             </section>
             
@@ -65,13 +146,7 @@ export default function SportPage({ params }: { params: { sport: string } }) {
             <section id="upcoming-matches">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Upcoming</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {upcomingMatches.length > 0 ? (
-                  upcomingMatches.map((match) => <MatchCard key={match.id} match={match} />)
-                ) : (
-                   <div className="md:col-span-2">
-                    <p className="text-muted-foreground">No upcoming matches scheduled.</p>
-                  </div>
-                )}
+                 {renderMatchList(upcomingMatches, 'No upcoming matches scheduled.')}
               </div>
             </section>
 
@@ -79,14 +154,8 @@ export default function SportPage({ params }: { params: { sport: string } }) {
 
             <section id="recent-results">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Recent Results</h2>
-              <div>
-                {finishedMatches.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {finishedMatches.map((match) => <MatchCard key={match.id} match={match} />)}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No recent results found.</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {renderMatchList(completedMatches, 'No recent results found.')}
               </div>
             </section>
 
@@ -97,33 +166,41 @@ export default function SportPage({ params }: { params: { sport: string } }) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-3xl font-bold tracking-tight">
                     <Users className="w-8 h-8 text-accent-foreground" />
-                    Participating Schools
+                    Participating Teams
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {participatingTeams.length > 0 ? (
+                  {isLoading ? (
+                     <div className="flex justify-center items-center p-6">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : participatingTeams.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[100px]">#</TableHead>
+                          <TableHead>Team Name</TableHead>
                           <TableHead>School Name</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {participatingTeams.map((team, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{index + 1}</TableCell>
-                            <TableCell>{team.schoolName}</TableCell>
+                        {participatingTeams.map((team) => (
+                          <TableRow key={team._id}>
+                            <TableCell className="font-medium">{team.name}</TableCell>
+                            <TableCell>{team.school.name}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   ) : (
-                     <p className="text-muted-foreground text-center">No participating schools listed for {sportData.name} yet.</p>
+                     <p className="text-muted-foreground text-center">No participating teams listed for {sportData.name} yet.</p>
                   )}
                 </CardContent>
               </Card>
             </section>
+          </div>
+          <aside className="lg:col-span-1">
+            <PredictionTool sport={sportData.name} />
+          </aside>
         </div>
       </main>
     </div>

@@ -5,33 +5,15 @@ import type { MatchAPI, Team } from '@/lib/types';
 import { SportIcon } from './sports-icons';
 import { Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getTeamById } from '@/services/team-service';
 
 interface MatchCardProps {
   match: MatchAPI;
+  teamOne?: Team | null;
+  teamTwo?: Team | null;
 }
 
-export function MatchCard({ match }: MatchCardProps) {
-  const { sport, teamA, teamB, pointsA, pointsB, status, scheduledAt } = match;
-  const [teamOne, setTeamOne] = React.useState<Team | null>(null);
-  const [teamTwo, setTeamTwo] = React.useState<Team | null>(null);
-
-  React.useEffect(() => {
-    async function fetchTeams() {
-      try {
-        const [fetchedTeamOne, fetchedTeamTwo] = await Promise.all([
-          getTeamById(teamA),
-          getTeamById(teamB),
-        ]);
-        setTeamOne(fetchedTeamOne);
-        setTeamTwo(fetchedTeamTwo);
-      } catch (error) {
-        console.error("Failed to fetch team details for match card:", error);
-      }
-    }
-    fetchTeams();
-  }, [teamA, teamB]);
-
+export function MatchCard({ match, teamOne, teamTwo }: MatchCardProps) {
+  const { sport, pointsA, pointsB, status, scheduledAt } = match;
 
   const team1Name = teamOne?.name || 'Team A';
   const team2Name = teamTwo?.name || 'Team B';
@@ -56,7 +38,7 @@ export function MatchCard({ match }: MatchCardProps) {
             </div>
           )}
           {status === 'completed' && <Badge variant="secondary">Finished</Badge>}
-          {status === 'scheduled' && time && (
+          {(status === 'scheduled' || status === 'upcoming') && time && (
             <Badge variant="outline" className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               <span>{time}</span>
@@ -73,14 +55,14 @@ export function MatchCard({ match }: MatchCardProps) {
             </Avatar>
             <div className="text-center">
               <p className="font-semibold text-sm text-foreground truncate">{team1Name}</p>
-              {status !== 'scheduled' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsA}</p>}
+              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsA}</p>}
             </div>
           </div>
           
           {/* Separator */}
           <div className="col-span-1 text-center">
             <span className="font-semibold text-lg text-muted-foreground">
-              {status === 'scheduled' ? 'vs' : '-'}
+              {(status === 'scheduled' || status === 'upcoming') ? 'vs' : '-'}
             </span>
           </div>
 
@@ -92,7 +74,7 @@ export function MatchCard({ match }: MatchCardProps) {
             </Avatar>
             <div className="text-center">
               <p className="font-semibold text-sm text-foreground truncate">{team2Name}</p>
-              {status !== 'scheduled' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsB}</p>}
+              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsB}</p>}
             </div>
           </div>
         </div>
