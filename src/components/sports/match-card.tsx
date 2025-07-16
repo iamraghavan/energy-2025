@@ -49,7 +49,7 @@ export function MatchCard({ match, teamOne, teamTwo }: MatchCardProps) {
         <div className="grid grid-cols-11 items-center gap-2 text-center">
           {/* Team 1 */}
           <div className="col-span-5 flex flex-col items-center gap-2">
-            <Avatar className="w-10 h-10 border">
+            <Avatar className="w-12 h-12 border">
               <AvatarImage src={`https://placehold.co/100x100.png`} alt={team1Name} data-ai-hint="logo" />
               <AvatarFallback>{team1Name.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
@@ -68,7 +68,7 @@ export function MatchCard({ match, teamOne, teamTwo }: MatchCardProps) {
 
           {/* Team 2 */}
           <div className="col-span-5 flex flex-col items-center gap-2">
-            <Avatar className="w-10 h-10 border">
+            <Avatar className="w-12 h-12 border">
                 <AvatarImage src={`https://placehold.co/100x100.png`} alt={team2Name} data-ai-hint="logo" />
                 <AvatarFallback>{team2Name.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
