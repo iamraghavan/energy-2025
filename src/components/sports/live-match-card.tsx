@@ -29,22 +29,22 @@ export function LiveMatchCard({ match, teamOne, teamTwo }: LiveMatchCardProps) {
         <div className="grid grid-cols-2 items-center gap-4 text-center">
           {/* Team 1 */}
           <div className="flex flex-col items-center justify-center gap-3 p-4 bg-secondary/50 rounded-lg">
-            <Avatar className="w-16 h-16 md:w-20 md:h-20 border-2">
+            <Avatar className="w-20 h-20 md:w-24 md:h-24 border-2">
               <AvatarImage src={`https://placehold.co/100x100.png`} alt={team1Name} data-ai-hint="logo" />
               <AvatarFallback>{team1Name.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <h3 className="text-xl md:text-2xl font-bold text-foreground text-center line-clamp-2">{team1Name}</h3>
-            <p className="font-bold text-6xl md:text-7xl text-primary tabular-nums tracking-tighter">{pointsA}</p>
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground text-center line-clamp-2">{team1Name}</h3>
+            <p className="font-bold text-7xl md:text-8xl text-primary tabular-nums tracking-tighter">{pointsA}</p>
           </div>
           
           {/* Team 2 */}
           <div className="flex flex-col items-center justify-center gap-3 p-4 bg-secondary/50 rounded-lg">
-            <Avatar className="w-16 h-16 md:w-20 md:h-20 border-2">
+            <Avatar className="w-20 h-20 md:w-24 md:h-24 border-2">
                 <AvatarImage src={`https://placehold.co/100x100.png`} alt={team2Name} data-ai-hint="logo" />
                 <AvatarFallback>{team2Name.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <h3 className="text-xl md:text-2xl font-bold text-foreground text-center line-clamp-2">{team2Name}</h3>
-            <p className="font-bold text-6xl md:text-7xl text-primary tabular-nums tracking-tighter">{pointsB}</p>
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground text-center line-clamp-2">{team2Name}</h3>
+            <p className="font-bold text-7xl md:text-8xl text-primary tabular-nums tracking-tighter">{pointsB}</p>
           </div>
         </div>
       </CardContent>
