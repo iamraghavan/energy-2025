@@ -143,13 +143,13 @@ export default function CreateMatchPage() {
 
     const payload: CreateMatchPayload = {
       sport: sportName,
-      teamA: values.teamOneId, // Send the MongoDB _id
-      teamB: values.teamTwoId, // Send the MongoDB _id
+      teamA: values.teamOneId,
+      teamB: values.teamTwoId,
       scheduledAt: values.scheduledAt.toISOString(),
       venue: values.venue,
       courtNumber: values.courtNumber,
       refereeName: values.refereeName,
-      scorekeeperId: user._id, // Add the logged-in user's ID
+      scorekeeperId: user._id,
     };
 
     try {
