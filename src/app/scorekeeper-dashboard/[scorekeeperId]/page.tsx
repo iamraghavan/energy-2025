@@ -22,7 +22,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { MatchDetailsCard } from '@/components/scorekeeper/match-details-card';
-import { SportIcon } from '@/components/sports/sports-icons';
 import { format } from 'date-fns';
 import { useAuth } from '@/context/auth-context';
 import { socket } from '@/services/socket';
@@ -200,7 +199,6 @@ function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false, onGoLi
                         <DialogContent className="sm:max-w-md">
                             <DialogHeader>
                                 <DialogTitle className="flex items-center gap-2">
-                                <SportIcon sportName={match.sport} className="w-6 h-6" />
                                 Match Details
                                 </DialogTitle>
                                 <DialogDescription>

@@ -10,7 +10,6 @@ import { getTeams } from '@/services/team-service';
 import { socket } from '@/services/socket';
 
 import { Header } from '@/components/layout/header';
-import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -141,7 +140,6 @@ export default function SportPage() {
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8">
         <section className="flex items-center gap-4 mb-8">
-          <SportIcon sportName={sportData.name} className="w-16 h-16 text-primary" />
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
             {sportData.name}
           </h1>

@@ -20,7 +20,6 @@ import { useToast } from '@/hooks/use-toast';
 import { getMatches, updateMatch } from '@/services/match-service';
 import { getTeamById } from '@/services/team-service';
 import type { MatchAPI, Team } from '@/lib/types';
-import { SportIcon } from '@/components/sports/sports-icons';
 import { socket } from '@/services/socket';
 import { useAuth } from '@/context/auth-context';
 
@@ -148,7 +147,6 @@ export default function LiveMatchPage() {
             <div>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Live Scorekeeping</h1>
                 <p className="text-muted-foreground flex items-center gap-2">
-                    <SportIcon sportName={match.sport} className="w-4 h-4" />
                     {match.sport} Match | {format(new Date(match.scheduledAt), 'PPP p')}
                 </p>
             </div>

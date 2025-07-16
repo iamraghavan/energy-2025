@@ -11,7 +11,6 @@ import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
-import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
 import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -121,10 +120,6 @@ export default function Home() {
                         key={sport.slug}
                         className="group flex flex-col items-center justify-center gap-2 rounded-lg p-4 bg-card hover:bg-card/90 hover:shadow-md transition-all"
                       >
-                        <SportIcon
-                          sportName={sport.name}
-                          className="w-8 h-8 text-primary group-hover:text-primary/80 transition-colors"
-                        />
                         <span className="font-semibold text-center text-foreground">
                           {sport.name}
                         </span>

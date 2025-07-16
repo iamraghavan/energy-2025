@@ -7,7 +7,6 @@ import { Calendar, MapPin, User, Shield, RadioTower, Loader2 } from 'lucide-reac
 import type { PopulatedMatch } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { SportIcon } from '@/components/sports/sports-icons';
 import { Button } from '../ui/button';
 
 interface MatchDetailsCardProps {
@@ -34,7 +33,6 @@ export function MatchDetailsCard({ match, onGoLive, isUpdating }: MatchDetailsCa
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-lg flex items-center gap-2">
-                        <SportIcon sportName={match.sport} className="w-5 h-5 text-primary" />
                         <span className="font-bold">{match.sport}</span>
                     </CardTitle>
                     <Badge variant={getStatusVariant()} className="capitalize">
