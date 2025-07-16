@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { MatchAPI, Team } from '@/lib/types';
 import { Clock } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface MatchCardProps {
   match: MatchAPI;
@@ -25,7 +24,7 @@ export function MatchCard({ match, teamOne, teamTwo, hideSportIcon = false }: Ma
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="truncate font-semibold">{sport}</span>
+            {!hideSportIcon && <span className="truncate font-semibold">{sport}</span>}
           </div>
           {status === 'live' && (
              <div className="flex items-center gap-2">
@@ -47,15 +46,11 @@ export function MatchCard({ match, teamOne, teamTwo, hideSportIcon = false }: Ma
 
         <div className="grid grid-cols-11 items-center gap-2 text-center">
           {/* Team 1 */}
-          <div className="col-span-5 flex flex-col items-center gap-2">
-            <Avatar className="w-12 h-12 border">
-              <AvatarImage src={`https://placehold.co/100x100.png`} alt={team1Name} data-ai-hint="logo" />
-              <AvatarFallback>{team1Name.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="text-center">
-              <p className="font-semibold text-sm text-foreground truncate">{team1Name}</p>
-              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{pointsA}</p>}
-            </div>
+          <div className="col-span-5 flex flex-col items-center justify-center gap-1">
+            <p className="font-semibold text-base text-foreground truncate">{team1Name}</p>
+            {status !== 'scheduled' && status !== 'upcoming' && (
+              <p className="font-bold text-4xl text-primary tabular-nums tracking-tight">{pointsA}</p>
+            )}
           </div>
           
           {/* Separator */}
@@ -66,15 +61,11 @@ export function MatchCard({ match, teamOne, teamTwo, hideSportIcon = false }: Ma
           </div>
 
           {/* Team 2 */}
-          <div className="col-span-5 flex flex-col items-center gap-2">
-            <Avatar className="w-12 h-12 border">
-                <AvatarImage src={`https://placehold.co/100x100.png`} alt={team2Name} data-ai-hint="logo" />
-                <AvatarFallback>{team2Name.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="text-center">
-              <p className="font-semibold text-sm text-foreground truncate">{team2Name}</p>
-              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{pointsB}</p>}
-            </div>
+          <div className="col-span-5 flex flex-col items-center justify-center gap-1">
+            <p className="font-semibold text-base text-foreground truncate">{team2Name}</p>
+            {status !== 'scheduled' && status !== 'upcoming' && (
+              <p className="font-bold text-4xl text-primary tabular-nums tracking-tight">{pointsB}</p>
+            )}
           </div>
         </div>
       </div>
