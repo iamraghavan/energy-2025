@@ -74,14 +74,14 @@ export default function LiveMatchPage() {
     if (!match) return;
 
     const currentScore = team === 'A' ? match.pointsA : match.pointsB;
-    const newScore = currentScore + delta;
+    const newScore = Math.max(0, currentScore + delta);
     
-    if (newScore < 0) return;
-
     const updatedField = team === 'A' ? 'pointsA' : 'pointsB';
 
+    // Optimistic UI update
+    const previousMatchState = match;
     const newMatchState = { ...match, [updatedField]: newScore };
-    setMatch(newMatchState); // Optimistic update
+    setMatch(newMatchState);
 
     try {
         const payload = { [updatedField]: newScore };
@@ -93,7 +93,8 @@ export default function LiveMatchPage() {
             title: 'Update Failed',
             description: 'Could not sync score with the server. Please check your connection.',
         });
-        setMatch(match); // Revert on failure
+        // Revert on failure
+        setMatch(previousMatchState); 
     }
   };
   
