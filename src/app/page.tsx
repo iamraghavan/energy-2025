@@ -33,6 +33,9 @@ export default function Home() {
   React.useEffect(() => {
     async function fetchData() {
       try {
+        // Establish socket connection early
+        socket.connect();
+
         const [fetchedMatches, fetchedTeams] = await Promise.all([
           getMatches(),
           getTeams()
@@ -54,8 +57,6 @@ export default function Home() {
     }
     fetchData();
     
-    socket.connect();
-    
     function onScoreUpdate(updatedMatch: MatchAPI) {
         setMatches(prevMatches => 
             prevMatches.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m)
@@ -64,6 +65,7 @@ export default function Home() {
     
     socket.on('scoreUpdate', onScoreUpdate);
     
+    // Cleanup on component unmount
     return () => {
         socket.off('scoreUpdate', onScoreUpdate);
         socket.disconnect();

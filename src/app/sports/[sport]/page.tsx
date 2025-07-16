@@ -42,6 +42,9 @@ export default function SportPage() {
       if (!sportData) return;
       setIsLoading(true);
       try {
+        // Establish socket connection early
+        socket.connect();
+
         const [fetchedMatches, fetchedTeams] = await Promise.all([
             getMatches(),
             getTeams()
@@ -65,16 +68,18 @@ export default function SportPage() {
     }
     fetchData();
 
-    socket.connect();
-    
     function onScoreUpdate(updatedMatch: MatchAPI) {
-        setMatches(prevMatches => 
-            prevMatches.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m)
-        );
+        // Only update if the match belongs to the current sport page
+        if (updatedMatch.sport.toLowerCase() === sportData?.name.toLowerCase()) {
+            setMatches(prevMatches => 
+                prevMatches.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m)
+            );
+        }
     }
     
     socket.on('scoreUpdate', onScoreUpdate);
     
+    // Cleanup on component unmount
     return () => {
         socket.off('scoreUpdate', onScoreUpdate);
         socket.disconnect();
