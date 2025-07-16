@@ -30,8 +30,8 @@ export function MatchCard({ match, teamOne, teamTwo }: MatchCardProps) {
           
           {/* Separator */}
           <div className="col-span-1 text-center">
-            <span className="font-semibold text-lg text-muted-foreground">
-              {(status === 'scheduled' || status === 'upcoming') ? 'vs' : '-'}
+            <span className="font-semibold text-lg text-destructive">
+              vs
             </span>
           </div>
 
