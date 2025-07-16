@@ -185,94 +185,93 @@ export default function CreateMatchPage() {
   const dashboardUrl = user ? `/scorekeeper-dashboard/${btoa(user.id)}` : '/login';
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-muted/40 p-4">
-      <div className="w-full max-w-2xl">
+    <div className="w-full max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="outline" size="icon" asChild>
+            <Button variant="outline" size="icon" asChild>
             <Link href={dashboardUrl}>
-              <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back to Dashboard</span>
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Back to Dashboard</span>
             </Link>
-          </Button>
-          <div>
+            </Button>
+            <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Create a New Match
+                Create a New Match
             </h1>
             <p className="text-muted-foreground">
-              Select the sport and teams to schedule a match.
+                Select the sport and teams to schedule a match.
             </p>
-          </div>
+            </div>
         </div>
         <Card>
-          <CardContent className="p-6">
+            <CardContent className="p-6">
             <Form {...form}>
-              <form
+                <form
                 onSubmit={form.handleSubmit(onFormSubmit)}
                 className="space-y-6"
-              >
+                >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
+                    <FormField
                     control={form.control}
                     name="sportId"
                     render={({ field }) => (
-                      <FormItem>
+                        <FormItem>
                         <FormLabel>Sport</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
                         >
-                          <FormControl>
+                            <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a sport" />
+                                <SelectValue placeholder="Select a sport" />
                             </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
+                            </FormControl>
+                            <SelectContent>
                             {sports.map((sport) => (
-                              <SelectItem key={sport._id} value={sport._id}>
+                                <SelectItem key={sport._id} value={sport._id}>
                                 {sport.name}
-                              </SelectItem>
+                                </SelectItem>
                             ))}
-                          </SelectContent>
+                            </SelectContent>
                         </Select>
                         <FormMessage />
-                      </FormItem>
+                        </FormItem>
                     )}
-                  />
-                  <FormField
+                    />
+                    <FormField
                     control={form.control}
                     name="scheduledAt"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
+                        <FormItem className="flex flex-col">
                         <FormLabel>Match Date & Time</FormLabel>
                         <Popover>
-                          <PopoverTrigger asChild>
+                            <PopoverTrigger asChild>
                             <FormControl>
-                              <Button
+                                <Button
                                 variant={'outline'}
                                 className={cn(
-                                  'pl-3 text-left font-normal',
-                                  !field.value && 'text-muted-foreground'
+                                    'pl-3 text-left font-normal',
+                                    !field.value && 'text-muted-foreground'
                                 )}
-                              >
+                                >
                                 {field.value ? (
-                                  format(field.value, 'PPP HH:mm')
+                                    format(field.value, 'PPP HH:mm')
                                 ) : (
-                                  <span>Pick a date</span>
+                                    <span>Pick a date</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
+                                </Button>
                             </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date('1900-01-01')}
-                              initialFocus
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date('1900-01-01')}
+                                initialFocus
                             />
                             <div className="p-2 border-t">
-                               <Input 
+                                <Input 
                                 type="time"
                                 defaultValue={field.value ? format(field.value, 'HH:mm') : ''}
                                 onChange={(e) => {
@@ -282,34 +281,34 @@ export default function CreateMatchPage() {
                                     newDate.setHours(hours, minutes);
                                     field.onChange(newDate);
                                 }}
-                               />
+                                />
                             </div>
-                          </PopoverContent>
+                            </PopoverContent>
                         </Popover>
                         <FormMessage />
-                      </FormItem>
+                        </FormItem>
                     )}
-                  />
+                    />
                 </div>
 
-                 <FormField
-                  control={form.control}
-                  name="teamOneId"
-                  render={({ field }) => (
+                    <FormField
+                    control={form.control}
+                    name="teamOneId"
+                    render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Team One</FormLabel>
-                      <Select
+                        <FormLabel>Team One</FormLabel>
+                        <Select
                         onValueChange={field.onChange}
                         value={field.value}
                         disabled={!selectedSportId}
-                      >
+                        >
                         <FormControl>
-                          <SelectTrigger>
+                            <SelectTrigger>
                             <SelectValue placeholder="Select team one" />
-                          </SelectTrigger>
+                            </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           {filteredTeams
+                            {filteredTeams
                             .filter(team => team._id !== selectedTeamTwoId)
                             .map((team) => (
                                 <SelectItem key={team._id} value={team._id}>
@@ -317,29 +316,29 @@ export default function CreateMatchPage() {
                                 </SelectItem>
                             ))}
                         </SelectContent>
-                      </Select>
-                      <FormMessage />
+                        </Select>
+                        <FormMessage />
                     </FormItem>
-                  )}
+                    )}
                 />
                 <FormField
-                  control={form.control}
-                  name="teamTwoId"
-                  render={({ field }) => (
+                    control={form.control}
+                    name="teamTwoId"
+                    render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Team Two</FormLabel>
-                      <Select
+                        <FormLabel>Team Two</FormLabel>
+                        <Select
                         onValueChange={field.onChange}
                         value={field.value}
                         disabled={!selectedSportId}
-                      >
+                        >
                         <FormControl>
-                          <SelectTrigger>
+                            <SelectTrigger>
                             <SelectValue placeholder="Select team two" />
-                          </SelectTrigger>
+                            </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           {filteredTeams
+                            {filteredTeams
                             .filter(team => team._id !== selectedTeamOneId)
                             .map((team) => (
                                 <SelectItem key={team._id} value={team._id}>
@@ -347,55 +346,55 @@ export default function CreateMatchPage() {
                                 </SelectItem>
                             ))}
                         </SelectContent>
-                      </Select>
-                      <FormMessage />
+                        </Select>
+                        <FormMessage />
                     </FormItem>
-                  )}
+                    )}
                 />
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
-                      control={form.control}
-                      name="venue"
-                      render={({ field }) => (
+                        control={form.control}
+                        name="venue"
+                        render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Venue</FormLabel>
-                          <Select
+                            <FormLabel>Venue</FormLabel>
+                            <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
-                          >
+                            >
                             <FormControl>
-                              <SelectTrigger>
+                                <SelectTrigger>
                                 <SelectValue placeholder="Select a venue" />
-                              </SelectTrigger>
+                                </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {venues.map((venue) => (
+                                {venues.map((venue) => (
                                 <SelectItem key={venue} value={venue}>
-                                  {venue}
+                                    {venue}
                                 </SelectItem>
-                              ))}
+                                ))}
                             </SelectContent>
-                          </Select>
-                          <FormMessage />
+                            </Select>
+                            <FormMessage />
                         </FormItem>
-                      )}
-                    />
-                     <FormField
+                        )}
+                        />
+                        <FormField
                         control={form.control}
                         name="courtNumber"
                         render={({ field }) => (
-                          <FormItem>
+                            <FormItem>
                             <FormLabel>Court / Field Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g., Court 1" {...field} />
+                                <Input placeholder="e.g., Court 1" {...field} />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>
+                            </FormItem>
                         )}
-                      />
+                        />
                 </div>
 
-                 <FormField
+                    <FormField
                     control={form.control}
                     name="refereeName"
                     render={({ field }) => (
@@ -410,19 +409,18 @@ export default function CreateMatchPage() {
                 />
 
                 <div className="flex justify-end pt-4">
-                  <Button
+                    <Button
                     type="submit"
                     disabled={isSubmitting}
                     className="w-full md:w-auto"
-                  >
+                    >
                     {isSubmitting ? 'Creating...' : 'Create Match'}
-                  </Button>
+                    </Button>
                 </div>
-              </form>
+                </form>
             </Form>
-          </CardContent>
+            </CardContent>
         </Card>
-      </div>
     </div>
   );
 }
