@@ -1,20 +1,22 @@
-
 'use client';
 
 import * as React from 'react';
 import { format } from 'date-fns';
-import { Calendar, MapPin, User, Shield } from 'lucide-react';
+import { Calendar, MapPin, User, Shield, RadioTower, Loader2 } from 'lucide-react';
 
 import type { PopulatedMatch } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SportIcon } from '@/components/sports/sports-icons';
+import { Button } from '../ui/button';
 
 interface MatchDetailsCardProps {
     match: PopulatedMatch;
+    onGoLive?: (matchId: string) => void;
+    isUpdating?: boolean;
 }
 
-export function MatchDetailsCard({ match }: MatchDetailsCardProps) {
+export function MatchDetailsCard({ match, onGoLive, isUpdating }: MatchDetailsCardProps) {
     const getStatusVariant = (): 'destructive' | 'secondary' | 'default' => {
         switch (match.status) {
             case 'live': return 'destructive';
@@ -63,6 +65,25 @@ export function MatchDetailsCard({ match }: MatchDetailsCardProps) {
                     <p>Referee: {match.refereeName}</p>
                 </div>
             </CardContent>
+            {onGoLive && match.status === 'scheduled' && (
+                <CardFooter>
+                    <Button 
+                        className="w-full" 
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent dialog from opening
+                            onGoLive(match._id);
+                        }}
+                        disabled={isUpdating}
+                    >
+                        {isUpdating ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <RadioTower className="mr-2 h-4 w-4" />
+                        )}
+                        Go Live
+                    </Button>
+                </CardFooter>
+            )}
         </Card>
     );
 }

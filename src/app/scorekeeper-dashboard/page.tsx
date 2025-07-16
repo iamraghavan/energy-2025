@@ -4,13 +4,12 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ClipboardList, PlusCircle, Frown } from 'lucide-react';
-import { format } from 'date-fns';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { getMatches } from '@/services/match-service';
+import { getMatches, updateMatch } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
 import type { MatchAPI, Team, PopulatedMatch } from '@/lib/types';
 import {
@@ -23,12 +22,14 @@ import {
 } from '@/components/ui/dialog';
 import { MatchDetailsCard } from '@/components/scorekeeper/match-details-card';
 import { SportIcon } from '@/components/sports/sports-icons';
+import { format } from 'date-fns';
 
 export default function ScorekeeperDashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isUpdating, setIsUpdating] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState(searchParams.get('tab') || 'live');
 
   const { toast } = useToast();
@@ -36,21 +37,18 @@ export default function ScorekeeperDashboardPage() {
   const fetchAndPopulateMatches = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch both matches and teams at the same time
       const [fetchedMatches, allTeams] = await Promise.all([
         getMatches(),
         getTeams()
       ]);
 
-      // Create a Map for quick team lookups by their _id
       const teamsMap = new Map<string, Team>(allTeams.map(team => [team._id, team]));
       
-      // Populate the matches with full team objects
       const populatedMatches = fetchedMatches.map(match => ({
         ...match,
         teamOne: teamsMap.get(match.teamA)!,
         teamTwo: teamsMap.get(match.teamB)!,
-      }));
+      })).sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
       
       setMatches(populatedMatches);
     } catch (error) {
@@ -71,6 +69,27 @@ export default function ScorekeeperDashboardPage() {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     router.push(`/scorekeeper-dashboard?tab=${value}`, { scroll: false });
+  };
+  
+  const handleGoLive = async (matchId: string) => {
+    setIsUpdating(matchId);
+    try {
+      await updateMatch(matchId, { status: 'live' });
+      toast({
+        title: 'Match is Live!',
+        description: 'The match has been moved to the Live tab.',
+      });
+      await fetchAndPopulateMatches();
+      handleTabChange('live');
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Operation Failed',
+            description: error.message || 'Could not update the match status.',
+        });
+    } finally {
+        setIsUpdating(null);
+    }
   };
 
   const scheduledMatches = matches.filter((m) => m.status === 'scheduled');
@@ -105,7 +124,7 @@ export default function ScorekeeperDashboardPage() {
           <MatchList matches={liveMatches} isLoading={isLoading} emptyMessage="No live matches right now." isLiveTab />
         </TabsContent>
         <TabsContent value="scheduled">
-          <MatchList matches={scheduledMatches} isLoading={isLoading} emptyMessage="No matches are scheduled." />
+          <MatchList matches={scheduledMatches} isLoading={isLoading} emptyMessage="No matches are scheduled." onGoLive={handleGoLive} isUpdatingId={isUpdating} />
         </TabsContent>
         <TabsContent value="completed">
           <MatchList matches={completedMatches} isLoading={isLoading} emptyMessage="No matches have been completed yet." />
@@ -120,9 +139,11 @@ interface MatchListProps {
   isLoading: boolean;
   emptyMessage: string;
   isLiveTab?: boolean;
+  onGoLive?: (matchId: string) => void;
+  isUpdatingId?: string | null;
 }
 
-function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false }: MatchListProps) {
+function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false, onGoLive, isUpdatingId }: MatchListProps) {
     if (isLoading) {
         return <p className="text-center text-muted-foreground py-8">Loading matches...</p>;
     }
@@ -140,42 +161,54 @@ function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false }: Matc
     
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {matches.map((match) => (
-                isLiveTab ? (
-                  <Link href={`/scorekeeper-dashboard/live/${match._id}`} key={match._id} className="block">
-                      <MatchDetailsCard match={match} />
-                  </Link>
-                ) : (
-                  <Dialog key={match._id}>
-                      <DialogTrigger asChild>
-                          <div className="cursor-pointer">
-                            <MatchDetailsCard match={match} />
-                          </div>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                              <DialogTitle className="flex items-center gap-2">
+            {matches.map((match) => {
+                const cardContent = (
+                    <MatchDetailsCard 
+                        match={match} 
+                        onGoLive={onGoLive}
+                        isUpdating={isUpdatingId === match._id}
+                    />
+                );
+
+                if (isLiveTab) {
+                    return (
+                        <Link href={`/scorekeeper-dashboard/live/${match._id}`} key={match._id} className="block">
+                            {cardContent}
+                        </Link>
+                    );
+                }
+
+                return (
+                    <Dialog key={match._id}>
+                        <DialogTrigger asChild>
+                            <div className="cursor-pointer">
+                                {cardContent}
+                            </div>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
                                 <SportIcon sportName={match.sport} className="w-6 h-6" />
                                 Match Details
-                              </DialogTitle>
-                              <DialogDescription>
+                                </DialogTitle>
+                                <DialogDescription>
                                 Reviewing the details for the {match.sport} match.
-                              </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 text-sm">
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 text-sm">
                             <p><strong>Team One:</strong> {match.teamOne?.name || 'N/A'}</p>
                             <p><strong>Team Two:</strong> {match.teamTwo?.name || 'N/A'}</p>
                             <p><strong>Score:</strong> {match.teamOneScore} - {match.teamTwoScore}</p>
-                             <p><strong>Date:</strong> {match.scheduledAt ? format(new Date(match.scheduledAt), 'PPP p') : 'N/A'}</p>
+                            <p><strong>Date:</strong> {match.scheduledAt ? format(new Date(match.scheduledAt), 'PPP p') : 'N/A'}</p>
                             <p><strong>Venue:</strong> {match.venue}</p>
                             <p><strong>Court:</strong> {match.courtNumber}</p>
                             <p><strong>Referee:</strong> {match.refereeName}</p>
                             <p><strong>Status:</strong> <span className="capitalize">{match.status}</span></p>
-                          </div>
-                      </DialogContent>
-                  </Dialog>
-                )
-            ))}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                );
+            })}
         </div>
     );
 }
