@@ -87,7 +87,6 @@ export default function CreateMatchPage() {
       venue: '',
       courtNumber: '',
       refereeName: '',
-      scheduledAt: undefined,
     },
   });
 
