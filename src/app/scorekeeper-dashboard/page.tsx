@@ -9,7 +9,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { getMatches } from '@/services/match-service';
-import type { MatchAPI } from '@/lib/types';
+import { getTeams } from '@/services/team-service';
+import type { MatchAPI, Team } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -33,8 +34,20 @@ export default function ScorekeeperDashboardPage() {
   const fetchMatches = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedMatches = await getMatches();
-      setMatches(fetchedMatches);
+      const [fetchedMatches, allTeams] = await Promise.all([
+        getMatches(),
+        getTeams()
+      ]);
+
+      const teamsMap = new Map<string, Team>(allTeams.map(team => [team._id, team]));
+
+      const populatedMatches = fetchedMatches.map(match => ({
+        ...match,
+        teamOne: teamsMap.get(match.teamOne as any)!,
+        teamTwo: teamsMap.get(match.teamTwo as any)!,
+      }));
+      
+      setMatches(populatedMatches);
     } catch (error) {
       toast({
         variant: 'destructive',
