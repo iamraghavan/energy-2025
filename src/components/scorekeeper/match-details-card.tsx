@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -23,8 +24,8 @@ export function MatchDetailsCard({ match }: MatchDetailsCardProps) {
         }
     };
 
-    const teamOneName = match.teamOne?.name || 'Team A';
-    const teamTwoName = match.teamTwo?.name || 'Team B';
+    const teamOneName = match.teamOne?.name || 'N/A';
+    const teamTwoName = match.teamTwo?.name || 'N/A';
 
     return (
         <Card className="hover:shadow-md transition-shadow h-full flex flex-col">
