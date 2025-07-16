@@ -9,7 +9,7 @@ import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
 import { LiveMatchCard } from '@/components/sports/live-match-card';
-import { UpcomingMatchCard } from '@/components/sports/upcoming-match-card'; // New component
+import { UpcomingMatchCard } from '@/components/sports/upcoming-match-card';
 import { Loader2, RadioTower, Frown, CalendarClock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -51,12 +51,10 @@ export default function LiveMatchesPage() {
       setMatches(prevMatches => {
         const matchIndex = prevMatches.findIndex(m => m._id === updatedMatch._id);
         if (matchIndex > -1) {
-          // If match exists, update it. This handles score updates and status changes (e.g. live -> completed)
           const newMatches = [...prevMatches];
           newMatches[matchIndex] = { ...newMatches[matchIndex], ...updatedMatch };
           return newMatches;
         }
-        // If the match is new (e.g., just created), add it to the list
         return [...prevMatches, updatedMatch];
       });
     }
