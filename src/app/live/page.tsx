@@ -20,6 +20,9 @@ export default function LiveMatchesPage() {
   const [matches, setMatches] = React.useState<MatchAPI[]>([]);
   const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
   const [isLoading, setIsLoading] = React.useState(true);
+  const vibrantColors = [
+    'bg-red-500/10', 'bg-blue-500/10', 'bg-green-500/10', 'bg-yellow-500/10', 'bg-purple-500/10', 'bg-pink-500/10'
+  ];
 
   React.useEffect(() => {
     async function fetchData() {
@@ -98,46 +101,48 @@ export default function LiveMatchesPage() {
           </div>
         ) : liveMatches.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {liveMatches.map((match) => {
+            {liveMatches.map((match, index) => {
               const teamOne = teams.get(match.teamA);
               const teamTwo = teams.get(match.teamB);
               const team1Name = teamOne?.name || 'Team A';
               const team2Name = teamTwo?.name || 'Team B';
+              const team1Color = vibrantColors[index % vibrantColors.length];
+              const team2Color = vibrantColors[(index + 1) % vibrantColors.length];
               return (
-                <Card key={match._id} className="w-full shadow-2xl border-primary/20 bg-card overflow-hidden rounded-2xl">
-                    <CardHeader className="pb-2 bg-muted/30 border-b p-4">
-                        <CardTitle className="flex justify-between items-center text-lg md:text-xl">
+                <div key={match._id} className="w-full shadow-2xl bg-card dark:bg-gray-800/50 overflow-hidden rounded-2xl border border-primary/10">
+                    <div className="pb-2 bg-muted/30 dark:bg-gray-900/30 border-b p-4">
+                        <div className="flex justify-between items-center text-lg md:text-xl">
                             <Badge variant="destructive" className="text-base px-4 py-1 font-bold tracking-wider">LIVE</Badge>
                             <div className="text-right">
                                 <p className="font-semibold text-muted-foreground">{match.sport}</p>
                                 <p className="text-sm text-muted-foreground">{match.venue} - {match.courtNumber}</p>
                             </div>
-                        </CardTitle>
-                    </CardHeader>
-                  <CardContent className="p-0">
+                        </div>
+                    </div>
+                  <div className="p-0">
                     <div className="grid grid-cols-2 items-stretch text-center">
                       {/* Team 1 */}
-                      <div className="flex flex-col items-center justify-between gap-4 p-6 bg-secondary/50 border-r">
+                      <div className={`flex flex-col items-center justify-between gap-4 p-6 ${team1Color} border-r`}>
                         <Avatar className="w-24 h-24 md:w-28 md:h-28 border-4 border-white dark:border-gray-800 shadow-lg">
                           <AvatarImage src={`https://placehold.co/100x100.png`} alt={team1Name} data-ai-hint="logo" />
                           <AvatarFallback>{team1Name.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <h3 className="text-3xl font-bold text-foreground text-center min-h-[84px] flex items-center">{team1Name}</h3>
-                        <p className="font-black text-8xl text-primary tabular-nums tracking-tighter">{match.pointsA}</p>
+                        <p className="font-black text-9xl text-primary dark:text-yellow-400 tabular-nums tracking-tighter">{match.pointsA}</p>
                       </div>
                       
                       {/* Team 2 */}
-                      <div className="flex flex-col items-center justify-between gap-4 p-6 bg-secondary/50">
+                      <div className={`flex flex-col items-center justify-between gap-4 p-6 ${team2Color}`}>
                         <Avatar className="w-24 h-24 md:w-28 md:h-28 border-4 border-white dark:border-gray-800 shadow-lg">
                             <AvatarImage src={`https://placehold.co/100x100.png`} alt={team2Name} data-ai-hint="logo" />
                             <AvatarFallback>{team2Name.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <h3 className="text-3xl font-bold text-foreground text-center min-h-[84px] flex items-center">{team2Name}</h3>
-                        <p className="font-black text-8xl text-primary tabular-nums tracking-tighter">{match.pointsB}</p>
+                        <p className="font-black text-9xl text-primary dark:text-green-400 tabular-nums tracking-tighter">{match.pointsB}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -178,8 +183,8 @@ export default function LiveMatchesPage() {
                const team2Name = teamTwo?.name || 'Team B';
                const time = format(new Date(match.scheduledAt), 'p');
               return (
-                 <Card key={match._id} className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card rounded-lg">
-                    <CardHeader className="p-3 border-b bg-muted/30">
+                 <div key={match._id} className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card rounded-lg">
+                    <div className="p-3 border-b bg-muted/30">
                         <div className="flex justify-between items-center">
                             <p className="font-semibold text-muted-foreground">{match.sport}</p>
                             <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 text-sm">
@@ -187,8 +192,8 @@ export default function LiveMatchesPage() {
                                 <span>{time}</span>
                             </Badge>
                         </div>
-                    </CardHeader>
-                    <CardContent className="p-4">
+                    </div>
+                    <div className="p-4">
                          <div className="flex justify-between items-center">
                             <div className="flex items-center gap-4 flex-1">
                                 <Avatar className="w-12 h-12 border-2">
@@ -208,8 +213,8 @@ export default function LiveMatchesPage() {
                                 </Avatar>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
               )
             })}
           </div>
