@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
-  _id: string;
+  id: string; // Changed from _id to id to match API response
   username: string;
   role: 'superadmin' | 'lv2admin' | 'scorekeeper' | 'user';
   // Add other user properties as needed
@@ -14,7 +14,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password:string) => Promise<void>;
   logout: () => void;
   isAuthorized: (allowedRoles: User['role'][]) => boolean;
 }

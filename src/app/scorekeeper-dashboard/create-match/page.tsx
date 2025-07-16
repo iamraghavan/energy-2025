@@ -160,7 +160,7 @@ export default function CreateMatchPage() {
       venue: values.venue,
       courtNumber: values.courtNumber,
       refereeName: values.refereeName,
-      scorekeeperId: user._id,
+      scorekeeperId: user.id, // Use user.id here
     };
 
     try {
