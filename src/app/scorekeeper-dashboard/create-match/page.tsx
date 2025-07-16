@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -79,6 +80,15 @@ export default function CreateMatchPage() {
 
   const form = useForm<MatchFormValues>({
     resolver: zodResolver(matchSchema),
+    defaultValues: {
+      sportId: '',
+      teamOneId: '',
+      teamTwoId: '',
+      venue: '',
+      courtNumber: '',
+      refereeName: '',
+      scheduledAt: undefined,
+    },
   });
 
   const selectedSportId = form.watch('sportId');
@@ -316,7 +326,7 @@ export default function CreateMatchPage() {
                     <FormItem>
                       <FormLabel>Team Two</FormLabel>
                       <Select
-                        onValuechange={field.onChange}
+                        onValueChange={field.onChange}
                         value={field.value}
                         disabled={!selectedSportId}
                       >
