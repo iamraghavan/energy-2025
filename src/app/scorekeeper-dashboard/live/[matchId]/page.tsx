@@ -86,14 +86,14 @@ export default function LiveMatchPage() {
     
     const updatedField = team === 'A' ? 'pointsA' : 'pointsB';
 
-    const previousMatchState = match;
+    const previousMatchState = { ...match };
     const newMatchState = { ...match, [updatedField]: newScore };
     setMatch(newMatchState);
 
     try {
         const payload = { [updatedField]: newScore };
-        const updatedMatch = await updateMatch(match._id, payload);
-        socket.emit('scoreUpdate', updatedMatch); 
+        await updateMatch(match._id, payload);
+        socket.emit('scoreUpdate', newMatchState); 
     } catch (error: any) {
         toast({
             variant: 'destructive',
