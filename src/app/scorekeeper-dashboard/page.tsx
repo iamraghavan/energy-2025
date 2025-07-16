@@ -198,7 +198,7 @@ function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false, onGoLi
                             <div className="space-y-4 text-sm">
                             <p><strong>Team One:</strong> {match.teamOne?.name || 'N/A'}</p>
                             <p><strong>Team Two:</strong> {match.teamTwo?.name || 'N/A'}</p>
-                            <p><strong>Score:</strong> {match.teamOneScore} - {match.teamTwoScore}</p>
+                            <p><strong>Score:</strong> {match.pointsA} - {match.pointsB}</p>
                             <p><strong>Date:</strong> {match.scheduledAt ? format(new Date(match.scheduledAt), 'PPP p') : 'N/A'}</p>
                             <p><strong>Venue:</strong> {match.venue}</p>
                             <p><strong>Court:</strong> {match.courtNumber}</p>

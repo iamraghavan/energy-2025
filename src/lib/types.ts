@@ -68,8 +68,8 @@ export interface MatchAPI {
   sport: string;
   teamA: string; // Team ID
   teamB: string; // Team ID
-  teamOneScore: number;
-  teamTwoScore: number;
+  pointsA: number;
+  pointsB: number;
   status: 'scheduled' | 'live' | 'completed';
   scheduledAt: string;
   venue: string;
@@ -97,7 +97,7 @@ export interface CreateMatchPayload {
 }
 
 export interface UpdateMatchPayload {
-  teamOneScore?: number;
-  teamTwoScore?: number;
+  pointsA?: number;
+  pointsB?: number;
   status?: 'scheduled' | 'live' | 'completed';
 }

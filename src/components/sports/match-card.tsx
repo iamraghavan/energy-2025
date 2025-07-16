@@ -12,7 +12,7 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match }: MatchCardProps) {
-  const { sport, teamA, teamB, teamOneScore, teamTwoScore, status, scheduledAt } = match;
+  const { sport, teamA, teamB, pointsA, pointsB, status, scheduledAt } = match;
   const [teamOne, setTeamOne] = React.useState<Team | null>(null);
   const [teamTwo, setTeamTwo] = React.useState<Team | null>(null);
 
@@ -73,7 +73,7 @@ export function MatchCard({ match }: MatchCardProps) {
             </Avatar>
             <div className="text-center">
               <p className="font-semibold text-sm text-foreground truncate">{team1Name}</p>
-              {status !== 'scheduled' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{teamOneScore}</p>}
+              {status !== 'scheduled' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsA}</p>}
             </div>
           </div>
           
@@ -92,7 +92,7 @@ export function MatchCard({ match }: MatchCardProps) {
             </Avatar>
             <div className="text-center">
               <p className="font-semibold text-sm text-foreground truncate">{team2Name}</p>
-              {status !== 'scheduled' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{teamTwoScore}</p>}
+              {status !== 'scheduled' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsB}</p>}
             </div>
           </div>
         </div>

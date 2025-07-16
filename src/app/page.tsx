@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sports-icons';
 import { MatchCard } from '@/components/sports/match-card';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
   Carousel,
@@ -60,8 +60,8 @@ export default function Home() {
   }, [toast]);
 
   const liveMatches = matches.filter((m) => m.status === 'live');
-  const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
-
+  const upcomingMatches = matches.filter((m) => m.status === 'upcoming' || m.status === 'scheduled');
+  
   const plugin = React.useRef(
     Autoplay({ delay: 2000, stopOnInteraction: true })
   );
@@ -137,14 +137,19 @@ export default function Home() {
                   </Link>
                 </div>
                 <div>
-                  {liveMatches.length > 0 ? (
+                  {isLoading ? (
+                    <div className="flex justify-center items-center p-6 bg-card rounded-lg">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      <span className="ml-2 text-muted-foreground">Loading matches...</span>
+                    </div>
+                   ) : liveMatches.length > 0 ? (
                       <Carousel
                         plugins={[plugin.current]}
                         className="w-full"
                         onMouseEnter={plugin.current.stop}
                         onMouseLeave={plugin.current.reset}
                         opts={{
-                          loop: true,
+                          loop: liveMatches.length > 1,
                           align: "start"
                         }}
                       >
@@ -162,7 +167,7 @@ export default function Home() {
                     <Card>
                       <CardContent className="p-6">
                         <p className="text-muted-foreground text-center">
-                          {isLoading ? 'Loading matches...' : 'No live matches at the moment. Check back soon!'}
+                          No live matches at the moment. Check back soon!
                         </p>
                       </CardContent>
                     </Card>
@@ -178,7 +183,12 @@ export default function Home() {
                   Upcoming Matches
                 </h2>
                 <div className="space-y-4">
-                  {upcomingMatches.length > 0 ? (
+                  {isLoading ? (
+                     <div className="flex justify-center items-center p-6 bg-card rounded-lg">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      <span className="ml-2 text-muted-foreground">Loading matches...</span>
+                    </div>
+                  ) : upcomingMatches.length > 0 ? (
                     upcomingMatches.map((match) => (
                       <MatchCard key={match._id} match={match} />
                     ))
@@ -186,7 +196,7 @@ export default function Home() {
                     <Card>
                       <CardContent className="p-6">
                         <p className="text-muted-foreground text-center">
-                          {isLoading ? 'Loading matches...' : 'No upcoming matches scheduled right now.'}
+                          No upcoming matches scheduled right now.
                         </p>
                       </CardContent>
                     </Card>

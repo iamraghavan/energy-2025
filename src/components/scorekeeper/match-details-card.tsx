@@ -49,7 +49,7 @@ export function MatchDetailsCard({ match, onGoLive, isUpdating }: MatchDetailsCa
                 {match.status !== 'scheduled' && (
                     <div className="flex items-center gap-2 font-semibold">
                         <Shield className="w-4 h-4 text-primary" />
-                        <p>Score: {match.teamOneScore} - {match.teamTwoScore}</p>
+                        <p>Score: {match.pointsA} - {match.pointsB}</p>
                     </div>
                 )}
                 <div className="flex items-center gap-2">
