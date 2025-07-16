@@ -10,9 +10,10 @@ interface MatchCardProps {
   match: MatchAPI;
   teamOne?: Team | null;
   teamTwo?: Team | null;
+  hideSportIcon?: boolean;
 }
 
-export function MatchCard({ match, teamOne, teamTwo }: MatchCardProps) {
+export function MatchCard({ match, teamOne, teamTwo, hideSportIcon = false }: MatchCardProps) {
   const { sport, pointsA, pointsB, status, scheduledAt } = match;
 
   const team1Name = teamOne?.name || 'Team A';
@@ -25,7 +26,7 @@ export function MatchCard({ match, teamOne, teamTwo }: MatchCardProps) {
       <CardContent className="p-4">
         <div className="flex justify-between items-center mb-4 pb-2 border-b">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <SportIcon sportName={sport} className="w-4 h-4" />
+            {!hideSportIcon && <SportIcon sportName={sport} className="w-4 h-4" />}
             <span className="truncate">{sport}</span>
           </div>
           {status === 'live' && (

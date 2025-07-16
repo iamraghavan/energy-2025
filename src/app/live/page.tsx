@@ -142,6 +142,7 @@ export default function LiveMatchesPage() {
                 match={match}
                 teamOne={teams.get(match.teamA)}
                 teamTwo={teams.get(match.teamB)}
+                hideSportIcon={true}
               />
             ))}
           </div>
