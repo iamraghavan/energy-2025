@@ -38,13 +38,14 @@ export default function SportPage() {
   const sportData = sports.find((s) => s.slug === sportSlug);
 
   React.useEffect(() => {
+    if (!sportData) {
+      notFound();
+      return;
+    }
+    
     async function fetchData() {
-      if (!sportData) return;
       setIsLoading(true);
       try {
-        // Establish socket connection early
-        socket.connect();
-
         const [fetchedMatches, fetchedTeams] = await Promise.all([
             getMatches(),
             getTeams()
@@ -66,7 +67,9 @@ export default function SportPage() {
         setIsLoading(false);
       }
     }
-    fetchData();
+    
+    // Connect to socket and set up listeners
+    socket.connect();
 
     function onScoreUpdate(updatedMatch: MatchAPI) {
         // Only update if the match belongs to the current sport page
@@ -78,6 +81,8 @@ export default function SportPage() {
     }
     
     socket.on('scoreUpdate', onScoreUpdate);
+
+    fetchData();
     
     // Cleanup on component unmount
     return () => {
@@ -89,7 +94,8 @@ export default function SportPage() {
 
 
   if (!sportData) {
-    notFound();
+    // This will be caught by the useEffect, but it's good practice for clarity.
+    return null;
   }
   
   const liveMatches = matches.filter((m) => m.status === 'live');
@@ -111,7 +117,11 @@ export default function SportPage() {
     if (matchList.length === 0) {
       return (
         <div className="md:col-span-2 lg:col-span-4">
-          <p className="text-muted-foreground">{emptyMessage}</p>
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-muted-foreground text-center">{emptyMessage}</p>
+            </CardContent>
+          </Card>
         </div>
       );
     }
@@ -204,7 +214,9 @@ export default function SportPage() {
             </section>
           </div>
           <aside className="lg:col-span-1">
-            <PredictionTool sport={sportData.name} />
+            <div className="sticky top-24">
+              <PredictionTool sport={sportData.name} />
+            </div>
           </aside>
         </div>
       </main>

@@ -33,9 +33,6 @@ export default function Home() {
   React.useEffect(() => {
     async function fetchData() {
       try {
-        // Establish socket connection early
-        socket.connect();
-
         const [fetchedMatches, fetchedTeams] = await Promise.all([
           getMatches(),
           getTeams()
@@ -44,7 +41,9 @@ export default function Home() {
         const teamsMap = new Map<string, Team>(fetchedTeams.map(team => [team._id, team]));
         setTeams(teamsMap);
 
-        setMatches(fetchedMatches.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()));
+        const sortedMatches = fetchedMatches.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+        setMatches(sortedMatches);
+
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -55,7 +54,9 @@ export default function Home() {
         setIsLoading(false);
       }
     }
-    fetchData();
+
+    // Connect to socket and set up listeners
+    socket.connect();
     
     function onScoreUpdate(updatedMatch: MatchAPI) {
         setMatches(prevMatches => 
@@ -64,6 +65,8 @@ export default function Home() {
     }
     
     socket.on('scoreUpdate', onScoreUpdate);
+
+    fetchData();
     
     // Cleanup on component unmount
     return () => {
