@@ -73,6 +73,9 @@ export interface MatchAPI {
   status: 'scheduled' | 'live' | 'completed';
   date?: string;
   time?: string;
+  venue: string;
+  courtNumber: string;
+  refereeName: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -10,7 +10,16 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { getMatches } from '@/services/match-service';
 import type { MatchAPI } from '@/lib/types';
-import { UpdateScoreForm } from '@/components/scorekeeper/update-score-form';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { MatchDetailsCard } from '@/components/scorekeeper/match-details-card';
+import { SportIcon } from '@/components/sports/sports-icons';
 
 export default function ScorekeeperDashboardPage() {
   const router = useRouter();
@@ -75,13 +84,13 @@ export default function ScorekeeperDashboardPage() {
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
         <TabsContent value="live">
-          <MatchList matches={liveMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No live matches right now." />
+          <MatchList matches={liveMatches} isLoading={isLoading} emptyMessage="No live matches right now." isLiveTab />
         </TabsContent>
         <TabsContent value="scheduled">
-          <MatchList matches={scheduledMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No matches are scheduled." />
+          <MatchList matches={scheduledMatches} isLoading={isLoading} emptyMessage="No matches are scheduled." />
         </TabsContent>
         <TabsContent value="completed">
-          <MatchList matches={completedMatches} onUpdate={fetchMatches} isLoading={isLoading} emptyMessage="No matches have been completed yet." />
+          <MatchList matches={completedMatches} isLoading={isLoading} emptyMessage="No matches have been completed yet." />
         </TabsContent>
       </Tabs>
     </div>
@@ -90,12 +99,12 @@ export default function ScorekeeperDashboardPage() {
 
 interface MatchListProps {
   matches: MatchAPI[];
-  onUpdate: () => void;
   isLoading: boolean;
   emptyMessage: string;
+  isLiveTab?: boolean;
 }
 
-function MatchList({ matches, onUpdate, isLoading, emptyMessage }: MatchListProps) {
+function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false }: MatchListProps) {
     if (isLoading) {
         return <p className="text-center text-muted-foreground py-8">Loading matches...</p>;
     }
@@ -112,9 +121,41 @@ function MatchList({ matches, onUpdate, isLoading, emptyMessage }: MatchListProp
     }
     
     return (
-        <div className="space-y-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {matches.map((match) => (
-                <UpdateScoreForm key={match._id} match={match} onMatchUpdated={onUpdate} />
+                isLiveTab ? (
+                  <Link href={`/scorekeeper-dashboard/live/${match._id}`} key={match._id}>
+                      <MatchDetailsCard match={match} />
+                  </Link>
+                ) : (
+                  <Dialog key={match._id}>
+                      <DialogTrigger asChild>
+                          <div className="cursor-pointer">
+                            <MatchDetailsCard match={match} />
+                          </div>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                              <DialogTitle className="flex items-center gap-2">
+                                <SportIcon sportName={match.sport.name} className="w-6 h-6" />
+                                Match Details
+                              </DialogTitle>
+                              <DialogDescription>
+                                Reviewing the details for the {match.sport.name} match.
+                              </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <p><strong>Team One:</strong> {match.teamOne?.name || 'N/A'}</p>
+                            <p><strong>Team Two:</strong> {match.teamTwo?.name || 'N/A'}</p>
+                            <p><strong>Score:</strong> {match.teamOneScore} - {match.teamTwoScore}</p>
+                            <p><strong>Venue:</strong> {match.venue}</p>
+                            <p><strong>Court:</strong> {match.courtNumber}</p>
+                            <p><strong>Referee:</strong> {match.refereeName}</p>
+                            <p><strong>Status:</strong> <span className="capitalize">{match.status}</span></p>
+                          </div>
+                      </DialogContent>
+                  </Dialog>
+                )
             ))}
         </div>
     );
