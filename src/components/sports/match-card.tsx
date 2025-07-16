@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { MatchAPI, Team } from '@/lib/types';
-import { SportIcon } from './sports-icons';
 import { Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -26,8 +25,7 @@ export function MatchCard({ match, teamOne, teamTwo, hideSportIcon = false }: Ma
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {!hideSportIcon && <SportIcon sportName={sport} className="w-4 h-4" />}
-            <span className="truncate">{sport}</span>
+            <span className="truncate font-semibold">{sport}</span>
           </div>
           {status === 'live' && (
              <div className="flex items-center gap-2">
@@ -56,7 +54,7 @@ export function MatchCard({ match, teamOne, teamTwo, hideSportIcon = false }: Ma
             </Avatar>
             <div className="text-center">
               <p className="font-semibold text-sm text-foreground truncate">{team1Name}</p>
-              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsA}</p>}
+              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{pointsA}</p>}
             </div>
           </div>
           
@@ -75,7 +73,7 @@ export function MatchCard({ match, teamOne, teamTwo, hideSportIcon = false }: Ma
             </Avatar>
             <div className="text-center">
               <p className="font-semibold text-sm text-foreground truncate">{team2Name}</p>
-              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-xl text-primary tabular-nums tracking-tight">{pointsB}</p>}
+              {status !== 'scheduled' && status !== 'upcoming' && <p className="font-bold text-2xl text-primary tabular-nums tracking-tight">{pointsB}</p>}
             </div>
           </div>
         </div>
