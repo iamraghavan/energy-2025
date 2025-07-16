@@ -36,6 +36,15 @@ export const getTeams = async (): Promise<Team[]> => {
   return data.data;
 };
 
+export const getTeamById = async (id: string): Promise<Team> => {
+  const response = await fetch(`${API_BASE_URL}/teams/${id}`, {
+    headers: getHeaders(),
+    cache: 'no-store',
+  });
+  const data = await handleResponse(response);
+  return data.data;
+};
+
 export const createTeam = async (teamData: TeamPayload): Promise<Team> => {
   const response = await fetch(`${API_BASE_URL}/teams`, {
     method: 'POST',

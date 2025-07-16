@@ -2,10 +2,7 @@
 
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Save, ArrowLeft, ClipboardList } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, Minus, Plus, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 import {
@@ -16,35 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { updateMatch, getMatches } from '@/services/match-service';
-import type { MatchAPI } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
+import { getMatches, updateMatch } from '@/services/match-service';
+import { getTeamById } from '@/services/team-service';
+import type { MatchAPI, Team } from '@/lib/types';
 import { SportIcon } from '@/components/sports/sports-icons';
-
-const updateScoreSchema = z.object({
-  teamOneScore: z.coerce.number().min(0),
-  teamTwoScore: z.coerce.number().min(0),
-  status: z.enum(['scheduled', 'live', 'completed']),
-});
-
-type UpdateScoreFormValues = z.infer<typeof updateScoreSchema>;
+import { socket } from '@/services/socket';
 
 export default function LiveMatchPage() {
   const router = useRouter();
@@ -52,66 +27,105 @@ export default function LiveMatchPage() {
   const matchId = params.matchId as string;
   
   const [match, setMatch] = React.useState<MatchAPI | null>(null);
+  const [teamOne, setTeamOne] = React.useState<Team | null>(null);
+  const [teamTwo, setTeamTwo] = React.useState<Team | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  
   const { toast } = useToast();
 
-  const form = useForm<UpdateScoreFormValues>({
-    resolver: zodResolver(updateScoreSchema),
-  });
+  const fetchMatchDetails = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const allMatches = await getMatches();
+      const currentMatch = allMatches.find(m => m._id === matchId);
+      if (currentMatch) {
+          setMatch(currentMatch);
+          const [fetchedTeamOne, fetchedTeamTwo] = await Promise.all([
+            getTeamById(currentMatch.teamA),
+            getTeamById(currentMatch.teamB),
+          ]);
+          setTeamOne(fetchedTeamOne);
+          setTeamTwo(fetchedTeamTwo);
+      } else {
+          toast({ variant: 'destructive', title: 'Match not found' });
+          router.push('/scorekeeper-dashboard');
+      }
+    } catch (error) {
+      console.error(error);
+      toast({ variant: 'destructive', title: 'Failed to fetch match details' });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [matchId, router, toast]);
 
   React.useEffect(() => {
-    if (!matchId) return;
+    if (matchId) {
+      fetchMatchDetails();
+      socket.connect();
+    }
+    return () => {
+      socket.disconnect();
+    }
+  }, [matchId, fetchMatchDetails]);
 
-    const fetchMatchDetails = async () => {
-      setIsLoading(true);
-      try {
-        const allMatches = await getMatches();
-        const currentMatch = allMatches.find(m => m._id === matchId);
-        if (currentMatch) {
-            setMatch(currentMatch);
-            form.reset({
-                teamOneScore: currentMatch.teamOneScore,
-                teamTwoScore: currentMatch.teamTwoScore,
-                status: currentMatch.status,
-            });
-        } else {
-            toast({ variant: 'destructive', title: 'Match not found' });
-            router.push('/scorekeeper-dashboard');
-        }
-      } catch (error) {
-        toast({ variant: 'destructive', title: 'Failed to fetch match details' });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchMatchDetails();
-  }, [matchId, router, toast, form]);
-
-  const onFormSubmit = async (values: UpdateScoreFormValues) => {
+  const handleScoreChange = async (team: 'teamOne' | 'teamTwo', delta: number) => {
     if (!match) return;
-    setIsSubmitting(true);
+
+    const newScore = team === 'teamOne' 
+        ? match.teamOneScore + delta 
+        : match.teamTwoScore + delta;
+    
+    if (newScore < 0) return;
+
+    const updatedField = team === 'teamOne' ? 'teamOneScore' : 'teamTwoScore';
+
+    const newMatchState = { ...match, [updatedField]: newScore };
+    setMatch(newMatchState);
+
     try {
-      await updateMatch(match._id, values);
-      toast({ title: 'Match Updated', description: 'The scores and status have been saved.' });
-      router.push(`/scorekeeper-dashboard?tab=${values.status}`);
+        const payload = { [updatedField]: newScore };
+        const updatedMatch = await updateMatch(match._id, payload);
+        socket.emit('scoreUpdate', updatedMatch);
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Update Failed',
-        description: error.message || 'Could not save match details.',
-      });
-    } finally {
-      setIsSubmitting(false);
+        toast({
+            variant: 'destructive',
+            title: 'Update Failed',
+            description: 'Could not sync score with the server. Please check your connection.',
+        });
+        // Revert optimistic update on failure
+        setMatch(match);
     }
   };
-
-  if (isLoading) {
-      return <div className="flex h-screen items-center justify-center">Loading match details...</div>
+  
+  const handleEndMatch = async () => {
+      if (!match) return;
+      setIsSubmitting(true);
+      try {
+          const payload = { status: 'completed' as const };
+          const updatedMatch = await updateMatch(match._id, payload);
+          socket.emit('scoreUpdate', updatedMatch);
+          toast({ title: 'Match Completed!', description: 'The final scores have been saved.' });
+          router.push(`/scorekeeper-dashboard?tab=completed`);
+      } catch (error: any) {
+          toast({
+              variant: 'destructive',
+              title: 'Operation Failed',
+              description: error.message || 'Could not end the match.',
+          });
+      } finally {
+          setIsSubmitting(false);
+      }
   }
 
-  if (!match) {
-      return <div className="flex h-screen items-center justify-center">Match not found.</div>
+
+  if (isLoading || !match || !teamOne || !teamTwo) {
+      return (
+        <div className="flex h-[80vh] items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="ml-4 text-muted-foreground">Loading match details...</p>
+        </div>
+      );
   }
 
   return (
@@ -124,101 +138,66 @@ export default function LiveMatchPage() {
                 </Link>
             </Button>
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Update Live Match</h1>
-                <p className="text-muted-foreground">Modify scores and status for the ongoing match.</p>
+                <h1 className="text-3xl font-bold tracking-tight">Live Scorekeeping</h1>
+                <p className="text-muted-foreground flex items-center gap-2">
+                    <SportIcon sportName={match.sport} className="w-4 h-4" />
+                    {match.sport} Match
+                </p>
             </div>
         </div>
-        <Card className="max-w-2xl mx-auto w-full">
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onFormSubmit)}>
-                <CardHeader>
-                    <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="flex items-center gap-2">
-                            <SportIcon sportName={match.sport.name} className="w-6 h-6" />
-                            {match.sport.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {match.teamOne?.school?.name && match.teamTwo?.school?.name 
-                            ? `${match.teamOne.school.name} vs ${match.teamTwo.school.name}`
-                            : 'Team details unavailable'}
-                        </CardDescription>
+        <Card className="w-full">
+            <CardHeader className="text-center">
+                 <CardTitle className="text-2xl md:text-4xl font-extrabold tracking-tight">
+                    {teamOne.name} vs {teamTwo.name}
+                </CardTitle>
+                <CardDescription>
+                    Venue: {match.venue} ({match.courtNumber}) | Referee: {match.refereeName}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 items-center p-6">
+                {/* Team One Score */}
+                <div className="flex flex-col items-center gap-4 p-6 bg-secondary rounded-lg">
+                    <h3 className="text-2xl font-bold text-center">{teamOne.name}</h3>
+                    <p className="text-7xl font-bold text-primary tabular-nums">{match.teamOneScore}</p>
+                    <div className="flex gap-4">
+                         <Button size="icon" variant="outline" onClick={() => handleScoreChange('teamOne', -1)}>
+                            <Minus className="h-6 w-6" />
+                        </Button>
+                        <Button size="icon" onClick={() => handleScoreChange('teamOne', 1)}>
+                            <Plus className="h-6 w-6" />
+                        </Button>
                     </div>
-                    <Badge variant={match.status === 'live' ? 'destructive' : 'secondary'}>
-                        {match.status.charAt(0).toUpperCase() + match.status.slice(1)}
-                    </Badge>
+                </div>
+
+                {/* Team Two Score */}
+                <div className="flex flex-col items-center gap-4 p-6 bg-secondary rounded-lg">
+                    <h3 className="text-2xl font-bold text-center">{teamTwo.name}</h3>
+                    <p className="text-7xl font-bold text-primary tabular-nums">{match.teamTwoScore}</p>
+                    <div className="flex gap-4">
+                        <Button size="icon" variant="outline" onClick={() => handleScoreChange('teamTwo', -1)}>
+                            <Minus className="h-6 w-6" />
+                        </Button>
+                        <Button size="icon" onClick={() => handleScoreChange('teamTwo', 1)}>
+                            <Plus className="h-6 w-6" />
+                        </Button>
                     </div>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                    <p className="font-semibold">{match.teamOne?.name || 'Team 1'}</p>
-                    <FormField
-                        control={form.control}
-                        name="teamOneScore"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="sr-only">Score for {match.teamOne?.name}</FormLabel>
-                            <FormControl>
-                            <Input type="number" {...field} />
-                            </FormControl>
-                        </FormItem>
-                        )}
-                    />
-                    </div>
-                    <div className="space-y-2">
-                    <p className="font-semibold">{match.teamTwo?.name || 'Team 2'}</p>
-                    <FormField
-                        control={form.control}
-                        name="teamTwoScore"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="sr-only">Score for {match.teamTwo?.name}</FormLabel>
-                            <FormControl>
-                            <Input type="number" {...field} />
-                            </FormControl>
-                        </FormItem>
-                        )}
-                    />
-                    </div>
-                </CardContent>
-                <CardFooter className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                            <FormItem className="w-full sm:w-auto">
-                                <FormLabel className="sr-only">Match Status</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Update status" />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="scheduled">Scheduled</SelectItem>
-                                        <SelectItem value="live">Live</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </FormItem>
-                        )}
-                    />
-                    <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                </div>
+            </CardContent>
+            <CardFooter className="flex justify-center p-6">
+                <Button size="lg" variant="destructive" onClick={handleEndMatch} disabled={isSubmitting}>
                     {isSubmitting ? (
                         <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Ending Match...
                         </>
                     ) : (
                         <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Update Match
+                            <Trophy className="mr-2 h-4 w-4" />
+                            End Match & Finalize Score
                         </>
                     )}
-                    </Button>
-                </CardFooter>
-                </form>
-            </Form>
+                </Button>
+            </CardFooter>
         </Card>
     </div>
   );

@@ -5,7 +5,9 @@ import * as React from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import Image from 'next/image';
 
-import { sports, matches as mockMatches } from '@/lib/data';
+import { sports } from '@/lib/data';
+import type { MatchAPI } from '@/lib/types';
+import { getMatches } from '@/services/match-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { SportIcon } from '@/components/sports/sports-icons';
@@ -18,10 +20,47 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { socket } from '@/services/socket';
 
 export default function Home() {
-  const liveMatches = mockMatches.filter((m) => m.status === 'live');
-  const upcomingMatches = mockMatches.filter((m) => m.status === 'upcoming');
+  const { toast } = useToast();
+  const [matches, setMatches] = React.useState<MatchAPI[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchMatches() {
+      try {
+        const fetchedMatches = await getMatches();
+        setMatches(fetchedMatches.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()));
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Failed to fetch matches',
+          description: 'Could not load match data. Please try again later.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMatches();
+    
+    socket.connect();
+    socket.on('scoreUpdate', (updatedMatch: MatchAPI) => {
+        setMatches(prevMatches => 
+            prevMatches.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m)
+        );
+    });
+    
+    return () => {
+        socket.off('scoreUpdate');
+        socket.disconnect();
+    }
+
+  }, [toast]);
+
+  const liveMatches = matches.filter((m) => m.status === 'live');
+  const upcomingMatches = matches.filter((m) => m.status === 'upcoming');
 
   const plugin = React.useRef(
     Autoplay({ delay: 2000, stopOnInteraction: true })
@@ -111,7 +150,7 @@ export default function Home() {
                       >
                         <CarouselContent>
                           {liveMatches.map((match) => (
-                            <CarouselItem key={match.id} className="md:basis-1/2">
+                            <CarouselItem key={match._id} className="md:basis-1/2">
                                <div className="p-1">
                                 <MatchCard match={match} />
                                </div>
@@ -123,7 +162,7 @@ export default function Home() {
                     <Card>
                       <CardContent className="p-6">
                         <p className="text-muted-foreground text-center">
-                          No live matches at the moment. Check back soon!
+                          {isLoading ? 'Loading matches...' : 'No live matches at the moment. Check back soon!'}
                         </p>
                       </CardContent>
                     </Card>
@@ -141,13 +180,13 @@ export default function Home() {
                 <div className="space-y-4">
                   {upcomingMatches.length > 0 ? (
                     upcomingMatches.map((match) => (
-                      <MatchCard key={match.id} match={match} />
+                      <MatchCard key={match._id} match={match} />
                     ))
                   ) : (
                     <Card>
                       <CardContent className="p-6">
                         <p className="text-muted-foreground text-center">
-                          No upcoming matches scheduled right now.
+                          {isLoading ? 'Loading matches...' : 'No upcoming matches scheduled right now.'}
                         </p>
                       </CardContent>
                     </Card>
