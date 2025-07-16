@@ -43,6 +43,7 @@ export default function ScorekeeperDashboardPage() {
 
       const populatedMatches = fetchedMatches.map(match => ({
         ...match,
+        // The API returns teamOne/teamTwo as string IDs, so we populate them here.
         teamOne: teamsMap.get(match.teamOne as any)!,
         teamTwo: teamsMap.get(match.teamTwo as any)!,
       }));
@@ -137,7 +138,7 @@ function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false }: Matc
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {matches.map((match) => (
                 isLiveTab ? (
-                  <Link href={`/scorekeeper-dashboard/live/${match._id}`} key={match._id}>
+                  <Link href={`/scorekeeper-dashboard/live/${match._id}`} key={match._id} className="block">
                       <MatchDetailsCard match={match} />
                   </Link>
                 ) : (
@@ -150,17 +151,18 @@ function MatchList({ matches, isLoading, emptyMessage, isLiveTab = false }: Matc
                       <DialogContent className="sm:max-w-md">
                           <DialogHeader>
                               <DialogTitle className="flex items-center gap-2">
-                                <SportIcon sportName={match.sport.name} className="w-6 h-6" />
+                                <SportIcon sportName={match.sport?.name} className="w-6 h-6" />
                                 Match Details
                               </DialogTitle>
                               <DialogDescription>
-                                Reviewing the details for the {match.sport.name} match.
+                                Reviewing the details for the {match.sport?.name} match.
                               </DialogDescription>
                           </DialogHeader>
-                          <div className="space-y-4">
+                          <div className="space-y-4 text-sm">
                             <p><strong>Team One:</strong> {match.teamOne?.name || 'N/A'}</p>
                             <p><strong>Team Two:</strong> {match.teamTwo?.name || 'N/A'}</p>
                             <p><strong>Score:</strong> {match.teamOneScore} - {match.teamTwoScore}</p>
+                             <p><strong>Date:</strong> {match.date ? format(new Date(match.date), 'PPP') : 'N/A'}</p>
                             <p><strong>Venue:</strong> {match.venue}</p>
                             <p><strong>Court:</strong> {match.courtNumber}</p>
                             <p><strong>Referee:</strong> {match.refereeName}</p>
