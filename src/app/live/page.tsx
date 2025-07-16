@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -9,20 +8,98 @@ import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
 import { Loader2, RadioTower, Frown, CalendarClock, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+
+interface PopulatedMatch extends MatchAPI {
+  teamOne: Team | undefined;
+  teamTwo: Team | undefined;
+}
+
+// Sub-component for Live Match display, defined directly in this file
+function LiveMatchCard({ match }: { match: PopulatedMatch }) {
+  const teamOneName = match.teamOne?.name || 'Team A';
+  const teamTwoName = match.teamTwo?.name || 'Team B';
+
+  return (
+    <div className="bg-black/40 p-3 rounded-md border-l-4 border-destructive">
+       <div className="flex items-center justify-between mb-2 text-sm text-gray-400">
+        <span>{match.sport}</span>
+        <span>{match.venue} - {match.courtNumber}</span>
+       </div>
+      <div className="flex justify-between items-center text-lg">
+        <div className="flex items-center gap-3 font-semibold flex-1 truncate text-white">
+            <Avatar className="w-8 h-8 border-2 border-gray-600">
+                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamOneName} data-ai-hint="logo" />
+                <AvatarFallback>{teamOneName.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="truncate">{teamOneName}</span>
+        </div>
+        <AnimatePresence mode="wait">
+            <motion.div
+            key={match.pointsA}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="text-3xl font-bold text-white tabular-nums"
+            >
+            {match.pointsA}
+            </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="flex justify-between items-center mt-1 text-lg">
+        <div className="flex items-center gap-3 font-semibold flex-1 truncate text-white">
+             <Avatar className="w-8 h-8 border-2 border-gray-600">
+                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamTwoName} data-ai-hint="logo" />
+                <AvatarFallback>{teamTwoName.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="truncate">{teamTwoName}</span>
+        </div>
+         <AnimatePresence mode="wait">
+            <motion.div
+            key={match.pointsB}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="text-3xl font-bold text-white tabular-nums"
+            >
+            {match.pointsB}
+            </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+// Sub-component for Upcoming Match display, defined directly in this file
+function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
+  const teamOneName = match.teamOne?.name || 'Team A';
+  const teamTwoName = match.teamTwo?.name || 'Team B';
+
+  return (
+    <div className="bg-gray-800/50 p-3 rounded-md border-l-4 border-cyan-500 text-white">
+        <div className="flex items-center justify-between text-base">
+            <span className="font-medium truncate">{teamOneName}</span>
+            <span className="text-gray-400 mx-2">vs</span>
+            <span className="font-medium truncate text-right">{teamTwoName}</span>
+        </div>
+      <div className="text-sm text-cyan-300 mt-2 flex items-center justify-center gap-2">
+        <Clock className="w-4 h-4" />
+        <span>{format(new Date(match.scheduledAt), 'p')} @ {match.venue}</span>
+      </div>
+    </div>
+  );
+}
+
 
 export default function LiveMatchesPage() {
   const { toast } = useToast();
-  const [matches, setMatches] = React.useState<MatchAPI[]>([]);
+  const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
   const [isLoading, setIsLoading] = React.useState(true);
-  const vibrantColors = [
-    'bg-red-500/10', 'bg-blue-500/10', 'bg-green-500/10', 'bg-yellow-500/10', 'bg-purple-500/10', 'bg-pink-500/10'
-  ];
 
   React.useEffect(() => {
     async function fetchData() {
@@ -33,8 +110,14 @@ export default function LiveMatchesPage() {
         ]);
 
         const teamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
+        const populatedMatches = fetchedMatches.map(match => ({
+          ...match,
+          teamOne: teamsMap.get(match.teamA),
+          teamTwo: teamsMap.get(match.teamB),
+        }));
+        
+        setMatches(populatedMatches);
         setTeams(teamsMap);
-        setMatches(fetchedMatches);
 
       } catch (error) {
         toast({
@@ -52,14 +135,27 @@ export default function LiveMatchesPage() {
     socket.connect();
 
     function onScoreUpdate(updatedMatch: MatchAPI) {
-      setMatches(prevMatches => {
-        const matchIndex = prevMatches.findIndex(m => m._id === updatedMatch._id);
-        if (matchIndex > -1) {
-          const newMatches = [...prevMatches];
-          newMatches[matchIndex] = { ...newMatches[matchIndex], ...updatedMatch };
+      setMatches((prevMatches) => {
+          const matchIndex = prevMatches.findIndex((m) => m._id === updatedMatch._id);
+          let newMatches = [...prevMatches];
+          
+          if (matchIndex > -1) {
+              const currentMatch = newMatches[matchIndex];
+              // Update the match with new data, but keep populated team info
+              newMatches[matchIndex] = {
+                  ...currentMatch, // Keeps teamOne, teamTwo
+                  ...updatedMatch, // Overwrites with new score, status etc.
+              };
+          } else {
+              // This is a new match not previously fetched. We'll need to find its teams.
+              const teamsMap = new Map(teams.entries());
+              newMatches.push({
+                  ...updatedMatch,
+                  teamOne: teamsMap.get(updatedMatch.teamA),
+                  teamTwo: teamsMap.get(updatedMatch.teamB),
+              });
+          }
           return newMatches;
-        }
-        return [...prevMatches, updatedMatch];
       });
     }
 
@@ -69,165 +165,103 @@ export default function LiveMatchesPage() {
       socket.off('scoreUpdate', onScoreUpdate);
       socket.disconnect();
     };
-  }, [toast]);
+  }, [toast, teams]);
   
   const liveMatches = matches
     .filter((m) => m.status === 'live')
-    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
   const upcomingMatches = matches
     .filter((m) => m.status === 'scheduled' || m.status === 'upcoming')
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
-    .slice(0, 2);
+    .slice(0, 4);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-            <RadioTower className="w-8 h-8 text-red-600 dark:text-red-400" />
-          </div>
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">Live Matches</h1>
-            <p className="text-gray-500 dark:text-gray-400">All ongoing matches, updated in real-time for the big screen.</p>
-          </div>
-        </div>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center text-center gap-4 p-8">
+          <div className="flex flex-col h-[80vh] items-center justify-center text-center gap-4 p-8">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
-            <p className="text-muted-foreground font-semibold">Loading live matches...</p>
-          </div>
-        ) : liveMatches.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {liveMatches.map((match, index) => {
-              const teamOne = teams.get(match.teamA);
-              const teamTwo = teams.get(match.teamB);
-              const team1Name = teamOne?.name || 'Team A';
-              const team2Name = teamTwo?.name || 'Team B';
-              const team1Color = vibrantColors[index % vibrantColors.length];
-              const team2Color = vibrantColors[(index + 1) % vibrantColors.length];
-              return (
-                <div key={match._id} className="w-full shadow-2xl bg-card dark:bg-gray-800/50 overflow-hidden rounded-2xl border border-primary/10">
-                    <div className="pb-2 bg-muted/30 dark:bg-gray-900/30 border-b p-4">
-                        <div className="flex justify-between items-center text-lg md:text-xl">
-                            <Badge variant="destructive" className="text-base px-4 py-1 font-bold tracking-wider">LIVE</Badge>
-                            <div className="text-right">
-                                <p className="font-semibold text-muted-foreground">{match.sport}</p>
-                                <p className="text-sm text-muted-foreground">{match.venue} - {match.courtNumber}</p>
-                            </div>
-                        </div>
-                    </div>
-                  <div className="p-0">
-                    <div className="grid grid-cols-2 items-stretch text-center">
-                      {/* Team 1 */}
-                      <div className={`flex flex-col items-center justify-between gap-4 p-6 ${team1Color} border-r`}>
-                        <Avatar className="w-24 h-24 md:w-28 md:h-28 border-4 border-white dark:border-gray-800 shadow-lg">
-                          <AvatarImage src={`https://placehold.co/100x100.png`} alt={team1Name} data-ai-hint="logo" />
-                          <AvatarFallback>{team1Name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-3xl font-bold text-foreground text-center min-h-[84px] flex items-center">{team1Name}</h3>
-                        <p className="font-black text-9xl text-primary dark:text-yellow-400 tabular-nums tracking-tighter">{match.pointsA}</p>
-                      </div>
-                      
-                      {/* Team 2 */}
-                      <div className={`flex flex-col items-center justify-between gap-4 p-6 ${team2Color}`}>
-                        <Avatar className="w-24 h-24 md:w-28 md:h-28 border-4 border-white dark:border-gray-800 shadow-lg">
-                            <AvatarImage src={`https://placehold.co/100x100.png`} alt={team2Name} data-ai-hint="logo" />
-                            <AvatarFallback>{team2Name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-3xl font-bold text-foreground text-center min-h-[84px] flex items-center">{team2Name}</h3>
-                        <p className="font-black text-9xl text-primary dark:text-green-400 tabular-nums tracking-tighter">{match.pointsB}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            <p className="text-muted-foreground font-semibold">Loading live data...</p>
           </div>
         ) : (
-          <Card className="mt-4 bg-card">
-            <CardContent className="p-8 flex flex-col items-center justify-center text-center gap-4">
-              <Frown className="w-16 h-16 text-muted-foreground" />
-              <h2 className="text-2xl font-semibold">No Live Matches</h2>
-              <p className="text-muted-foreground max-w-sm">
-                There are no matches being played right now. Check back soon!
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        <Separator className="my-12" />
-
-        <div className="flex items-center gap-4 mb-8">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                <CalendarClock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-                <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">Up Next</h2>
-                <p className="text-gray-500 dark:text-gray-400">The next two matches in the schedule.</p>
-            </div>
-        </div>
-        
-         {isLoading ? (
-          <div className="flex flex-col items-center justify-center text-center gap-4 p-8">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
-          </div>
-        ) : upcomingMatches.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {upcomingMatches.map((match) => {
-               const teamOne = teams.get(match.teamA);
-               const teamTwo = teams.get(match.teamB);
-               const team1Name = teamOne?.name || 'Team A';
-               const team2Name = teamTwo?.name || 'Team B';
-               const time = format(new Date(match.scheduledAt), 'p');
-              return (
-                 <div key={match._id} className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card rounded-lg">
-                    <div className="p-3 border-b bg-muted/30">
-                        <div className="flex justify-between items-center">
-                            <p className="font-semibold text-muted-foreground">{match.sport}</p>
-                            <Badge variant="outline" className="flex items-center gap-1.5 py-1 px-2 text-sm">
-                                <Clock className="w-4 h-4" />
-                                <span>{time}</span>
-                            </Badge>
-                        </div>
-                    </div>
-                    <div className="p-4">
-                         <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-4 flex-1">
-                                <Avatar className="w-12 h-12 border-2">
-                                    <AvatarImage src={`https://placehold.co/100x100.png`} alt={team1Name} data-ai-hint="logo" />
-                                    <AvatarFallback>{team1Name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                                </Avatar>
-                                <span className="font-bold text-lg text-foreground">{team1Name}</span>
-                            </div>
-                            
-                            <span className="text-muted-foreground font-bold text-2xl mx-4">vs</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
             
-                            <div className="flex items-center gap-4 flex-1 justify-end">
-                                 <span className="font-bold text-lg text-foreground text-right">{team2Name}</span>
-                                 <Avatar className="w-12 h-12 border-2">
-                                    <AvatarImage src={`https://placehold.co/100x100.png`} alt={team2Name} data-ai-hint="logo" />
-                                    <AvatarFallback>{team2Name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                                </Avatar>
-                            </div>
-                        </div>
+            {/* Live Matches Column */}
+            <div className="lg:col-span-2 flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-destructive/20 rounded-full">
+                        <RadioTower className="w-8 h-8 text-destructive" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-destructive">LIVE</h1>
+                        <p className="text-gray-400">All ongoing matches, updated in real-time.</p>
                     </div>
                 </div>
-              )
-            })}
+                <div className="flex-1 bg-black/20 rounded-lg p-4 space-y-3 overflow-y-auto">
+                     <AnimatePresence>
+                        {liveMatches.length > 0 ? (
+                        liveMatches.map((match) => (
+                            <motion.div
+                            key={match._id}
+                            layout
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, x: -50 }}
+                            transition={{ duration: 0.5 }}
+                            >
+                            <LiveMatchCard match={match} />
+                            </motion.div>
+                        ))
+                        ) : (
+                           <div className="h-full flex flex-col items-center justify-center text-center text-gray-500">
+                                <Frown className="w-16 h-16" />
+                                <h2 className="text-2xl font-semibold mt-4">No Live Matches</h2>
+                                <p className="max-w-sm">There are no matches being played right now.</p>
+                            </div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
+
+            {/* Upcoming Matches Column */}
+             <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                     <div className="p-3 bg-cyan-500/20 rounded-full">
+                        <CalendarClock className="w-8 h-8 text-cyan-400" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-cyan-400">UP NEXT</h1>
+                        <p className="text-gray-400">The next few matches in the schedule.</p>
+                    </div>
+                </div>
+                 <div className="flex-1 bg-black/20 rounded-lg p-4 space-y-3 overflow-y-auto">
+                    <AnimatePresence>
+                        {upcomingMatches.length > 0 ? (
+                        upcomingMatches.map((match) => (
+                            <motion.div
+                                key={match._id}
+                                layout
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
+                            >
+                                <UpcomingMatchCard match={match} />
+                            </motion.div>
+                        ))
+                        ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-center text-gray-500">
+                            <Frown className="w-16 h-16" />
+                            <h2 className="text-xl font-semibold mt-4">No Upcoming Matches</h2>
+                        </div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
+
           </div>
-        ) : (
-          <Card className="mt-4 bg-card">
-            <CardContent className="p-8 flex flex-col items-center justify-center text-center gap-4">
-              <Frown className="w-16 h-16 text-muted-foreground" />
-              <h2 className="text-2xl font-semibold">No Upcoming Matches</h2>
-              <p className="text-muted-foreground max-w-sm">
-                All scheduled matches are complete or live.
-              </p>
-            </CardContent>
-          </Card>
         )}
       </main>
     </div>
