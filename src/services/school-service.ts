@@ -10,15 +10,31 @@ const getHeaders = () => {
   };
 };
 
+// Helper to handle API responses
+async function handleResponse(response: Response) {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.indexOf('application/json') !== -1) {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+      return data;
+    } else {
+      const text = await response.text();
+       if (!response.ok) {
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+      return { data: text };
+    }
+}
+
+
 export const getSchools = async (): Promise<School[]> => {
   const response = await fetch(`${API_BASE_URL}/schools`, {
     headers: getHeaders(),
-    cache: 'no-store', // Ensure fresh data
+    cache: 'no-store', // Schools list might change, keep it fresh
   });
-  if (!response.ok) {
-    throw new Error('Failed to fetch schools');
-  }
-  const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -28,11 +44,7 @@ export const createSchool = async (schoolData: { name: string; address: string }
     headers: getHeaders(),
     body: JSON.stringify(schoolData),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to create school');
-  }
-  const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -42,11 +54,7 @@ export const updateSchool = async (id: string, schoolData: Partial<{ name: strin
     headers: getHeaders(),
     body: JSON.stringify(schoolData),
   });
-  if (!response.ok) {
-     const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to update school');
-  }
-   const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -55,9 +63,5 @@ export const deleteSchool = async (id: string): Promise<{ message: string }> => 
     method: 'DELETE',
     headers: getHeaders(),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to delete school');
-  }
-  return await response.json();
+  return await handleResponse(response);
 };

@@ -1,9 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -19,12 +18,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { User, LogOut, Menu, Instagram, Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
-
-interface UserData {
-  username: string;
-  role: string;
-}
+import { User, LogOut, Menu, Instagram, Facebook, Linkedin, Twitter, Youtube, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
 
 const navLinks = [
   { href: '/#live-matches', label: 'Live Matches' },
@@ -41,27 +36,17 @@ const socialLinks = [
 ]
 
 export function Header() {
-  const [user, setUser] = useState<UserData | null>(null);
+  const { user, logout } = useAuth();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    router.push('/login');
-  };
-
+  
   const getDashboardLink = () => {
-    if (user?.role === 'superadmin') return '/super-admin-dashboard';
-    if (user?.role === 'lv2admin') return '/lv2-admin-dashboard';
-    return '/';
+    if (!user) return '/login';
+    switch (user.role) {
+      case 'superadmin': return '/super-admin-dashboard';
+      case 'lv2admin': return '/lv2-admin-dashboard';
+      case 'scorekeeper': return '/scorekeeper-dashboard';
+      default: return '/';
+    }
   }
 
   return (
@@ -117,9 +102,12 @@ export function Header() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href={getDashboardLink()}>Dashboard</Link>
+                  <Link href={getDashboardLink()}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>

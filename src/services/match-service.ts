@@ -10,15 +10,29 @@ const getHeaders = () => {
   };
 };
 
+async function handleResponse(response: Response) {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.indexOf('application/json') !== -1) {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+      return data;
+    } else {
+      const text = await response.text();
+       if (!response.ok) {
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+      return { data: text };
+    }
+}
+
 export const getMatches = async (): Promise<MatchAPI[]> => {
   const response = await fetch(`${API_BASE_URL}/matches`, {
     headers: getHeaders(),
     cache: 'no-store',
   });
-  if (!response.ok) {
-    throw new Error('Failed to fetch matches');
-  }
-  const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -28,11 +42,7 @@ export const createMatch = async (payload: CreateMatchPayload): Promise<MatchAPI
     headers: getHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to create match');
-  }
-  const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -42,11 +52,7 @@ export const updateMatch = async (id: string, payload: UpdateMatchPayload): Prom
     headers: getHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to update match');
-  }
-  const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -55,9 +61,5 @@ export const deleteMatch = async (id: string): Promise<{ message: string }> => {
     method: 'DELETE',
     headers: getHeaders(),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error('Failed to delete match');
-  }
-  return await response.json();
+  return await handleResponse(response);
 };

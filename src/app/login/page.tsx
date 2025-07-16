@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Header } from '@/components/layout/header';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { useAuth } from '@/context/auth-context';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required.'),
@@ -31,16 +32,26 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, login, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // If a user is already logged in, redirect them away from the login page.
   useEffect(() => {
-    // Redirect if user is already logged in
-    const user = localStorage.getItem('user');
     if (user) {
-      router.push('/');
+      // Redirect based on role if needed, or to a default page
+      if (user.role === 'superadmin') {
+        router.replace('/super-admin-dashboard');
+      } else if (user.role === 'lv2admin') {
+        router.replace('/lv2-admin-dashboard');
+      } else if (user.role === 'scorekeeper') {
+        router.replace('/scorekeeper-dashboard');
+      } else {
+        router.replace('/');
+      }
     }
-  }, [router]);
+  }, [user, router]);
+
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -51,56 +62,26 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
-      const response = await fetch('https://two025-energy-event-backend.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'c815d7ba0b568849563496a6ae9b899c296b209f3d66283d27435d4bba9d794f',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        localStorage.setItem('user', JSON.stringify(result.data));
-        
-        toast({
-          title: 'Login Successful',
-          description: `Welcome, ${result.data.username}!`,
-        });
-
-        // Role-based redirection
-        if (result.data.role === 'superadmin') {
-          router.push('/super-admin-dashboard');
-        } else if (result.data.role === 'lv2admin') {
-          router.push('/lv2-admin-dashboard');
-        } else if (result.data.role === 'scorekeeper') {
-          router.push('/scorekeeper-dashboard');
-        } else {
-          // Fallback redirect for other roles or no role
-          router.push('/');
-        }
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: result.message || 'Invalid username or password.',
-        });
-      }
-    } catch (error) {
+      await login(data.username, data.password);
+      // The redirect is handled by the AuthContext and the effect above
+    } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'An Error Occurred',
-        description: 'Could not connect to the server. Please try again later.',
+        title: 'Login Failed',
+        description: error.message || 'An unexpected error occurred.',
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+  
+  if (isAuthLoading || user) {
+     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
 
+  const isLoading = isSubmitting || isAuthLoading;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -126,6 +107,7 @@ export default function LoginPage() {
                         <Input
                           id="username"
                           placeholder="your_username"
+                          disabled={isLoading}
                           {...field}
                         />
                       </FormControl>
@@ -148,6 +130,7 @@ export default function LoginPage() {
                         <Input
                           id="password"
                           type="password"
+                          disabled={isLoading}
                           {...field}
                         />
                       </FormControl>

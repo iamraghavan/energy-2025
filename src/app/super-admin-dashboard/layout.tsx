@@ -3,8 +3,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { School, Users, Home } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { School, Users, Home, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 import {
@@ -20,20 +20,16 @@ import {
   SidebarInset,
   SidebarRail,
 } from '@/components/ui/sidebar';
+import { useAuth } from '@/context/auth-context';
 
-export default function SuperAdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
   const isActive = (path: string) => pathname === path;
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
-        <Sidebar collapsible="offcanvas">
+        <Sidebar collapsible="icon">
            <SidebarContent className="flex flex-col">
             <SidebarHeader>
               <Link href="/" className="flex items-center justify-center p-2">
@@ -114,4 +110,32 @@ export default function SuperAdminLayout({
       </div>
     </SidebarProvider>
   );
+}
+
+export default function ProtectedSuperAdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const { user, isLoading, isAuthorized } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || !isAuthorized(['superadmin'])) {
+    router.replace('/login');
+     return (
+       <div className="flex h-screen items-center justify-center">
+        <p>Redirecting...</p>
+      </div>
+    );
+  }
+
+  return <SuperAdminDashboardLayout>{children}</SuperAdminDashboardLayout>;
 }

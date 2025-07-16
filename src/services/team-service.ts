@@ -10,16 +10,29 @@ const getHeaders = () => {
   };
 };
 
+async function handleResponse(response: Response) {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.indexOf('application/json') !== -1) {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+      return data;
+    } else {
+      const text = await response.text();
+       if (!response.ok) {
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+      return { data: text };
+    }
+}
+
 export const getTeams = async (): Promise<Team[]> => {
   const response = await fetch(`${API_BASE_URL}/teams`, {
     headers: getHeaders(),
     cache: 'no-store',
   });
-  if (!response.ok) {
-    throw new Error('Failed to fetch teams');
-  }
-  const data = await response.json();
-  // The API returns teams under a `data` property which is an array.
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -29,11 +42,7 @@ export const createTeam = async (teamData: TeamPayload): Promise<Team> => {
     headers: getHeaders(),
     body: JSON.stringify(teamData),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to create team');
-  }
-  const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -43,11 +52,7 @@ export const updateTeam = async (id: string, teamData: Partial<TeamPayload>): Pr
     headers: getHeaders(),
     body: JSON.stringify(teamData),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to update team');
-  }
-  const data = await response.json();
+  const data = await handleResponse(response);
   return data.data;
 };
 
@@ -56,9 +61,5 @@ export const deleteTeam = async (id: string): Promise<{ message: string }> => {
     method: 'DELETE',
     headers: getHeaders(),
   });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to delete team');
-  }
-  return await response.json();
+  return await handleResponse(response);
 };
