@@ -41,6 +41,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/auth-context';
 
 const matchSchema = z
   .object({
@@ -69,6 +70,7 @@ const venues = [
 
 export default function CreateMatchPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [allTeams, setAllTeams] = React.useState<Team[]>([]);
   const [sports, setSports] = React.useState<SportAPI[]>([]);
   const [filteredTeams, setFilteredTeams] = React.useState<Team[]>([]);
@@ -117,6 +119,14 @@ export default function CreateMatchPage() {
   }, [selectedSportId, allTeams, form]);
 
   const onFormSubmit = async (values: MatchFormValues) => {
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Authentication Error',
+            description: 'You must be logged in to create a match.',
+        });
+        return;
+    }
     setIsSubmitting(true);
     
     const sportName = sports.find(s => s._id === values.sportId)?.name;
@@ -139,6 +149,7 @@ export default function CreateMatchPage() {
       venue: values.venue,
       courtNumber: values.courtNumber,
       refereeName: values.refereeName,
+      scorekeeperId: user._id, // Add the logged-in user's ID
     };
 
     try {

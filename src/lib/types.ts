@@ -64,7 +64,7 @@ export interface TeamPayload {
 // Type matching the API response for a single match
 export interface MatchAPI {
   _id: string;
-  matchId: string;
+  matchId?: string; // Is optional in some contexts
   sport: string;
   teamA: string; // Team ID
   teamB: string; // Team ID
@@ -75,6 +75,12 @@ export interface MatchAPI {
   venue: string;
   courtNumber: string;
   refereeName: string;
+  isComplete: boolean;
+  scorekeeperId: string;
+  result?: string;
+  winnerTeam?: string;
+  winnerPlayer?: string;
+  remarks?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -94,6 +100,7 @@ export interface CreateMatchPayload {
   venue: string;
   courtNumber: string;
   refereeName: string;
+  scorekeeperId: string;
 }
 
 export interface UpdateMatchPayload {
