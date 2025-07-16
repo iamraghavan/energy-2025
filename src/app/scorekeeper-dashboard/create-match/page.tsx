@@ -119,15 +119,16 @@ export default function CreateMatchPage() {
   }, [selectedSportId, allTeams, form]);
 
   const onFormSubmit = async (values: MatchFormValues) => {
+    setIsSubmitting(true);
     if (!user) {
         toast({
             variant: 'destructive',
             title: 'Authentication Error',
             description: 'You must be logged in to create a match.',
         });
+        setIsSubmitting(false);
         return;
     }
-    setIsSubmitting(true);
     
     const sportName = sports.find(s => s._id === values.sportId)?.name;
 
@@ -315,7 +316,7 @@ export default function CreateMatchPage() {
                     <FormItem>
                       <FormLabel>Team Two</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValuechange={field.onChange}
                         value={field.value}
                         disabled={!selectedSportId}
                       >
