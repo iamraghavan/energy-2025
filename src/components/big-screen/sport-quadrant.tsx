@@ -9,7 +9,6 @@ import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
 import type { MatchAPI, Team } from '@/lib/types';
 import { socket } from '@/services/socket';
-import { SportIcon } from '../sports/sports-icons';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface SportQuadrantProps {
