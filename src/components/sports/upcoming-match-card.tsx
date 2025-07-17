@@ -56,7 +56,7 @@ export function UpcomingMatchCard({ match, teamOne, teamTwo }: UpcomingMatchCard
         </div>
         <Separator />
       </CardContent>
-      <CardFooter className="flex-col sm:flex-row text-xs text-muted-foreground gap-x-4 gap-y-2 justify-between items-center p-2">
+      <CardFooter className="flex-col sm:flex-row text-xs text-muted-foreground gap-x-4 gap-y-2 justify-between items-center px-4 py-2">
           <div className="flex flex-col sm:flex-row gap-x-4 gap-y-1 w-full">
             <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3" />
