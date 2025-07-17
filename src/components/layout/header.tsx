@@ -22,7 +22,7 @@ import { User, LogOut, Menu, Instagram, Facebook, Linkedin, Twitter, Youtube, La
 import { useAuth } from '@/context/auth-context';
 
 const navLinks = [
-  { href: '/#live-matches', label: 'Live Matches' },
+  { href: '/live', label: 'Live Matches' },
   { href: '/#upcoming-matches', label: 'Upcoming Matches' },
   { href: 'https://www.youtube.com', label: 'YouTube Live', target: '_blank' },
 ];
