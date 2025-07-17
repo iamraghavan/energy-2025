@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -103,6 +104,9 @@ export function TeamsTable() {
   const [isFormModalOpen, setIsFormModalOpen] = React.useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = React.useState(false);
   const [selectedTeam, setSelectedTeam] = React.useState<Team | null>(null);
+
+  const [schoolPopoverOpen, setSchoolPopoverOpen] = React.useState(false);
+  const [sportPopoverOpen, setSportPopoverOpen] = React.useState(false);
 
   const { toast } = useToast();
 
@@ -330,7 +334,7 @@ export function TeamsTable() {
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
                                 <FormLabel>School</FormLabel>
-                                <Popover>
+                                <Popover open={schoolPopoverOpen} onOpenChange={setSchoolPopoverOpen}>
                                     <PopoverTrigger asChild>
                                     <FormControl>
                                         <Button
@@ -362,6 +366,7 @@ export function TeamsTable() {
                                                     key={option.value}
                                                     onSelect={() => {
                                                         form.setValue("schoolId", option.value)
+                                                        setSchoolPopoverOpen(false)
                                                     }}
                                                 >
                                                     <Check
@@ -390,7 +395,7 @@ export function TeamsTable() {
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
                                 <FormLabel>Sport</FormLabel>
-                                <Popover>
+                                <Popover open={sportPopoverOpen} onOpenChange={setSportPopoverOpen}>
                                     <PopoverTrigger asChild>
                                     <FormControl>
                                         <Button
@@ -422,6 +427,7 @@ export function TeamsTable() {
                                                     key={option.value}
                                                     onSelect={() => {
                                                         form.setValue("sportId", option.value)
+                                                        setSportPopoverOpen(false)
                                                     }}
                                                 >
                                                     <Check
