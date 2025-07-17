@@ -46,7 +46,10 @@ async function handleResponse(response: Response) {
 
 export const getMatches = async (): Promise<MatchAPI[]> => {
   const response = await fetch(`${API_BASE_URL}/matches`, {
-    headers: getHeaders(),
+    headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': STATIC_API_KEY,
+    },
     cache: 'no-store',
   });
   const data = await handleResponse(response);

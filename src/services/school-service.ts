@@ -47,7 +47,10 @@ async function handleResponse(response: Response) {
 
 export const getSchools = async (): Promise<School[]> => {
   const response = await fetch(`${API_BASE_URL}/schools`, {
-    headers: getHeaders(),
+    headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': STATIC_API_KEY,
+    },
     cache: 'no-store', // Schools list might change, keep it fresh
   });
   const data = await handleResponse(response);

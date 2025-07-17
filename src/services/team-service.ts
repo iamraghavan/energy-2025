@@ -45,7 +45,10 @@ async function handleResponse(response: Response) {
 
 export const getTeams = async (): Promise<Team[]> => {
   const response = await fetch(`${API_BASE_URL}/teams`, {
-    headers: getHeaders(),
+    headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': STATIC_API_KEY,
+    },
     cache: 'no-store',
   });
   const data = await handleResponse(response);
@@ -54,7 +57,10 @@ export const getTeams = async (): Promise<Team[]> => {
 
 export const getTeamById = async (id: string): Promise<Team> => {
   const response = await fetch(`${API_BASE_URL}/teams/${id}`, {
-    headers: getHeaders(),
+    headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': STATIC_API_KEY,
+    },
     cache: 'no-store',
   });
   const data = await handleResponse(response);
