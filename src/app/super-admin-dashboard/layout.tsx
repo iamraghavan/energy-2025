@@ -34,8 +34,8 @@ function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) 
             <SidebarHeader>
               <Link href="/" className="flex items-center justify-center p-2">
                  <Image 
-                    src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-egspgoi-logo.png?alt=media&token=b401f7dd-c3ed-4a30-84b7-8222ba965250"
-                    alt="ScoreCast Logo"
+                    src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-logo.png?alt=media&token=49e75a63-950b-4ed2-a0f7-075ba54ace2e"
+                    alt="Energy 2025 Logo"
                     width={80}
                     height={80}
                  />
