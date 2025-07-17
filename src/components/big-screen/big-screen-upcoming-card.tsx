@@ -8,11 +8,11 @@ export function BigScreenUpcomingCard({ match }: { match: { teamOne?: Team, team
   const teamTwoName = match.teamTwo?.name || 'Team B';
 
   return (
-    <div className="bg-gray-800/50 p-3 rounded-md border-l-4 border-cyan-500 text-white">
-        <div className="flex items-center justify-between text-base">
-            <span className="font-medium truncate">{teamOneName}</span>
-            <span className="text-gray-400 mx-2">vs</span>
-            <span className="font-medium truncate text-right">{teamTwoName}</span>
+    <div className="bg-white p-3 rounded-md text-black text-center">
+        <div className="flex items-center justify-between text-lg font-semibold">
+            <span className="flex-1 truncate text-right">{teamOneName}</span>
+            <span className="text-muted-foreground mx-4 font-normal">vs</span>
+            <span className="flex-1 truncate text-left">{teamTwoName}</span>
         </div>
     </div>
   );

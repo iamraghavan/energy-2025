@@ -1,11 +1,14 @@
+
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+
 import { getMatches } from '@/services/match-service';
 import type { MatchAPI } from '@/lib/types';
 import { socket } from '@/services/socket';
-import { Header } from '@/components/layout/header';
-import { Loader2, Tv } from 'lucide-react';
 import { SportQuadrant } from '@/components/big-screen/sport-quadrant';
 
 export default function BigScreenPage() {
@@ -13,35 +16,35 @@ export default function BigScreenPage() {
   const [isLoading, setIsLoading] = React.useState(true);
 
   const updateLiveSports = React.useCallback((matches: MatchAPI[]) => {
-    const currentLiveSports = matches
-      .filter((m) => m.status === 'live')
-      .map((m) => m.sport);
-    const uniqueSports = [...new Set(currentLiveSports)];
-    setLiveSports(uniqueSports);
+    const currentLiveSports = new Set(
+      matches
+        .filter((m) => m.status === 'live')
+        .map((m) => m.sport.toLowerCase())
+    );
+    setLiveSports(Array.from(currentLiveSports));
   }, []);
 
   React.useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
       try {
-        const fetchedMatches = await getMatches();
-        updateLiveSports(fetchedMatches);
+        const matches = await getMatches();
+        updateLiveSports(matches);
       } catch (error) {
-        console.error('Failed to fetch initial match data', error);
+        console.error('Failed to fetch initial match data:', error);
       } finally {
         setIsLoading(false);
       }
     }
-
     fetchData();
 
     socket.connect();
     
-    // We can just refetch all matches on any update for simplicity
-    // as it correctly recalculates all live sports.
+    // On any change, refetch all matches and update the list of live sports.
     const handleMatchChange = async () => {
         try {
-            const fetchedMatches = await getMatches();
-            updateLiveSports(fetchedMatches);
+            const matches = await getMatches();
+            updateLiveSports(matches);
         } catch(error) {
             console.error('Failed to refetch matches on socket event', error);
         }
@@ -60,31 +63,68 @@ export default function BigScreenPage() {
       socket.disconnect();
     };
   }, [updateLiveSports]);
-
-  const gridCols = liveSports.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
-  const gridRows = liveSports.length > 2 ? 'grid-rows-2' : 'grid-rows-1';
+  
+  const getGridClasses = () => {
+    const count = liveSports.length;
+    if (count <= 1) return "grid-cols-1 grid-rows-1";
+    if (count === 2) return "grid-cols-2 grid-rows-1";
+    // For 3 or 4 sports, use a 2x2 grid. For 3, one quadrant will be empty.
+    return "grid-cols-2 grid-rows-2";
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
-      <Header />
-      <main className="flex-1 container mx-auto p-4 flex flex-col">
+    <div className="flex flex-col min-h-screen bg-gray-900 text-white overflow-hidden">
+       <header className="py-4 px-8 flex justify-center items-center gap-6 bg-black/30">
+             <Image
+              src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-egspgoi-logo.png?alt=media&token=b401f7dd-c3ed-4a30-84b7-8222ba965250"
+              alt="EGS Pillay Group of Institutions Logo"
+              width={160}
+              height={42}
+              className="h-12 w-auto"
+            />
+            <Image
+              src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-logo.png?alt=media&token=49e75a63-950b-4ed2-a0f7-075ba54ace2e"
+              alt="Energy 2025 Inter-School Sports Meet Logo"
+              width={160}
+              height={42}
+              className="h-14 w-auto"
+            />
+      </header>
+
+      <main className="flex-1 grid gap-4 p-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))' }}>
         {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
+          <div className="col-span-full row-span-full flex flex-col h-full items-center justify-center text-center gap-4 p-8">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
             <p className="text-muted-foreground font-semibold">Loading live data...</p>
           </div>
-        ) : liveSports.length > 0 ? (
-          <div className={`flex-1 grid ${gridCols} ${gridRows} gap-4`}>
-            {liveSports.map((sport) => (
-              <SportQuadrant key={sport} sportName={sport} />
-            ))}
-          </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-500">
-            <Tv className="w-24 h-24" />
-            <h1 className="text-4xl font-bold mt-6">Awaiting Live Matches</h1>
-            <p className="text-xl mt-2">The big screen will activate once a match goes live.</p>
-          </div>
+          <AnimatePresence>
+            {liveSports.length > 0 ? (
+              liveSports.map((sport) => (
+                <motion.div
+                  key={sport}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.5, type: 'spring' }}
+                  className="min-h-[45vh]"
+                >
+                  <SportQuadrant sportName={sport} />
+                </motion.div>
+              ))
+            ) : (
+              <motion.div 
+                className="col-span-full row-span-full flex flex-col h-full items-center justify-center text-center gap-4 p-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <h1 className="text-5xl font-bold tracking-tight">No Live Matches Currently</h1>
+                <p className="text-muted-foreground text-xl">Waiting for the next match to start...</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
       </main>
     </div>

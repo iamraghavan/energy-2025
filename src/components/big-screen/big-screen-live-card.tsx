@@ -3,27 +3,29 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import type { MatchAPI, Team } from '@/lib/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 
-interface PopulatedMatch extends MatchAPI {
-  teamOne: Team | undefined;
-  teamTwo: Team | undefined;
+interface BigScreenLiveCardProps {
+  match: { teamOne?: Team; teamTwo?: Team } & MatchAPI;
 }
 
-export function BigScreenLiveCard({ match }: { match: { teamOne?: Team, teamTwo?: Team } & MatchAPI }) {
+export function BigScreenLiveCard({ match }: BigScreenLiveCardProps) {
   const teamOneName = match.teamOne?.name || 'Team A';
   const teamTwoName = match.teamTwo?.name || 'Team B';
 
   return (
-    <div className="bg-black/40 p-4 rounded-lg border-l-4 border-destructive w-full">
-       <div className="grid grid-cols-2 items-center gap-4">
-        {/* Team A */}
-        <div className="flex flex-col items-center gap-3">
-            <Avatar className="w-16 h-16 border-2 border-gray-600">
-                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamOneName} data-ai-hint="logo" />
-                <AvatarFallback>{teamOneName.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <h3 className="text-xl font-bold text-center text-white truncate">{teamOneName}</h3>
+    <div className="bg-destructive/10 p-4 rounded-lg border-l-4 border-destructive w-full flex flex-col items-center justify-center text-center">
+      <div className="flex items-center justify-center w-full">
+        <h3 className="text-xl font-bold text-white truncate text-right flex-1">{teamOneName}</h3>
+        <span className="mx-4 text-gray-400 font-light">vs</span>
+        <h3 className="text-xl font-bold text-white truncate text-left flex-1">{teamTwoName}</h3>
+      </div>
+      
+      <Separator className="bg-destructive/50 my-2" />
+
+      <div className="flex items-center justify-center w-full mt-2">
+        {/* Team A Score */}
+        <div className="flex-1">
             <AnimatePresence mode="wait">
                 <motion.div
                 key={match.pointsA}
@@ -31,20 +33,17 @@ export function BigScreenLiveCard({ match }: { match: { teamOne?: Team, teamTwo?
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
-                className="text-6xl md:text-8xl font-black text-primary tabular-nums tracking-tighter"
+                className="text-7xl font-black text-white tabular-nums tracking-tighter"
                 >
                 {match.pointsA}
                 </motion.div>
             </AnimatePresence>
         </div>
-        
-        {/* Team B */}
-        <div className="flex flex-col items-center gap-3">
-             <Avatar className="w-16 h-16 border-2 border-gray-600">
-                <AvatarImage src={`https://placehold.co/100x100.png`} alt={teamTwoName} data-ai-hint="logo" />
-                <AvatarFallback>{teamTwoName.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <h3 className="text-xl font-bold text-center text-white truncate">{teamTwoName}</h3>
+
+        <div className="w-[1px] h-16 bg-gray-700 mx-4"></div>
+
+        {/* Team B Score */}
+        <div className="flex-1">
              <AnimatePresence mode="wait">
                 <motion.div
                 key={match.pointsB}
@@ -52,7 +51,7 @@ export function BigScreenLiveCard({ match }: { match: { teamOne?: Team, teamTwo?
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
-                className="text-6xl md:text-8xl font-black text-primary tabular-nums tracking-tighter"
+                className="text-7xl font-black text-white tabular-nums tracking-tighter"
                 >
                 {match.pointsB}
                 </motion.div>
