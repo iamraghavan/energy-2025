@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Check, ChevronsUpDown } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -62,26 +62,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-  } from "@/components/ui/popover"
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-  } from "@/components/ui/command"
 import { useToast } from '@/hooks/use-toast';
 import { getTeams, createTeam, updateTeam, deleteTeam } from '@/services/team-service';
 import { getSchools } from '@/services/school-service';
 import { getSports } from '@/services/sport-service';
 import type { Team, School, SportAPI, TeamPayload } from '@/lib/types';
-import { Select as ShadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 const teamSchema = z.object({
@@ -104,9 +90,6 @@ export function TeamsTable() {
   const [isFormModalOpen, setIsFormModalOpen] = React.useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = React.useState(false);
   const [selectedTeam, setSelectedTeam] = React.useState<Team | null>(null);
-
-  const [schoolPopoverOpen, setSchoolPopoverOpen] = React.useState(false);
-  const [sportPopoverOpen, setSportPopoverOpen] = React.useState(false);
 
   const { toast } = useToast();
 
@@ -285,9 +268,6 @@ export function TeamsTable() {
     },
   });
 
-  const schoolOptions = schools.map(school => ({ value: school._id, label: school.name }));
-  const sportOptions = sports.map(sport => ({ value: sport._id, label: sport.name }));
-
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
@@ -328,124 +308,50 @@ export function TeamsTable() {
                                 </FormItem>
                             )}
                         />
-                        <FormField
+                         <FormField
                             control={form.control}
                             name="schoolId"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col">
+                                <FormItem>
                                 <FormLabel>School</FormLabel>
-                                <Popover open={schoolPopoverOpen} onOpenChange={setSchoolPopoverOpen}>
-                                    <PopoverTrigger asChild>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className={cn(
-                                            "w-full justify-between",
-                                            !field.value && "text-muted-foreground"
-                                        )}
-                                        >
-                                        {field.value
-                                            ? schoolOptions.find(
-                                                (option) => option.value === field.value
-                                            )?.label
-                                            : "Select school"}
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a school" />
+                                    </SelectTrigger>
                                     </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" container={undefined}>
-                                    <Command>
-                                        <CommandInput placeholder="Search school..." />
-                                        <CommandList>
-                                            <CommandEmpty>No school found.</CommandEmpty>
-                                            <CommandGroup>
-                                                {schoolOptions.map((option) => (
-                                                <CommandItem
-                                                    value={option.label}
-                                                    key={option.value}
-                                                    onSelect={() => {
-                                                        form.setValue("schoolId", option.value)
-                                                        setSchoolPopoverOpen(false)
-                                                    }}
-                                                >
-                                                    <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        option.value === field.value
-                                                        ? "opacity-100"
-                                                        : "opacity-0"
-                                                    )}
-                                                    />
-                                                    {option.label}
-                                                </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                    </PopoverContent>
-                                </Popover>
+                                    <SelectContent>
+                                    {schools.map((school) => (
+                                        <SelectItem key={school._id} value={school._id}>
+                                        {school.name}
+                                        </SelectItem>
+                                    ))}
+                                    </SelectContent>
+                                </Select>
                                 <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <FormField
+                         <FormField
                             control={form.control}
                             name="sportId"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col">
+                                <FormItem>
                                 <FormLabel>Sport</FormLabel>
-                                <Popover open={sportPopoverOpen} onOpenChange={setSportPopoverOpen}>
-                                    <PopoverTrigger asChild>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className={cn(
-                                            "w-full justify-between",
-                                            !field.value && "text-muted-foreground"
-                                        )}
-                                        >
-                                        {field.value
-                                            ? sportOptions.find(
-                                                (option) => option.value === field.value
-                                            )?.label
-                                            : "Select sport"}
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a sport" />
+                                    </SelectTrigger>
                                     </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" container={undefined}>
-                                    <Command>
-                                        <CommandInput placeholder="Search sport..." />
-                                        <CommandList>
-                                            <CommandEmpty>No sport found.</CommandEmpty>
-                                            <CommandGroup>
-                                                {sportOptions.map((option) => (
-                                                <CommandItem
-                                                    value={option.label}
-                                                    key={option.value}
-                                                    onSelect={() => {
-                                                        form.setValue("sportId", option.value)
-                                                        setSportPopoverOpen(false)
-                                                    }}
-                                                >
-                                                    <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        option.value === field.value
-                                                        ? "opacity-100"
-                                                        : "opacity-0"
-                                                    )}
-                                                    />
-                                                    {option.label}
-                                                </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                    </PopoverContent>
-                                </Popover>
+                                    <SelectContent>
+                                    {sports.map((sport) => (
+                                        <SelectItem key={sport._id} value={sport._id}>
+                                        {sport.name}
+                                        </SelectItem>
+                                    ))}
+                                    </SelectContent>
+                                </Select>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -456,7 +362,7 @@ export function TeamsTable() {
                               render={({ field }) => (
                                   <FormItem>
                                   <FormLabel>Gender</FormLabel>
-                                  <ShadSelect onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                                       <FormControl>
                                       <SelectTrigger>
                                           <SelectValue placeholder="Select gender" />
@@ -466,7 +372,7 @@ export function TeamsTable() {
                                           <SelectItem value="M">Male</SelectItem>
                                           <SelectItem value="F">Female</SelectItem>
                                       </SelectContent>
-                                  </ShadSelect>
+                                  </Select>
                                   <FormMessage />
                                   </FormItem>
                               )}
