@@ -38,7 +38,7 @@ export const getSchools = async (): Promise<School[]> => {
   return data.data;
 };
 
-export const createSchool = async (schoolData: { name: string; location: string }): Promise<School> => {
+export const createSchool = async (schoolData: { name: string; address: string }): Promise<School> => {
   const response = await fetch(`${API_BASE_URL}/schools`, {
     method: 'POST',
     headers: getHeaders(),
@@ -48,7 +48,7 @@ export const createSchool = async (schoolData: { name: string; location: string 
   return data.data;
 };
 
-export const updateSchool = async (id: string, schoolData: Partial<{ name: string; location: string }>): Promise<School> => {
+export const updateSchool = async (id: string, schoolData: Partial<{ name: string; address: string }>): Promise<School> => {
   const response = await fetch(`${API_BASE_URL}/schools/mongo/${id}`, {
     method: 'PATCH',
     headers: getHeaders(),

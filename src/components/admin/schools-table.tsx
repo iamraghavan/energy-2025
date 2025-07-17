@@ -133,14 +133,18 @@ export function SchoolsTable() {
   };
 
   const onFormSubmit = async (values: SchoolFormValues) => {
+    const payload = {
+        name: values.name,
+        address: values.location, // Map UI 'location' to API 'address'
+    };
     try {
       if (selectedSchool) {
         // Update existing school
-        await updateSchool(selectedSchool._id, values);
+        await updateSchool(selectedSchool._id, payload);
         toast({ title: 'School Updated', description: `${values.name} has been successfully updated.` });
       } else {
         // Create new school
-        await createSchool(values);
+        await createSchool(payload);
         toast({ title: 'School Created', description: `${values.name} has been successfully created.` });
       }
       setIsFormModalOpen(false);
