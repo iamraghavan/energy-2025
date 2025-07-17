@@ -1,4 +1,5 @@
 
+
 export interface Sport {
   name: string;
   slug: string;
@@ -109,4 +110,14 @@ export interface UpdateMatchPayload {
   status?: 'scheduled' | 'live' | 'completed';
   result?: string;
   winnerTeam?: string;
+}
+
+// Type for a user from the API
+export interface User {
+  _id: string;
+  id: string;
+  username: string;
+  role: 'superadmin' | 'lv2admin' | 'scorekeeper' | 'user';
+  createdAt?: string;
+  updatedAt?: string;
 }

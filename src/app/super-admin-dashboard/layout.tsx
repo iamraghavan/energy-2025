@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { School, Users, Home, Loader2 } from 'lucide-react';
+import { School, Users, Home, Loader2, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 
 import {
@@ -24,7 +24,7 @@ import { useAuth } from '@/context/auth-context';
 
 function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname.startsWith(path);
 
   return (
     <SidebarProvider>
@@ -46,7 +46,7 @@ function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) 
                <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/super-admin-dashboard')}
+                  isActive={isActive('/super-admin-dashboard') && pathname === '/super-admin-dashboard'}
                   className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
                   tooltip={{
                     children: 'Dashboard',
@@ -55,6 +55,21 @@ function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) 
                   <Link href="/super-admin-dashboard">
                     <Home />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/super-admin-dashboard/scorekeepers')}
+                  className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
+                  tooltip={{
+                    children: 'Scorekeepers',
+                  }}
+                >
+                  <Link href="/super-admin-dashboard/scorekeepers">
+                    <UserPlus />
+                    <span>Scorekeepers</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
