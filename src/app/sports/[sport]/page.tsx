@@ -21,9 +21,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+
+const RESULTS_PER_PAGE = 4;
 
 export default function SportPage() {
   const params = useParams();
@@ -32,6 +44,7 @@ export default function SportPage() {
   const [matches, setMatches] = React.useState<MatchAPI[]>([]);
   const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
   const [isLoading, setIsLoading] = React.useState(true);
+  const [visibleResults, setVisibleResults] = React.useState(RESULTS_PER_PAGE);
 
   const sportSlug = params.sport as string;
   const sportData = sports.find((s) => s.slug === sportSlug);
@@ -163,6 +176,57 @@ export default function SportPage() {
       />
     ));
   };
+  
+  const renderCompletedMatches = () => {
+    if (isLoading) {
+        return (
+            <div className="md:col-span-2 lg:col-span-4 flex justify-center items-center p-6 bg-card rounded-lg">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading matches...</span>
+            </div>
+        );
+    }
+    if (completedMatches.length === 0) {
+        return (
+            <div className="md:col-span-2 lg:col-span-4">
+                <Card><CardContent className="p-6 text-center text-muted-foreground">No recent results found.</CardContent></Card>
+            </div>
+        );
+    }
+
+    return completedMatches.slice(0, visibleResults).map((match) => {
+      const teamOne = teams.get(match.teamA);
+      const teamTwo = teams.get(match.teamB);
+      return (
+        <Dialog key={match._id}>
+          <DialogTrigger asChild>
+            <div className="cursor-pointer">
+              <MatchCard match={match} teamOne={teamOne} teamTwo={teamTwo} />
+            </div>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                Match Result
+              </DialogTitle>
+              <DialogDescription>
+                Final details for the {match.sport} match.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 text-sm">
+                <p><strong>Team One:</strong> {teamOne?.name || 'N/A'}</p>
+                <p><strong>Team Two:</strong> {teamTwo?.name || 'N/A'}</p>
+                <p><strong>Final Score:</strong> {match.pointsA} - {match.pointsB}</p>
+                <p><strong>Result:</strong> {match.result || 'N/A'}</p>
+                <p><strong>Date:</strong> {match.scheduledAt ? format(new Date(match.scheduledAt), 'PPP p') : 'N/A'}</p>
+                <p><strong>Venue:</strong> {match.venue} ({match.courtNumber})</p>
+                <p><strong>Referee:</strong> {match.refereeName}</p>
+            </div>
+          </DialogContent>
+        </Dialog>
+      );
+    });
+  };
 
 
   return (
@@ -197,8 +261,15 @@ export default function SportPage() {
             <section id="recent-results">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Recent Results</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {renderMatchList(completedMatches, 'No recent results found.')}
+                 {renderCompletedMatches()}
               </div>
+               {completedMatches.length > visibleResults && (
+                <div className="mt-6 text-center">
+                  <Button onClick={() => setVisibleResults(prev => prev + RESULTS_PER_PAGE)}>
+                    Load More Results
+                  </Button>
+                </div>
+              )}
             </section>
 
             <Separator />
