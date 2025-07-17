@@ -93,10 +93,10 @@ export default function Home() {
             <div className="flex flex-col items-center gap-6">
               <div className="max-w-3xl">
                  <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-balance">
-                  EGS Pillay Group of Institutions Presents Energy 2025
+                   Chevalier Dr. G.S. Pillay Memorial Tournament - Energy 2025
                 </h1>
                 <p className="text-lg md:text-xl text-white/80 mt-4 text-balance">
-                  Your ultimate destination for live scores, match schedules, and results for the inter-departmental sports fest.
+                  Hosted by EGS Pillay Group of Institutions, Nagapattinam. Get live scores, schedules, and results for the inter-departmental sports fest.
                 </p>
               </div>
             </div>

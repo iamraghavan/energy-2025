@@ -7,8 +7,8 @@ import { AuthProvider } from '@/context/auth-context';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'ScoreCast | Live Sports Scores & Predictions',
-  description: 'Your ultimate destination for live scores, match schedules, and AI-powered predictions across Football, Cricket, Basketball, and more.',
+  title: 'Energy 2025 | EGS Pillay Group of Institutions, Nagapattinam',
+  description: 'Live scores, schedules, and results for the Chevalier Dr. G.S. Pillay Memorial Tournament (Energy 2025) hosted by EGS Pillay Group of Institutions, Nagapattinam.',
 };
 
 export default function RootLayout({
