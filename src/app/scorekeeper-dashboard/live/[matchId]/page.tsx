@@ -85,7 +85,19 @@ export default function LiveMatchPage() {
       fetchMatchDetails();
       socket.connect();
     }
+    
+    const handleMatchUpdate = (updatedMatch: MatchAPI) => {
+        if (updatedMatch._id === matchId) {
+            setMatch(prevMatch => ({ ...prevMatch, ...updatedMatch }));
+        }
+    };
+    
+    socket.on('matchUpdated', handleMatchUpdate);
+    socket.on('scoreUpdate', handleMatchUpdate);
+
     return () => {
+      socket.off('matchUpdated', handleMatchUpdate);
+      socket.off('scoreUpdate', handleMatchUpdate);
       socket.disconnect();
     }
   }, [matchId, fetchMatchDetails]);
@@ -104,8 +116,8 @@ export default function LiveMatchPage() {
 
     try {
         const payload = { [updatedField]: newScore };
-        await updateMatch(match._id, payload);
-        socket.emit('scoreUpdate', newMatchState); 
+        const updatedMatch = await updateMatch(match._id, payload);
+        socket.emit('matchUpdated', updatedMatch); 
     } catch (error: any) {
         toast({
             variant: 'destructive',
@@ -145,7 +157,7 @@ export default function LiveMatchPage() {
       
       try {
           const updatedMatch = await updateMatch(match._id, matchResult.payload);
-          socket.emit('scoreUpdate', updatedMatch);
+          socket.emit('matchUpdated', updatedMatch);
           toast({ title: 'Match Completed!', description: 'The final scores have been saved.' });
           const encodedId = btoa(user.id);
           router.push(`/scorekeeper-dashboard/${encodedId}?tab=completed`);

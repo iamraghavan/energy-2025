@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -55,22 +56,37 @@ export default function Home() {
       }
     }
 
-    // Connect to socket and set up listeners
+    fetchData();
+
     socket.connect();
     
-    function onScoreUpdate(updatedMatch: MatchAPI) {
-        setMatches(prevMatches => 
-            prevMatches.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m)
-        );
+    function onMatchCreated(newMatch: MatchAPI) {
+        setMatches(prevMatches => [newMatch, ...prevMatches].sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()));
     }
     
-    socket.on('scoreUpdate', onScoreUpdate);
+    function onMatchUpdated(updatedMatch: MatchAPI) {
+        setMatches(prevMatches => 
+            prevMatches.map(m => m._id === updatedMatch._id ? { ...updatedMatch } : m)
+        );
+    }
 
-    fetchData();
+    function onMatchDeleted({ matchId }: { matchId: string }) {
+        setMatches(prevMatches => prevMatches.filter(m => m._id !== matchId));
+    }
     
+    socket.on('matchCreated', onMatchCreated);
+    socket.on('matchUpdated', onMatchUpdated);
+    socket.on('matchDeleted', onMatchDeleted);
+    // Alias for score updates
+    socket.on('scoreUpdate', onMatchUpdated);
+
+
     // Cleanup on component unmount
     return () => {
-        socket.off('scoreUpdate', onScoreUpdate);
+        socket.off('matchCreated', onMatchCreated);
+        socket.off('matchUpdated', onMatchUpdated);
+        socket.off('matchDeleted', onMatchDeleted);
+        socket.off('scoreUpdate', onMatchUpdated);
         socket.disconnect();
     }
 

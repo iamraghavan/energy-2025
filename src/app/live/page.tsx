@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -22,6 +23,14 @@ export default function LiveMatchesPage() {
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
   const [isLoading, setIsLoading] = React.useState(true);
+  
+  const populateMatch = React.useCallback((match: MatchAPI, teamsMap: Map<string, Team>) => {
+    return {
+      ...match,
+      teamOne: teamsMap.get(match.teamA),
+      teamTwo: teamsMap.get(match.teamB),
+    };
+  }, []);
 
   React.useEffect(() => {
     async function fetchData() {
@@ -32,11 +41,7 @@ export default function LiveMatchesPage() {
         ]);
 
         const teamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
-        const populatedMatches = fetchedMatches.map(match => ({
-          ...match,
-          teamOne: teamsMap.get(match.teamA),
-          teamTwo: teamsMap.get(match.teamB),
-        }));
+        const populatedMatches = fetchedMatches.map(match => populateMatch(match, teamsMap));
         
         setMatches(populatedMatches);
         setTeams(teamsMap);
@@ -55,39 +60,50 @@ export default function LiveMatchesPage() {
     fetchData();
 
     socket.connect();
+    
+    function onMatchCreated(newMatch: MatchAPI) {
+        setMatches(prevMatches => {
+            const populated = populateMatch(newMatch, teams);
+            return [...prevMatches, populated];
+        });
+    }
 
-    function onScoreUpdate(updatedMatch: MatchAPI) {
+    function onMatchUpdated(updatedMatch: MatchAPI) {
       setMatches((prevMatches) => {
           const matchIndex = prevMatches.findIndex((m) => m._id === updatedMatch._id);
           let newMatches = [...prevMatches];
           
           if (matchIndex > -1) {
               const currentMatch = newMatches[matchIndex];
-              // Update the match with new data, but keep populated team info
               newMatches[matchIndex] = {
                   ...currentMatch, // Keeps teamOne, teamTwo
                   ...updatedMatch, // Overwrites with new score, status etc.
               };
           } else {
               // This is a new match not previously fetched. We'll need to find its teams.
-              const teamsMap = new Map(teams.entries());
-              newMatches.push({
-                  ...updatedMatch,
-                  teamOne: teamsMap.get(updatedMatch.teamA),
-                  teamTwo: teamsMap.get(updatedMatch.teamB),
-              });
+              newMatches.push(populateMatch(updatedMatch, teams));
           }
           return newMatches;
       });
     }
+    
+    function onMatchDeleted({ matchId }: { matchId: string }) {
+        setMatches(prevMatches => prevMatches.filter(m => m._id !== matchId));
+    }
 
-    socket.on('scoreUpdate', onScoreUpdate);
+    socket.on('matchCreated', onMatchCreated);
+    socket.on('matchUpdated', onMatchUpdated);
+    socket.on('matchDeleted', onMatchDeleted);
+    socket.on('scoreUpdate', onMatchUpdated); // Keep for compatibility if backend still sends it
 
     return () => {
-      socket.off('scoreUpdate', onScoreUpdate);
+      socket.off('matchCreated', onMatchCreated);
+      socket.off('matchUpdated', onMatchUpdated);
+      socket.off('matchDeleted', onMatchDeleted);
+      socket.off('scoreUpdate', onMatchUpdated);
       socket.disconnect();
     };
-  }, [toast, teams]);
+  }, [toast, teams, populateMatch]);
   
   const liveMatches = matches
     .filter((m) => m.status === 'live')

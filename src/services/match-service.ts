@@ -23,6 +23,7 @@ const getHeaders = () => {
      console.error("Could not parse user from localStorage for API key", e)
   }
   
+  // Fallback to static key for public or unauthenticated requests
   headers['x-api-key'] = STATIC_API_KEY;
   return headers;
 };
@@ -48,7 +49,7 @@ export const getMatches = async (): Promise<MatchAPI[]> => {
   const response = await fetch(`${API_BASE_URL}/matches`, {
     headers: {
         'Content-Type': 'application/json',
-        'x-api-key': STATIC_API_KEY,
+        'x-api-key': STATIC_API_KEY, // Public endpoint can use static key
     },
     cache: 'no-store',
   });
@@ -59,7 +60,7 @@ export const getMatches = async (): Promise<MatchAPI[]> => {
 export const createMatch = async (payload: CreateMatchPayload): Promise<MatchAPI> => {
   const response = await fetch(`${API_BASE_URL}/matches`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers: getHeaders(), // Uses dynamic key if available
     body: JSON.stringify(payload),
   });
   const data = await handleResponse(response);
@@ -69,7 +70,7 @@ export const createMatch = async (payload: CreateMatchPayload): Promise<MatchAPI
 export const updateMatch = async (id: string, payload: UpdateMatchPayload): Promise<MatchAPI> => {
   const response = await fetch(`${API_BASE_URL}/matches/${id}`, {
     method: 'PATCH',
-    headers: getHeaders(),
+    headers: getHeaders(), // Uses dynamic key if available
     body: JSON.stringify(payload),
   });
   const data = await handleResponse(response);
@@ -79,7 +80,7 @@ export const updateMatch = async (id: string, payload: UpdateMatchPayload): Prom
 export const deleteMatch = async (id: string): Promise<{ message: string }> => {
   const response = await fetch(`${API_BASE_URL}/matches/${id}`, {
     method: 'DELETE',
-    headers: getHeaders(),
+    headers: getHeaders(), // Uses dynamic key if available
   });
   const data = await handleResponse(response);
   return data;

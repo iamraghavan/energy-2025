@@ -88,7 +88,34 @@ export default function ScorekeeperDashboardPage() {
     }
     socket.connect();
     
+    // Listen for real-time updates
+    const onMatchUpdated = (updatedMatch: MatchAPI) => {
+        if (updatedMatch.scorekeeperId === user?.id) {
+            setMatches(prev => prev.map(m => m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m));
+        }
+    };
+    
+    const onMatchCreated = (newMatch: MatchAPI) => {
+        if (newMatch.scorekeeperId === user?.id) {
+            // Re-fetch to correctly populate new match
+            fetchAndPopulateMatches();
+        }
+    };
+    
+    const onMatchDeleted = ({ matchId }: { matchId: string }) => {
+        setMatches(prev => prev.filter(m => m._id !== matchId));
+    };
+    
+    socket.on('matchUpdated', onMatchUpdated);
+    socket.on('matchCreated', onMatchCreated);
+    socket.on('matchDeleted', onMatchDeleted);
+    socket.on('scoreUpdate', onMatchUpdated); // Legacy event
+    
     return () => {
+        socket.off('matchUpdated', onMatchUpdated);
+        socket.off('matchCreated', onMatchCreated);
+        socket.off('matchDeleted', onMatchDeleted);
+        socket.off('scoreUpdate', onMatchUpdated);
         socket.disconnect();
     }
   }, [fetchAndPopulateMatches, user]);
@@ -102,12 +129,11 @@ export default function ScorekeeperDashboardPage() {
     setIsUpdating(matchId);
     try {
       const updatedMatch = await updateMatch(matchId, { status: 'live' });
-      socket.emit('scoreUpdate', updatedMatch);
+      // The socket event will trigger the state update
       toast({
         title: 'Match is Live!',
         description: 'The match has been moved to the Live tab.',
       });
-      await fetchAndPopulateMatches();
       handleTabChange('live');
     } catch (error: any) {
         toast({
@@ -129,12 +155,12 @@ export default function ScorekeeperDashboardPage() {
     setIsUpdating(matchToDelete._id);
     try {
       await deleteMatch(matchToDelete._id);
+      // The socket event 'matchDeleted' will handle removal from state
       toast({
         title: 'Match Deleted',
         description: 'The match has been removed successfully.',
       });
       setMatchToDelete(null);
-      await fetchAndPopulateMatches();
     } catch (error: any) {
       toast({
         variant: 'destructive',
