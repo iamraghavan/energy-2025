@@ -12,6 +12,7 @@ import { getTeams } from '@/services/team-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { MatchCard } from '@/components/sports/match-card';
+import { UpcomingMatchCard } from '@/components/sports/upcoming-match-card';
 import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -202,7 +203,7 @@ export default function Home() {
                     </div>
                   ) : upcomingMatches.length > 0 ? (
                     upcomingMatches.map((match) => (
-                      <MatchCard key={match._id} match={match} teamOne={teams.get(match.teamA)} teamTwo={teams.get(match.teamB)} />
+                      <UpcomingMatchCard key={match._id} match={match} teamOne={teams.get(match.teamA)} teamTwo={teams.get(match.teamB)} />
                     ))
                   ) : (
                     <Card>

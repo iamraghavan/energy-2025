@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MatchCard } from '@/components/sports/match-card';
-import { SportIcon } from '@/components/sports/sports-icons';
+// import { SportIcon } from '@/components/sports/sports-icons';
 import type { MatchAPI, Team } from '@/lib/types';
 import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
@@ -95,7 +95,7 @@ export function SportQuadrant({ sportName }: SportQuadrantProps) {
     <Card className="h-full flex flex-col bg-slate-900/80 border-slate-700 text-white shadow-2xl backdrop-blur-sm">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="text-4xl font-extrabold flex items-center gap-3 text-white tracking-wider">
-          <SportIcon sportName={sportName} className="w-10 h-10 text-amber-400" />
+          {/* <SportIcon sportName={sportName} className="w-10 h-10 text-amber-400" /> */}
           {sportName.toUpperCase()}
         </CardTitle>
       </CardHeader>

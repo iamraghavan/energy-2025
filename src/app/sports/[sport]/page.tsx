@@ -11,6 +11,7 @@ import { socket } from '@/services/socket';
 
 import { Header } from '@/components/layout/header';
 import { MatchCard } from '@/components/sports/match-card';
+import { UpcomingMatchCard } from '@/components/sports/upcoming-match-card';
 import { Separator } from '@/components/ui/separator';
 import {
   Table,
@@ -134,6 +135,36 @@ export default function SportPage() {
     ));
   };
 
+  const renderUpcomingMatchList = (matchList: MatchAPI[], emptyMessage: string) => {
+    if (isLoading) {
+        return (
+            <div className="md:col-span-2 lg:col-span-4 flex justify-center items-center p-6 bg-card rounded-lg">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading matches...</span>
+            </div>
+        );
+    }
+    if (matchList.length === 0) {
+        return (
+            <div className="md:col-span-2 lg:col-span-4">
+                <Card>
+                    <CardContent className="p-6">
+                        <p className="text-muted-foreground text-center">{emptyMessage}</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+    return matchList.map((match) => (
+      <UpcomingMatchCard
+        key={match._id}
+        match={match}
+        teamOne={teams.get(match.teamA)}
+        teamTwo={teams.get(match.teamB)}
+      />
+    ));
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -159,7 +190,7 @@ export default function SportPage() {
             <section id="upcoming-matches">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Upcoming</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {renderMatchList(upcomingMatches, 'No upcoming matches scheduled.')}
+                 {renderUpcomingMatchList(upcomingMatches, 'No upcoming matches scheduled.')}
               </div>
             </section>
 
