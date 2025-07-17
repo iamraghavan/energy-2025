@@ -117,7 +117,7 @@ export default function CreateMatchPage() {
   React.useEffect(() => {
     if (selectedSportId && allTeams.length > 0) {
       const teamsForSport = allTeams.filter(
-        (team) => team.sport._id === selectedSportId
+        (team) => team.sport && team.sport._id === selectedSportId
       );
       setFilteredTeams(teamsForSport);
       form.resetField('teamOneId', { defaultValue: '' });
