@@ -24,7 +24,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { PredictionTool } from '@/components/sports/prediction-tool';
 
 export default function SportPage() {
   const params = useParams();
@@ -176,8 +175,7 @@ export default function SportPage() {
           </h1>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-8">
             <section id="live-matches">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Live</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -241,12 +239,6 @@ export default function SportPage() {
                 </CardContent>
               </Card>
             </section>
-          </div>
-          <aside className="lg:col-span-1">
-            <div className="sticky top-24">
-              <PredictionTool sport={sportData.name} />
-            </div>
-          </aside>
         </div>
       </main>
     </div>
