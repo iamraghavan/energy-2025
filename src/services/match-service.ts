@@ -1,3 +1,4 @@
+
 import type { MatchAPI, CreateMatchPayload, UpdateMatchPayload } from '@/lib/types';
 
 const API_BASE_URL = 'https://two025-energy-event-backend.onrender.com/api';
@@ -61,5 +62,6 @@ export const deleteMatch = async (id: string): Promise<{ message: string }> => {
     method: 'DELETE',
     headers: getHeaders(),
   });
-  return await handleResponse(response);
+  const data = await handleResponse(response);
+  return data;
 };
