@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -230,10 +231,6 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
             <span className="text-gray-400 mx-2">vs</span>
             <span className="font-medium truncate text-right">{teamTwoName}</span>
         </div>
-      <div className="text-sm text-cyan-300 mt-2 flex items-center justify-center gap-2">
-        <Clock className="w-4 h-4" />
-        <span>{format(new Date(match.scheduledAt), 'p')} @ {match.venue}</span>
-      </div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
+
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import type { MatchAPI, Team } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne: Team | undefined;
@@ -18,7 +18,6 @@ export function BigScreenLiveCard({ match }: { match: { teamOne?: Team, teamTwo?
     <div className="bg-black/40 p-4 rounded-lg border-l-4 border-destructive w-full">
        <div className="flex items-center justify-between mb-3 text-sm text-gray-400">
         <span className="font-bold text-base text-white">{match.sport}</span>
-        <span>{match.venue} - {match.courtNumber}</span>
        </div>
        <div className="grid grid-cols-2 items-center gap-4">
         {/* Team A */}
