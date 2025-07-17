@@ -107,4 +107,6 @@ export interface UpdateMatchPayload {
   pointsA?: number;
   pointsB?: number;
   status?: 'scheduled' | 'live' | 'completed';
+  result?: string;
+  winnerTeam?: string;
 }

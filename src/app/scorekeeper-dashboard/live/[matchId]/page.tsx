@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { getMatches, updateMatch } from '@/services/match-service';
 import { getTeamById } from '@/services/team-service';
-import type { MatchAPI, Team } from '@/lib/types';
+import type { MatchAPI, Team, UpdateMatchPayload } from '@/lib/types';
 import { socket } from '@/services/socket';
 import { useAuth } from '@/context/auth-context';
 
@@ -104,10 +104,22 @@ export default function LiveMatchPage() {
   };
   
   const handleEndMatch = async () => {
-      if (!match || !user) return;
+      if (!match || !user || !teamOne || !teamTwo) return;
       setIsSubmitting(true);
+      
+      const payload: UpdateMatchPayload = { status: 'completed' };
+
+      if (match.pointsA > match.pointsB) {
+          payload.winnerTeam = match.teamA;
+          payload.result = `${teamOne.name} Wins`;
+      } else if (match.pointsB > match.pointsA) {
+          payload.winnerTeam = match.teamB;
+          payload.result = `${teamTwo.name} Wins`;
+      } else {
+          payload.result = 'Draw';
+      }
+
       try {
-          const payload = { status: 'completed' as const };
           const updatedMatch = await updateMatch(match._id, payload);
           socket.emit('scoreUpdate', updatedMatch);
           toast({ title: 'Match Completed!', description: 'The final scores have been saved.' });
