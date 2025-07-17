@@ -28,7 +28,7 @@ async function handleResponse(response: Response) {
     }
 }
 
-export const createScorekeeper = async (payload: { username: string, password_hash: string }): Promise<User> => {
+export const createScorekeeper = async (payload: { username: string, password: string }): Promise<User> => {
     const response = await fetch(`${API_BASE_URL}/auth/scorekeeper`, {
       method: 'POST',
       headers: getHeaders(),
@@ -38,8 +38,12 @@ export const createScorekeeper = async (payload: { username: string, password_ha
     return data.data;
 };
 
-export const getUsers = async (): Promise<User[]> => {
-    const response = await fetch(`${API_BASE_URL}/auth/users`, {
+export const getUsers = async (role?: 'scorekeeper' | 'lv2admin'): Promise<User[]> => {
+    let url = `${API_BASE_URL}/auth/users`;
+    if (role) {
+      url += `?role=${role}`;
+    }
+    const response = await fetch(url, {
         headers: getHeaders(),
         cache: 'no-store',
     });

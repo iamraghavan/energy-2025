@@ -94,9 +94,8 @@ export function ScorekeepersTable() {
   const fetchUsers = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const users = await getUsers();
-      // Filter for scorekeepers only
-      setData(users.filter(u => u.role === 'scorekeeper'));
+      const users = await getUsers('scorekeeper');
+      setData(users);
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -125,7 +124,7 @@ export function ScorekeepersTable() {
 
   const onFormSubmit = async (values: ScorekeeperFormValues) => {
     try {
-      await createScorekeeper({ username: values.username, password_hash: values.password });
+      await createScorekeeper({ username: values.username, password: values.password });
       toast({ title: 'Scorekeeper Created', description: `Account for ${values.username} has been created.` });
       setIsFormModalOpen(false);
       fetchUsers(); // Refresh data
