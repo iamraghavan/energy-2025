@@ -24,6 +24,20 @@ export function SportQuadrant({ sportName }: SportQuadrantProps) {
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
+  const populateAndSetMatches = React.useCallback(async (fetchedMatches: MatchAPI[], allTeams: Team[]) => {
+      const teamsMap = new Map<string, Team>(allTeams.map((t) => [t._id, t]));
+      const sportMatches = fetchedMatches
+        .filter((m) => m.sport.toLowerCase() === sportName.toLowerCase())
+        .map((match) => ({
+          ...match,
+          teamOne: teamsMap.get(match.teamA),
+          teamTwo: teamsMap.get(match.teamB),
+        }));
+
+      setMatches(sportMatches);
+  }, [sportName]);
+
+
   React.useEffect(() => {
     async function fetchData() {
       try {
@@ -31,17 +45,7 @@ export function SportQuadrant({ sportName }: SportQuadrantProps) {
           getMatches(),
           getTeams(),
         ]);
-
-        const teamsMap = new Map<string, Team>(fetchedTeams.map((t) => [t._id, t]));
-        const sportMatches = fetchedMatches
-          .filter((m) => m.sport.toLowerCase() === sportName.toLowerCase())
-          .map((match) => ({
-            ...match,
-            teamOne: teamsMap.get(match.teamA),
-            teamTwo: teamsMap.get(match.teamB),
-          }));
-
-        setMatches(sportMatches);
+        await populateAndSetMatches(fetchedMatches, fetchedTeams);
       } catch (error) {
         console.error(`Failed to fetch data for ${sportName}:`, error);
       } finally {
@@ -52,46 +56,43 @@ export function SportQuadrant({ sportName }: SportQuadrantProps) {
     fetchData();
 
     socket.connect();
-
-    function onScoreUpdate(updatedMatch: MatchAPI) {
-      setMatches((prevMatches) => {
-        const matchExists = prevMatches.some((m) => m._id === updatedMatch._id);
-        if (matchExists) {
-          // Update existing match
-          return prevMatches.map((m) =>
-            m._id === updatedMatch._id ? { ...m, ...updatedMatch } : m
-          );
-        } else {
-          // It's a new match for this sport, add it (unlikely but safe)
-          if (updatedMatch.sport.toLowerCase() === sportName.toLowerCase()) {
-             const newPopulatedMatch = {
-                ...updatedMatch,
-                teamOne: undefined, // We might need to fetch this if it's a new match entirely
-                teamTwo: undefined,
-             };
-             // A full team fetch might be needed here in a more complex scenario
-             return [...prevMatches, newPopulatedMatch];
-          }
+    
+    // Re-fetch all data on any change to simplify state management
+    const handleMatchChange = async () => {
+         try {
+            const [fetchedMatches, fetchedTeams] = await Promise.all([
+                getMatches(),
+                getTeams(),
+            ]);
+            await populateAndSetMatches(fetchedMatches, fetchedTeams);
+        } catch(error) {
+            console.error('Failed to refetch matches on socket event', error);
         }
-        return prevMatches;
-      });
-    }
+    };
+    
+    socket.on('matchUpdated', handleMatchChange);
+    socket.on('matchCreated', handleMatchChange);
+    socket.on('matchDeleted', handleMatchChange);
+    socket.on('scoreUpdate', handleMatchChange);
 
-    socket.on('scoreUpdate', onScoreUpdate);
 
     return () => {
-      socket.off('scoreUpdate', onScoreUpdate);
+      socket.off('matchUpdated', handleMatchChange);
+      socket.off('matchCreated', handleMatchChange);
+      socket.off('matchDeleted', handleMatchChange);
+      socket.off('scoreUpdate', handleMatchChange);
       socket.disconnect();
     };
-  }, [sportName]);
+  }, [sportName, populateAndSetMatches]);
 
   const liveMatches = matches
     .filter((m) => m.status === 'live')
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
   const upcomingMatches = matches
-    .filter((m) => m.status === 'scheduled')
-    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+    .filter((m) => m.status === 'scheduled' || m.status === 'upcoming')
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+    .slice(0, 3);
 
   return (
     <div className="bg-gray-900/50 backdrop-blur-sm border border-primary/20 rounded-lg p-4 flex flex-col h-full overflow-hidden">
