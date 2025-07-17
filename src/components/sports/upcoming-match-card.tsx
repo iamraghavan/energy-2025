@@ -32,7 +32,11 @@ export function UpcomingMatchCard({ match, teamOne, teamTwo }: UpcomingMatchCard
         await navigator.clipboard.writeText(shareData.url);
         toast({ title: "Link Copied!", description: "Match link copied to your clipboard." });
       }
-    } catch (error) {
+    } catch (error: any) {
+        // Silently fail if the user cancels the share dialog (AbortError)
+        if (error.name === 'AbortError') {
+            return;
+        }
         console.error('Share failed:', error);
         toast({
             variant: 'destructive',
