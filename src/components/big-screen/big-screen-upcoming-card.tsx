@@ -1,8 +1,6 @@
 
 'use client';
 
-import { format } from 'date-fns';
-import { Clock } from 'lucide-react';
 import type { MatchAPI, Team } from '@/lib/types';
 
 export function BigScreenUpcomingCard({ match }: { match: { teamOne?: Team, teamTwo?: Team } & MatchAPI }) {

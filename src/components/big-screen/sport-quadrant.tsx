@@ -2,8 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { format } from 'date-fns';
-import { Clock, Loader2, Trophy } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { getMatches } from '@/services/match-service';
