@@ -163,19 +163,17 @@ export default function ProtectedSuperAdminLayout({
   const router = useRouter();
   const { user, isLoading, isAuthorized } = useAuth();
 
-  if (isLoading) {
+  React.useEffect(() => {
+    if (!isLoading && (!user || !isAuthorized(['superadmin']))) {
+      router.replace('/login');
+    }
+  }, [isLoading, user, isAuthorized, router]);
+
+  if (isLoading || !user || !isAuthorized(['superadmin'])) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user || !isAuthorized(['superadmin'])) {
-    router.replace('/login');
-     return (
-       <div className="flex h-screen items-center justify-center">
-        <p>Redirecting...</p>
+        <p className="ml-2">Verifying Access...</p>
       </div>
     );
   }
