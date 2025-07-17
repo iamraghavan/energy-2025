@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ClipboardList, PlusCircle, Frown, Trash2 } from 'lucide-react';
+import { ClipboardList, PlusCircle, Frown, Trash2, School, Users } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,6 +35,7 @@ import { MatchDetailsCard } from '@/components/scorekeeper/match-details-card';
 import { format } from 'date-fns';
 import { useAuth } from '@/context/auth-context';
 import { socket } from '@/services/socket';
+import { Separator } from '@/components/ui/separator';
 
 export default function ScorekeeperDashboardPage() {
   const router = useRouter();
@@ -158,17 +159,34 @@ export default function ScorekeeperDashboardPage() {
           <ClipboardList className="w-8 h-8 text-primary" />
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Scorekeeper Dashboard</h1>
-            <p className="text-muted-foreground">Manage live scores and match outcomes.</p>
+            <p className="text-muted-foreground">Manage matches, teams, and schools.</p>
           </div>
         </div>
-        <Button asChild>
-            <Link href="/scorekeeper-dashboard/create-match">
-                <PlusCircle className="mr-2" />
-                Create Match
-            </Link>
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+            <Button asChild>
+                <Link href="/scorekeeper-dashboard/schools">
+                    <School className="mr-2" />
+                    Manage Schools
+                </Link>
+            </Button>
+            <Button asChild>
+                <Link href="/scorekeeper-dashboard/teams">
+                    <Users className="mr-2" />
+                    Manage Teams
+                </Link>
+            </Button>
+            <Button asChild>
+                <Link href="/scorekeeper-dashboard/create-match">
+                    <PlusCircle className="mr-2" />
+                    Create Match
+                </Link>
+            </Button>
+        </div>
       </div>
+      
+      <Separator />
 
+      <h2 className="text-2xl font-bold tracking-tight">My Matches</h2>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="live">Live</TabsTrigger>
