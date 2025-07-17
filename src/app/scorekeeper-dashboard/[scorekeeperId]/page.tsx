@@ -51,6 +51,7 @@ export default function ScorekeeperDashboardPage() {
   const encodedId = user ? btoa(user.id) : '';
 
   const fetchAndPopulateMatches = React.useCallback(async () => {
+    if (!user) return;
     setIsLoading(true);
     try {
       const [fetchedMatches, allTeams] = await Promise.all([
@@ -60,10 +61,12 @@ export default function ScorekeeperDashboardPage() {
 
       const teamsMap = new Map<string, Team>(allTeams.map(team => [team._id, team]));
       
-      const populatedMatches = fetchedMatches.map(match => ({
-        ...match,
-        teamOne: teamsMap.get(match.teamA)!,
-        teamTwo: teamsMap.get(match.teamB)!,
+      const populatedMatches = fetchedMatches
+        .filter(match => match.scorekeeperId === user.id) // Filter by scorekeeper ID
+        .map(match => ({
+          ...match,
+          teamOne: teamsMap.get(match.teamA)!,
+          teamTwo: teamsMap.get(match.teamB)!,
       })).sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
       
       setMatches(populatedMatches);
@@ -76,16 +79,18 @@ export default function ScorekeeperDashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, user]);
 
   React.useEffect(() => {
-    fetchAndPopulateMatches();
+    if(user) {
+        fetchAndPopulateMatches();
+    }
     socket.connect();
     
     return () => {
         socket.disconnect();
     }
-  }, [fetchAndPopulateMatches]);
+  }, [fetchAndPopulateMatches, user]);
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
