@@ -118,6 +118,7 @@ export interface User {
   id: string;
   username: string;
   role: 'superadmin' | 'lv2admin' | 'scorekeeper' | 'user';
+  apiKey?: string; // API key is returned on login for superadmin
   createdAt?: string;
   updatedAt?: string;
 }

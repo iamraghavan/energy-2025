@@ -8,6 +8,7 @@ interface User {
   id: string; 
   username: string;
   role: 'superadmin' | 'lv2admin' | 'scorekeeper' | 'user';
+  apiKey?: string; // Add apiKey to the user type
 }
 
 interface AuthContextType {

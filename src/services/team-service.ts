@@ -1,13 +1,29 @@
-import type { Team, TeamPayload } from '@/lib/types';
+import type { Team, TeamPayload, User } from '@/lib/types';
 
 const API_BASE_URL = 'https://two025-energy-event-backend.onrender.com/api';
-const API_KEY = 'c815d7ba0b568849563496a6ae9b899c296b209f3d66283d27435d4bba9d794f';
+const STATIC_API_KEY = 'c815d7ba0b568849563496a6ae9b899c296b209f3d66283d27435d4bba9d794f';
+
 
 const getHeaders = () => {
-  return {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'x-api-key': API_KEY,
   };
+  
+  try {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const user: User = JSON.parse(storedUser);
+      if (user.apiKey) {
+        headers['x-api-key'] = user.apiKey;
+        return headers;
+      }
+    }
+  } catch (e) {
+    console.error("Could not parse user from localStorage for API key", e)
+  }
+  
+  headers['x-api-key'] = STATIC_API_KEY;
+  return headers;
 };
 
 async function handleResponse(response: Response) {
