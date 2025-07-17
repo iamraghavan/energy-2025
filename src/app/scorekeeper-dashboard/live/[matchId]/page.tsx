@@ -22,6 +22,16 @@ import { getTeamById } from '@/services/team-service';
 import type { MatchAPI, Team, UpdateMatchPayload } from '@/lib/types';
 import { socket } from '@/services/socket';
 import { useAuth } from '@/context/auth-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function LiveMatchPage() {
   const router = useRouter();
@@ -34,6 +44,9 @@ export default function LiveMatchPage() {
   const [teamTwo, setTeamTwo] = React.useState<Team | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isEndMatchDialogOpen, setIsEndMatchDialogOpen] = React.useState(false);
+  const [matchResult, setMatchResult] = React.useState<{ message: string; payload: UpdateMatchPayload } | null>(null);
+
   
   const { toast } = useToast();
 
@@ -103,24 +116,35 @@ export default function LiveMatchPage() {
     }
   };
   
-  const handleEndMatch = async () => {
-      if (!match || !user || !teamOne || !teamTwo) return;
+  const handleEndMatchRequest = () => {
+    if (!match || !teamOne || !teamTwo) return;
+
+    const payload: UpdateMatchPayload = { status: 'completed' };
+    let message = '';
+
+    if (match.pointsA > match.pointsB) {
+      payload.winnerTeam = match.teamA;
+      payload.result = `${teamOne.name} Wins`;
+      message = `${teamOne.name} will be declared the winner.`;
+    } else if (match.pointsB > match.pointsA) {
+      payload.winnerTeam = match.teamB;
+      payload.result = `${teamTwo.name} Wins`;
+      message = `${teamTwo.name} will be declared the winner.`;
+    } else {
+      payload.result = 'Draw';
+      message = 'The match will be recorded as a draw.';
+    }
+
+    setMatchResult({ message, payload });
+    setIsEndMatchDialogOpen(true);
+  };
+  
+  const confirmEndMatch = async () => {
+      if (!match || !user || !matchResult) return;
       setIsSubmitting(true);
       
-      const payload: UpdateMatchPayload = { status: 'completed' };
-
-      if (match.pointsA > match.pointsB) {
-          payload.winnerTeam = match.teamA;
-          payload.result = `${teamOne.name} Wins`;
-      } else if (match.pointsB > match.pointsA) {
-          payload.winnerTeam = match.teamB;
-          payload.result = `${teamTwo.name} Wins`;
-      } else {
-          payload.result = 'Draw';
-      }
-
       try {
-          const updatedMatch = await updateMatch(match._id, payload);
+          const updatedMatch = await updateMatch(match._id, matchResult.payload);
           socket.emit('scoreUpdate', updatedMatch);
           toast({ title: 'Match Completed!', description: 'The final scores have been saved.' });
           const encodedId = btoa(user.id);
@@ -133,6 +157,7 @@ export default function LiveMatchPage() {
           });
       } finally {
           setIsSubmitting(false);
+          setIsEndMatchDialogOpen(false);
       }
   }
 
@@ -148,6 +173,7 @@ export default function LiveMatchPage() {
   }
 
   return (
+    <>
     <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" asChild>
@@ -202,7 +228,7 @@ export default function LiveMatchPage() {
                 </div>
             </CardContent>
             <CardFooter className="flex justify-center p-4 md:p-6 border-t">
-                <Button size="lg" variant="destructive" onClick={handleEndMatch} disabled={isSubmitting}>
+                <Button size="lg" variant="destructive" onClick={handleEndMatchRequest} disabled={isSubmitting}>
                     {isSubmitting ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -218,5 +244,32 @@ export default function LiveMatchPage() {
             </CardFooter>
         </Card>
     </div>
+    <AlertDialog open={isEndMatchDialogOpen} onOpenChange={setIsEndMatchDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Finalize Match Result?</AlertDialogTitle>
+            <AlertDialogDescription>
+                The final score is <span className="font-bold">{teamOne.name}: {match.pointsA}</span> - <span className="font-bold">{teamTwo.name}: {match.pointsB}</span>.
+                <br />
+                {matchResult?.message}
+                <br />
+                <br />
+                This action cannot be undone.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmEndMatch} disabled={isSubmitting}>
+                 {isSubmitting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <Trophy className="mr-2 h-4 w-4" />
+                )}
+                Confirm & Finalize
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
