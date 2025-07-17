@@ -48,29 +48,30 @@ export function UpcomingMatchCard({ match, teamOne, teamTwo }: UpcomingMatchCard
         <h3 className="font-semibold text-sm text-muted-foreground">{match.sport}</h3>
         <Badge variant="outline" className="capitalize">Upcoming</Badge>
       </CardHeader>
-      <CardContent className="pt-2 pb-4">
+      <CardContent className="py-2">
         <div className="flex items-center justify-center gap-2 text-center font-semibold text-foreground py-2">
             <p className="flex-1 text-right truncate">{team1Name}</p>
             <span className="text-sm text-destructive mx-2">vs</span>
             <p className="flex-1 text-left truncate">{team2Name}</p>
         </div>
-        <Separator className="my-2" />
-        <div className="text-center text-xs text-muted-foreground mt-3 space-y-1.5">
-            <div className="flex items-center justify-center gap-1.5">
-                <Clock className="w-3 h-3" />
-                <span>{format(new Date(match.scheduledAt), 'p, EEE, MMM d')}</span>
-            </div>
-            <div className="flex items-center justify-center gap-1.5">
-                <MapPin className="w-3 h-3" />
-                <span>{match.venue} ({match.courtNumber})</span>
-            </div>
-        </div>
+        <Separator />
       </CardContent>
-      <CardFooter className="flex justify-end p-2 pt-0">
-         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleShare}>
-            <Share2 className="h-4 w-4" />
-            <span className="sr-only">Share Match</span>
-        </Button>
+      <CardFooter className="flex-col sm:flex-row text-xs text-muted-foreground gap-x-4 gap-y-2 justify-between items-center border-t p-2">
+          <div className="flex flex-col sm:flex-row gap-x-4 gap-y-1 w-full">
+            <div className="flex items-center gap-1.5">
+                <Clock className="w-3 h-3" />
+                <span>{format(new Date(match.scheduledAt), 'p, MMM d')}</span>
+            </div>
+            <div className="hidden sm:block">|</div>
+            <div className="flex items-center gap-1.5">
+                <MapPin className="w-3 h-3" />
+                <span className="truncate">{match.venue} ({match.courtNumber})</span>
+            </div>
+          </div>
+           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleShare}>
+              <Share2 className="h-4 w-4" />
+              <span className="sr-only">Share Match</span>
+          </Button>
       </CardFooter>
     </Card>
   );
