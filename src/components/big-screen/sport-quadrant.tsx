@@ -173,6 +173,7 @@ function LiveMatchCard({ match }: { match: PopulatedMatch }) {
 
   return (
     <div className="bg-black/40 p-3 rounded-md border-l-4 border-destructive">
+      {/* Team A */}
       <div className="flex justify-between items-center text-lg">
         <div className="flex items-center gap-3 font-semibold flex-1 truncate">
             <Avatar className="w-8 h-8 border-2 border-gray-600">
@@ -194,6 +195,7 @@ function LiveMatchCard({ match }: { match: PopulatedMatch }) {
             </motion.div>
         </AnimatePresence>
       </div>
+       {/* Team B */}
       <div className="flex justify-between items-center mt-1 text-lg">
         <div className="flex items-center gap-3 font-semibold flex-1 truncate">
              <Avatar className="w-8 h-8 border-2 border-gray-600">
