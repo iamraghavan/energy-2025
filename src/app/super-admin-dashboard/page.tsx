@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -6,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { School, Users, PlusCircle } from 'lucide-react';
+import { School, Users, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SuperAdminDashboardPage() {
@@ -19,7 +20,26 @@ export default function SuperAdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+         <Card className="shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Manage Scorekeepers</CardTitle>
+              <UserPlus className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <CardDescription>
+              Add, view, or remove scorekeeper accounts.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/super-admin-dashboard/scorekeepers">
+                 Manage Accounts
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+        
         <Card className="shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -33,8 +53,7 @@ export default function SuperAdminDashboardPage() {
           <CardContent>
             <Button asChild>
               <Link href="/super-admin-dashboard/schools">
-                <PlusCircle className="mr-2" />
-                Add New School
+                View Schools
               </Link>
             </Button>
           </CardContent>

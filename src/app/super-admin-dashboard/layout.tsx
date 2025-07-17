@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { School, Users, Home, Loader2, UserPlus } from 'lucide-react';
+import { School, Users, Home, Loader2, UserPlus, User, LogOut } from 'lucide-react';
 import Image from 'next/image';
 
 import {
@@ -20,10 +20,20 @@ import {
   SidebarInset,
   SidebarRail,
 } from '@/components/ui/sidebar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/context/auth-context';
+import { Button } from '@/components/ui/button';
 
 function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const isActive = (path: string) => pathname.startsWith(path);
 
   return (
@@ -119,6 +129,24 @@ function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) 
                         {pathname.split('/').pop()?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Dashboard'}
                     </div>
                 </div>
+                {user && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <User className="h-5 w-5" />
+                        <span className="hidden sm:inline">{user.username}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
            </header>
           <main className="flex-1 p-6">{children}</main>
         </SidebarInset>
