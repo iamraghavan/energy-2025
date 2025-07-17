@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -57,6 +58,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -69,7 +71,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const schoolSchema = z.object({
   name: z.string().min(3, { message: 'School name must be at least 3 characters long.' }),
-  address: z.string().min(10, { message: 'Address is required and must be detailed.' }),
+  location: z.string().min(3, { message: 'Location is required.' }),
 });
 
 type SchoolFormValues = z.infer<typeof schoolSchema>;
@@ -90,7 +92,7 @@ export function SchoolsTable() {
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(schoolSchema),
-    defaultValues: { name: '', address: '' },
+    defaultValues: { name: '', location: '' },
   });
 
   const fetchSchools = React.useCallback(async () => {
@@ -115,13 +117,13 @@ export function SchoolsTable() {
 
   const handleEditClick = (school: School) => {
     setSelectedSchool(school);
-    form.reset({ name: school.name, address: school.address });
+    form.reset({ name: school.name, location: school.location });
     setIsFormModalOpen(true);
   };
   
   const handleAddClick = () => {
     setSelectedSchool(null);
-    form.reset({ name: '', address: '' });
+    form.reset({ name: '', location: '' });
     setIsFormModalOpen(true);
   };
 
@@ -180,9 +182,9 @@ export function SchoolsTable() {
       cell: ({ row }) => <div className="capitalize font-medium">{row.getValue('name')}</div>,
     },
     {
-      accessorKey: 'address',
-      header: 'Address',
-      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue('address')}</div>,
+      accessorKey: 'location',
+      header: 'Location',
+      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue('location')}</div>,
     },
     {
       accessorKey: 'createdAt',
@@ -288,16 +290,19 @@ export function SchoolsTable() {
                           />
                           <FormField
                               control={form.control}
-                              name="address"
+                              name="location"
                               render={({ field }) => (
                                   <FormItem>
-                                      <FormLabel>Address</FormLabel>
+                                      <FormLabel>Location</FormLabel>
                                       <FormControl>
                                           <Input
-                                              placeholder="Enter the full school address"
+                                              placeholder="Enter the location"
                                               {...field}
                                           />
                                       </FormControl>
+                                      <FormDescription>
+                                        Enter the district, city, or general location name.
+                                      </FormDescription>
                                       <FormMessage />
                                   </FormItem>
                               )}

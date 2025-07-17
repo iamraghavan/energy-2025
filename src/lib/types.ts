@@ -29,7 +29,7 @@ export interface School {
   _id: string;
   schoolId: string;
   name: string;
-  address?: string;
+  location: string;
   createdAt: string;
   updatedAt: string;
 }
