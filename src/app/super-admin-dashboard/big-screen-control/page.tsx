@@ -19,11 +19,37 @@ import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 
 const quadrantOptions = ['none', ...sports.map(s => s.name)];
+const LOCAL_STORAGE_KEY = 'bigScreenLayout';
 
 export default function BigScreenControlPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [layout, setLayout] = React.useState<(string | null)[]>(['none', 'none', 'none', 'none']);
+
+  // Effect to load saved layout from localStorage on component mount
+  React.useEffect(() => {
+    try {
+      const savedLayout = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedLayout) {
+        const parsedLayout = JSON.parse(savedLayout);
+        if (Array.isArray(parsedLayout) && parsedLayout.length === 4) {
+          setLayout(parsedLayout);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load layout from localStorage", error);
+    }
+  }, []);
+
+  // Effect to save layout to localStorage whenever it changes
+  React.useEffect(() => {
+    try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(layout));
+    } catch (error) {
+        console.error("Failed to save layout to localStorage", error);
+    }
+  }, [layout]);
+
 
   const handleLayoutChange = (index: number, value: string) => {
     const newLayout = [...layout];
@@ -38,7 +64,9 @@ export default function BigScreenControlPage() {
     };
     
     try {
-        socket.connect();
+        if (!socket.connected) {
+          socket.connect();
+        }
         socket.emit('layoutUpdate', payload);
         toast({
             title: 'Layout Published!',
