@@ -1,3 +1,4 @@
+
 import { io, type Socket } from 'socket.io-client';
 import type { MatchAPI } from '@/lib/types';
 
@@ -10,6 +11,7 @@ export interface ServerToClientEvents {
   matchDeleted: (data: { matchId: string }) => void;
   scoreUpdate: (match: MatchAPI) => void;
   layoutUpdate: (layout: QuadrantConfig) => void;
+  currentLayout: (layout: QuadrantConfig) => void;
 }
 
 export interface ClientToServerEvents {
@@ -18,6 +20,7 @@ export interface ClientToServerEvents {
   matchDeleted: (data: { matchId: string }) => void;
   scoreUpdate: (match: MatchAPI) => void;
   layoutUpdate: (layout: QuadrantConfig) => void;
+  getLayout: () => void;
 }
 
 export interface QuadrantConfig {

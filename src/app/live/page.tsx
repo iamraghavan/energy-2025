@@ -19,15 +19,15 @@ interface PopulatedMatch extends MatchAPI {
 import type { MatchAPI } from '@/lib/types';
 import { getMatches } from '@/services/match-service';
 
-// Default layout if nothing is received from the admin panel
+// Default layout as a fallback
 const defaultLayout: QuadrantConfig = {
     quadrants: ["Kabaddi", "Volleyball", "Football", "Cricket"],
 };
 
 export default function BigScreenPage() {
-  const [layoutConfig, setLayoutConfig] = React.useState<QuadrantConfig>(defaultLayout);
+  const [layoutConfig, setLayoutConfig] = React.useState<QuadrantConfig | null>(null);
   const [teamsMap, setTeamsMap] = React.useState<Map<string, Team>>(new Map());
-  const [isLoadingTeams, setIsLoadingTeams] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -44,13 +44,12 @@ export default function BigScreenPage() {
                 description: 'Could not load team data. Some information may be missing.',
             });
         } finally {
-            setIsLoadingTeams(false);
+            setIsLoading(false);
         }
     }
     
     fetchInitialData();
 
-    // Establish and manage socket connection
     if (!socket.connected) {
       socket.connect();
     }
@@ -59,16 +58,36 @@ export default function BigScreenPage() {
       setLayoutConfig(newLayout);
     }
     
+    function onCurrentLayout(currentLayout: QuadrantConfig) {
+      setLayoutConfig(currentLayout || defaultLayout);
+    }
+    
     socket.on('layoutUpdate', onLayoutUpdate);
+    socket.on('currentLayout', onCurrentLayout);
+    
+    // Request the current layout when the component mounts
+    socket.emit('getLayout');
     
     return () => {
       socket.off('layoutUpdate', onLayoutUpdate);
-      // Optional: Disconnect if this is the only page using the socket
-      // and you want to clean up resources when the user navigates away.
-      // socket.disconnect();
+      socket.off('currentLayout', onCurrentLayout);
     };
   }, [toast]);
   
+  if (isLoading || !layoutConfig) {
+    return (
+        <div className="flex flex-col h-screen bg-gray-900 text-white">
+            <Header />
+            <main className="flex-1 container mx-auto p-4 flex">
+                <div className="flex flex-col w-full items-center justify-center text-center gap-4 p-8">
+                    <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                    <p className="text-muted-foreground font-semibold">Loading Live Display...</p>
+                </div>
+            </main>
+        </div>
+    );
+  }
+
   const activeSports = layoutConfig.quadrants.filter((q): q is string => q !== null && q !== 'none');
   const gridCols = activeSports.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
   const gridRows = activeSports.length > 2 ? 'grid-rows-2' : 'grid-rows-1';
@@ -77,18 +96,11 @@ export default function BigScreenPage() {
     <div className="flex flex-col h-screen bg-gray-900 text-white overflow-hidden">
         <Header />
         <main className="flex-1 container mx-auto p-4 flex">
-            {isLoadingTeams ? (
-                <div className="flex flex-col w-full items-center justify-center text-center gap-4 p-8">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                    <p className="text-muted-foreground font-semibold">Loading Live Display...</p>
-                </div>
-            ) : (
-                <div className={`grid ${gridCols} ${gridRows} gap-4 w-full h-full`}>
-                    {activeSports.map((sportName) => (
-                        <SportQuadrant key={sportName} sportName={sportName} teamsMap={teamsMap} />
-                    ))}
-                </div>
-            )}
+            <div className={`grid ${gridCols} ${gridRows} gap-4 w-full h-full`}>
+                {activeSports.map((sportName) => (
+                    <SportQuadrant key={sportName} sportName={sportName} teamsMap={teamsMap} />
+                ))}
+            </div>
         </main>
     </div>
   );
@@ -137,9 +149,17 @@ function SportQuadrant({ sportName, teamsMap }: SportQuadrantProps) {
     
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         if (updatedMatch.sport.toLowerCase() === sportName.toLowerCase()) {
-            setMatches(prev => 
-                prev.map(m => m._id === updatedMatch._id ? { ...m, teamOne: teamsMap.get(updatedMatch.teamA), teamTwo: teamsMap.get(updatedMatch.teamB), ...updatedMatch } : m)
-            );
+             setMatches(prev => {
+                const existingMatch = prev.find(m => m._id === updatedMatch._id);
+                if (existingMatch) {
+                    // Update existing match
+                    return prev.map(m => m._id === updatedMatch._id ? { ...existingMatch, ...updatedMatch } : m);
+                }
+                // This case should ideally not happen if match creation is handled separately,
+                // but as a fallback, we can add it.
+                const newPopulatedMatch = { ...updatedMatch, teamOne: teamsMap.get(updatedMatch.teamA), teamTwo: teamsMap.get(updatedMatch.teamB) };
+                return [...prev, newPopulatedMatch];
+            });
         }
     };
     
@@ -301,5 +321,3 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
     </div>
   );
 }
-
-    
