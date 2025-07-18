@@ -2,23 +2,22 @@
 'use client';
 
 import * as React from 'react';
-import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
-import type { MatchAPI, Team } from '@/lib/types';
+import type { Team } from '@/lib/types';
 import { socket, type QuadrantConfig } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
 import { Loader2, RadioTower } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import Image from 'next/image';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne: Team | undefined;
   teamTwo: Team | undefined;
 }
+
+import type { MatchAPI } from '@/lib/types';
+import { getMatches } from '@/services/match-service';
 
 // Default layout if nothing is received from the admin panel
 const defaultLayout: QuadrantConfig = {
@@ -32,7 +31,6 @@ export default function BigScreenPage() {
   const { toast } = useToast();
 
   React.useEffect(() => {
-    // Fetch initial team data once
     async function fetchInitialData() {
         try {
             const fetchedTeams = await getTeams();
@@ -52,7 +50,10 @@ export default function BigScreenPage() {
     
     fetchInitialData();
 
-    socket.connect();
+    // Establish and manage socket connection
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     function onLayoutUpdate(newLayout: QuadrantConfig) {
       setLayoutConfig(newLayout);
@@ -62,7 +63,9 @@ export default function BigScreenPage() {
     
     return () => {
       socket.off('layoutUpdate', onLayoutUpdate);
-      socket.disconnect();
+      // Optional: Disconnect if this is the only page using the socket
+      // and you want to clean up resources when the user navigates away.
+      // socket.disconnect();
     };
   }, [toast]);
   
@@ -128,12 +131,14 @@ function SportQuadrant({ sportName, teamsMap }: SportQuadrantProps) {
 
     fetchData();
 
-    socket.connect();
+    if (!socket.connected) {
+        socket.connect();
+    }
     
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         if (updatedMatch.sport.toLowerCase() === sportName.toLowerCase()) {
             setMatches(prev => 
-                prev.map(m => m._id === updatedMatch._id ? { ...teamsMap.get(updatedMatch.teamA), ...teamsMap.get(updatedMatch.teamB), ...m, ...updatedMatch } : m)
+                prev.map(m => m._id === updatedMatch._id ? { ...m, teamOne: teamsMap.get(updatedMatch.teamA), teamTwo: teamsMap.get(updatedMatch.teamB), ...updatedMatch } : m)
             );
         }
     };
@@ -163,7 +168,6 @@ function SportQuadrant({ sportName, teamsMap }: SportQuadrantProps) {
       socket.off('matchCreated', handleMatchCreated);
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
-      socket.disconnect();
     };
   }, [sportName, teamsMap, populateMatches]);
 
@@ -183,7 +187,7 @@ function SportQuadrant({ sportName, teamsMap }: SportQuadrantProps) {
       ) : (
         <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2">
           {/* Live Matches */}
-          <div>
+          <div className="flex-1">
             <h3 className="text-xl font-semibold text-destructive mb-2 flex items-center gap-2">
               <RadioTower className="w-6 h-6" />
               LIVE
@@ -245,37 +249,39 @@ function LiveMatchCard({ match }: { match: PopulatedMatch }) {
   const teamTwoName = match.teamTwo?.name || 'Team B';
 
   return (
-    <div className="bg-black/40 p-3 rounded-lg border-l-4 border-destructive w-full">
+    <div className="bg-destructive/10 p-3 rounded-lg border border-destructive/30 w-full text-center">
+       {/* Team Names */}
       <div className="flex justify-between items-center text-lg font-bold text-white mb-2">
-          <h3 className="flex-1 text-left truncate">{teamOneName}</h3>
+          <h3 className="flex-1 text-center truncate">{teamOneName}</h3>
           <span className="mx-4 text-gray-400 font-light text-sm">vs</span>
-          <h3 className="flex-1 text-right truncate">{teamTwoName}</h3>
+          <h3 className="flex-1 text-center truncate">{teamTwoName}</h3>
       </div>
+      {/* Scores */}
        <div className="flex justify-between items-center">
-        <AnimatePresence mode="wait">
-            <motion.div
-                key={`${match._id}-a-${match.pointsA}`}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="text-6xl font-black text-white tabular-nums tracking-tighter"
-            >
-            {match.pointsA}
-            </motion.div>
-        </AnimatePresence>
-        <AnimatePresence mode="wait">
-             <motion.div
-                key={`${match._id}-b-${match.pointsB}`}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="text-6xl font-black text-white tabular-nums tracking-tighter"
-            >
-            {match.pointsB}
-            </motion.div>
-        </AnimatePresence>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={`${match._id}-a-${match.pointsA}`}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex-1 text-6xl font-black text-white tabular-nums tracking-tighter"
+                >
+                {match.pointsA}
+                </motion.div>
+            </AnimatePresence>
+            <AnimatePresence mode="wait">
+                 <motion.div
+                    key={`${match._id}-b-${match.pointsB}`}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex-1 text-6xl font-black text-white tabular-nums tracking-tighter"
+                >
+                {match.pointsB}
+                </motion.div>
+            </AnimatePresence>
        </div>
     </div>
   );
@@ -288,10 +294,12 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
   return (
     <div className="bg-gray-800/50 p-3 rounded-md border-l-4 border-cyan-500 text-center">
         <div className="flex items-center justify-between text-base font-semibold">
-            <span className="flex-1 truncate text-left">{teamOneName}</span>
+            <span className="flex-1 truncate text-center">{teamOneName}</span>
             <span className="text-muted-foreground mx-4 font-normal text-sm">vs</span>
-            <span className="flex-1 truncate text-right">{teamTwoName}</span>
+            <span className="flex-1 truncate text-center">{teamTwoName}</span>
         </div>
     </div>
   );
 }
+
+    
