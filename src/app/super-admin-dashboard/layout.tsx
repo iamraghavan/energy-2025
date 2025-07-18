@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { School, Users, Home, Loader2, UserPlus, User, LogOut } from 'lucide-react';
+import { School, Users, Home, Loader2, UserPlus, User, LogOut, Tv } from 'lucide-react';
 import Image from 'next/image';
 
 import {
@@ -65,6 +65,21 @@ function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) 
                   <Link href="/super-admin-dashboard">
                     <Home />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/super-admin-dashboard/big-screen-control')}
+                  className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
+                  tooltip={{
+                    children: 'Big Screen Control',
+                  }}
+                >
+                  <Link href="/super-admin-dashboard/big-screen-control">
+                    <Tv />
+                    <span>Big Screen</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

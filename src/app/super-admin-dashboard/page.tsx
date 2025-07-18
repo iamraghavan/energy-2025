@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { School, Users, UserPlus } from 'lucide-react';
+import { School, Users, UserPlus, Tv } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SuperAdminDashboardPage() {
@@ -22,6 +22,25 @@ export default function SuperAdminDashboardPage() {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
          <Card className="shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Big Screen Control</CardTitle>
+              <Tv className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <CardDescription>
+              Manage the layout and content of the public live display screen.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/super-admin-dashboard/big-screen-control">
+                 Control Screen
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Manage Scorekeepers</CardTitle>
