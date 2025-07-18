@@ -110,7 +110,7 @@ export default function BigScreenPage() {
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
     };
-  }, [toast, teamsMap, populateMatches]);
+  }, [toast, populateMatches, teamsMap]);
   
   if (isLoading || !layoutConfig) {
     return (
