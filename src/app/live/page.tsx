@@ -11,6 +11,7 @@ import { Loader2, RadioTower } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
 import { getMatches } from '@/services/match-service';
+import { sports } from '@/lib/data';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne?: Team;
@@ -283,5 +284,3 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
     </div>
   );
 }
-
-    
