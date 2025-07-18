@@ -13,7 +13,7 @@ export default function LiveLayout({
   return (
     <>
       <head>
-        <meta http-equiv="refresh" content="120" />
+        <meta http-equiv="refresh" content="300" />
       </head>
       {children}
     </>
