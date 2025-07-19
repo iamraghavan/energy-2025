@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -9,6 +8,7 @@ import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
 import type { MatchAPI, Team } from '@/lib/types';
 import { socket } from '@/services/socket';
+import { Header } from '@/components/layout/header';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne: Team | undefined;
@@ -25,7 +25,7 @@ function LiveMatchCard({ match }: { match: PopulatedMatch }) {
       <div className="flex items-center justify-between text-white font-semibold text-lg">
         {/* Team A */}
         <div className="flex-1 text-center truncate pr-2">
-            <p>{teamOneName}</p>
+            <p className="text-wrap: balance;">{teamOneName}</p>
         </div>
 
         {/* Scores */}
@@ -59,7 +59,7 @@ function LiveMatchCard({ match }: { match: PopulatedMatch }) {
 
         {/* Team B */}
          <div className="flex-1 text-center truncate pl-2">
-            <p>{teamTwoName}</p>
+            <p className="text-wrap: balance;">{teamTwoName}</p>
         </div>
       </div>
     </div>
@@ -172,7 +172,7 @@ function SportQuadrant({ sportName, matches, isLoading }: SportQuadrantProps) {
 }
 
 
-export default function BigScreenPage() {
+export default function PublicLivePage() {
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [teamsMap, setTeamsMap] = React.useState<Map<string, Team>>(new Map());
   const [isLoading, setIsLoading] = React.useState(true);
@@ -242,11 +242,12 @@ export default function BigScreenPage() {
   }, [teamsMap, populateMatch]);
 
 
-  const sportsToShow = ["Kabaddi", "Volleyball", "Basketball", "Football"];
+  const sportsToShow = ["Badminton", "Kabaddi", "Volleyball", "Table Tennis"];
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4">
-      <main className="grid grid-cols-1 md:grid-cols-2 grid-rows-2 gap-4 h-[calc(100vh-2rem)]">
+       <Header />
+      <main className="grid grid-cols-1 md:grid-cols-2 grid-rows-2 gap-4 h-[calc(100vh-6rem)] mt-4">
         {sportsToShow.map(sport => (
            <SportQuadrant 
                 key={sport} 
