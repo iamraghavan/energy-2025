@@ -37,8 +37,10 @@ export default function BigScreenPage() {
     }));
   }, []);
 
+  // Effect for fetching initial data
   React.useEffect(() => {
     const fetchInitialData = async () => {
+        setIsLoading(true);
         try {
             const [fetchedTeams, fetchedMatches, fetchedLayout, fetchedSports] = await Promise.all([
                 getTeams(), 
@@ -69,7 +71,10 @@ export default function BigScreenPage() {
     };
     
     fetchInitialData();
+  }, [toast, populateMatches]);
 
+  // Effect for handling socket events
+  React.useEffect(() => {
     if (!socket.connected) {
       socket.connect();
     }
@@ -115,7 +120,7 @@ export default function BigScreenPage() {
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
     };
-  }, [toast, populateMatches]);
+  }, [teamsMap, populateMatches]);
   
   if (isLoading || !layoutConfig) {
     return (
@@ -155,7 +160,7 @@ export default function BigScreenPage() {
                         
                         return (
                              <motion.div
-                                key={`${sportName}-${index}`}
+                                key={`${sportId}-${index}`}
                                 layout
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -306,5 +311,3 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
     </div>
   );
 }
-
-    
