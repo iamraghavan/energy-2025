@@ -224,55 +224,54 @@ function SportQuadrant({ match, isFullScreen = false }: SportQuadrantProps) {
   const teamOneName = match.teamOne.name;
   const teamTwoName = match.teamTwo.name;
 
-  const titleSize = isFullScreen ? 'text-5xl' : 'text-3xl';
-  const scoreSize = isFullScreen ? 'text-9xl' : 'text-7xl';
-  const teamNameSize = isFullScreen ? 'text-4xl' : 'text-2xl';
+  const titleSize = isFullScreen ? 'text-4xl md:text-5xl' : 'text-3xl';
+  const scoreSize = isFullScreen ? 'text-8xl md:text-9xl' : 'text-7xl';
+  const teamNameSize = isFullScreen ? 'text-3xl md:text-4xl' : 'text-2xl';
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm border border-primary/20 rounded-lg p-4 flex flex-col h-full overflow-hidden">
-      <div className="flex items-center gap-3 mb-4 text-primary">
-        <h2 className={`${titleSize} font-bold uppercase tracking-wider`}>{match.sport}</h2>
+    <div className="bg-gray-800/30 backdrop-blur-sm border border-white/10 rounded-lg p-4 flex flex-col h-full overflow-hidden shadow-lg">
+      <div className="text-center mb-4 pb-2 border-b border-white/10">
+        <h2 className={`${titleSize} font-bold uppercase tracking-wider text-primary`}>{match.sport}</h2>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center gap-4">
-        {/* Live Match Card */}
-        <div className="bg-destructive/10 p-3 rounded-lg border border-destructive/30 w-full text-center flex-1 flex flex-col justify-center">
-            {/* Team Names & Scores */}
-            <div className="flex justify-around items-center h-full">
-                    <div className="flex flex-col items-center justify-center flex-1 gap-4">
-                        <h3 className={`font-bold text-white text-center truncate ${teamNameSize}`}>{teamOneName}</h3>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={`${match._id}-a-${match.pointsA}`}
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                transition={{ duration: 0.2 }}
-                                className={`${scoreSize} font-black text-white tabular-nums tracking-tighter`}
-                            >
-                            {match.pointsA}
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
+      <div className="flex-1 grid grid-cols-11 items-center justify-center gap-2">
+        {/* Team One */}
+        <div className="col-span-5 flex flex-col items-center justify-center gap-4 text-center">
+            <h3 className={`${teamNameSize} font-bold text-white text-balance h-24 flex items-center`}>{teamOneName}</h3>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={`${match._id}-a-${match.pointsA}`}
+                    initial={{ opacity: 0, y: -20, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className={`${scoreSize} font-black text-white tabular-nums tracking-tighter`}
+                >
+                {match.pointsA}
+                </motion.div>
+            </AnimatePresence>
+        </div>
 
-                    <span className="mx-2 md:mx-4 text-gray-400 font-light text-4xl">vs</span>
-                    
-                     <div className="flex flex-col items-center justify-center flex-1 gap-4">
-                        <h3 className={`font-bold text-white text-center truncate ${teamNameSize}`}>{teamTwoName}</h3>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={`${match._id}-b-${match.pointsB}`}
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                transition={{ duration: 0.2 }}
-                                className={`${scoreSize} font-black text-white tabular-nums tracking-tighter`}
-                            >
-                            {match.pointsB}
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-            </div>
+        {/* Separator */}
+        <div className="col-span-1 flex items-center justify-center">
+            <span className="font-light text-4xl text-gray-400">vs</span>
+        </div>
+        
+        {/* Team Two */}
+        <div className="col-span-5 flex flex-col items-center justify-center gap-4 text-center">
+            <h3 className={`${teamNameSize} font-bold text-white text-balance h-24 flex items-center`}>{teamTwoName}</h3>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={`${match._id}-b-${match.pointsB}`}
+                    initial={{ opacity: 0, y: -20, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className={`${scoreSize} font-black text-white tabular-nums tracking-tighter`}
+                >
+                {match.pointsB}
+                </motion.div>
+            </AnimatePresence>
         </div>
       </div>
     </div>
