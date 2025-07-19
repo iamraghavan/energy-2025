@@ -68,9 +68,11 @@ export default function BigScreenControlPage() {
 
 
   const handleLayoutChange = (index: number, value: string) => {
-    // Log and alert the selected sport name for debugging
-    console.log(`Quadrant ${index + 1} changed to:`, value);
-    alert(`Quadrant ${index + 1} set to: ${value}`);
+    const selectedSport = sports.find(sport => sport.name === value);
+    const sportId = selectedSport ? selectedSport.sportId : 'none';
+
+    console.log(`Quadrant ${index + 1} changed to sportId:`, sportId);
+    alert(`Quadrant ${index + 1} set to sportId: ${sportId}`);
 
     const newLayout = [...layout];
     newLayout[index] = value === 'none' ? null : value;
