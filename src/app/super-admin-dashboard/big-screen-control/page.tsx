@@ -91,12 +91,12 @@ export default function BigScreenControlPage() {
             title: 'Layout Published!',
             description: 'The big screen display has been updated.',
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to publish layout', error);
         toast({
             variant: 'destructive',
             title: 'Publish Failed',
-            description: 'Could not save or broadcast the layout update.',
+            description: error.message || 'Could not save or broadcast the layout update.',
         });
     } finally {
         setIsSubmitting(false);
