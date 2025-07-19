@@ -8,15 +8,17 @@ import type { Team, MatchAPI, PopulatedMatch } from '@/lib/types';
 import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Maximize, Minimize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMatches } from '@/services/match-service';
 import { CountdownTimer } from '@/components/common/countdown-timer';
+import { Button } from '@/components/ui/button';
 
 export default function BigScreenPage() {
   const [teamsMap, setTeamsMap] = React.useState<Map<string, Team>>(new Map());
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
   const { toast } = useToast();
 
   const populateMatches = React.useCallback((matchesToPopulate: MatchAPI[], teams: Map<string, Team>): PopulatedMatch[] => {
@@ -101,6 +103,26 @@ export default function BigScreenPage() {
     };
   }, [teamsMap, populateMatches]);
   
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
+  
+  React.useEffect(() => {
+    const onFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
   if (isLoading) {
     return (
         <div className="flex flex-col h-screen bg-gray-900 text-white">
@@ -186,7 +208,15 @@ export default function BigScreenPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white overflow-hidden">
-        <Header />
+        <div className="relative">
+            <Header />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <Button variant="outline" size="icon" onClick={handleFullscreen} className="bg-transparent text-white hover:bg-white/10 hover:text-white border-white/20">
+                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                    <span className="sr-only">Toggle Fullscreen</span>
+                </Button>
+            </div>
+        </div>
         <main className="flex-1 container mx-auto p-4 flex">
            <AnimatePresence>
                 <motion.div
