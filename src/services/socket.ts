@@ -1,6 +1,6 @@
 
 import { io, type Socket } from 'socket.io-client';
-import type { MatchAPI } from '@/lib/types';
+import type { MatchAPI, QuadrantConfig } from '@/lib/types';
 
 const URL = 'https://two025-energy-event-backend.onrender.com';
 
@@ -22,11 +22,6 @@ export interface ClientToServerEvents {
   layoutUpdate: (layout: QuadrantConfig) => void;
   getLayout: () => void;
 }
-
-export interface QuadrantConfig {
-  quadrants: (string | null)[];
-}
-
 
 // By setting autoConnect to true (the default) and specifying transports,
 // we ensure a more reliable and immediate connection for real-time updates.

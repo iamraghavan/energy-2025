@@ -3,8 +3,8 @@
 
 import * as React from 'react';
 import { getTeams } from '@/services/team-service';
-import type { Team, MatchAPI } from '@/lib/types';
-import { socket, type QuadrantConfig } from '@/services/socket';
+import type { Team, MatchAPI, SportAPI, QuadrantConfig } from '@/lib/types';
+import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
 import { Loader2, RadioTower } from 'lucide-react';
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
 import { getMatches } from '@/services/match-service';
 import { getLayout } from '@/services/layout-service';
+import { getSports } from '@/services/sport-service';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne?: Team;
@@ -19,12 +20,16 @@ interface PopulatedMatch extends MatchAPI {
 }
 
 const defaultLayout: QuadrantConfig = {
-    quadrants: ["Kabaddi", "Volleyball", "Football", "Cricket"],
+    quadrant1: "KABADDI",
+    quadrant2: "VOLLEYBALL",
+    quadrant3: "BASKETBALL",
+    quadrant4: "FOOTBALL",
 };
 
 export default function BigScreenPage() {
   const [layoutConfig, setLayoutConfig] = React.useState<QuadrantConfig | null>(null);
   const [teamsMap, setTeamsMap] = React.useState<Map<string, Team>>(new Map());
+  const [sportsMap, setSportsMap] = React.useState<Map<string, string>>(new Map());
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const { toast } = useToast();
@@ -40,13 +45,19 @@ export default function BigScreenPage() {
   React.useEffect(() => {
     const fetchInitialData = async () => {
         try {
-            const [fetchedTeams, fetchedMatches, fetchedLayout] = await Promise.all([
+            const [fetchedTeams, fetchedMatches, fetchedLayout, fetchedSports] = await Promise.all([
                 getTeams(), 
                 getMatches(),
-                getLayout().catch(() => defaultLayout) // Use default on error
+                getLayout().catch(() => defaultLayout),
+                getSports()
             ]);
+            
             const newTeamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
             setTeamsMap(newTeamsMap);
+
+            const newSportsMap = new Map<string, string>(fetchedSports.map(sport => [sport.sportId, sport.name]));
+            setSportsMap(newSportsMap);
+
             setMatches(populateMatches(fetchedMatches, newTeamsMap));
             setLayoutConfig(fetchedLayout || defaultLayout);
         } catch (error) {
@@ -67,10 +78,19 @@ export default function BigScreenPage() {
     if (!socket.connected) {
       socket.connect();
     }
+    
+    // For initial load or reconnection
+    socket.on('connect', () => {
+      socket.emit('getLayout');
+    });
 
-    const onLayoutUpdate = (newLayout: QuadrantConfig) => {
+    socket.on('currentLayout', (newLayout: QuadrantConfig) => {
+        setLayoutConfig(newLayout);
+    });
+
+    socket.on('layoutUpdate', (newLayout: QuadrantConfig) => {
       setLayoutConfig(newLayout);
-    };
+    });
 
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         setMatches(prev => {
@@ -94,14 +114,15 @@ export default function BigScreenPage() {
         setMatches(prev => prev.filter(m => m._id !== matchId));
     };
     
-    socket.on('layoutUpdate', onLayoutUpdate);
     socket.on('matchUpdated', handleMatchUpdate);
     socket.on('matchCreated', handleMatchCreated);
     socket.on('matchDeleted', handleMatchDeleted);
     socket.on('scoreUpdate', handleMatchUpdate);
     
     return () => {
-      socket.off('layoutUpdate', onLayoutUpdate);
+      socket.off('connect');
+      socket.off('currentLayout');
+      socket.off('layoutUpdate');
       socket.off('matchUpdated', handleMatchUpdate);
       socket.off('matchCreated', handleMatchCreated);
       socket.off('matchDeleted', handleMatchDeleted);
@@ -124,7 +145,9 @@ export default function BigScreenPage() {
     );
   }
 
-  const activeSports = layoutConfig.quadrants.filter((q): q is string => q !== null && q !== 'none');
+  const layoutValues = Object.values(layoutConfig).filter(v => v !== null) as string[];
+  const activeSports = [...new Set(layoutValues)].map(sportId => sportsMap.get(sportId)).filter((s): s is string => !!s);
+  
   const gridCols = activeSports.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
   const gridRows = activeSports.length > 2 ? 'grid-rows-2' : 'grid-rows-1';
 

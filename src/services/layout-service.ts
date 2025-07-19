@@ -1,4 +1,6 @@
 
+'use client';
+
 import type { QuadrantConfig, User } from '@/lib/types';
 
 const API_BASE_URL = 'https://two025-energy-event-backend.onrender.com/api';
@@ -67,7 +69,7 @@ export const updateLayout = async (layoutData: QuadrantConfig): Promise<Quadrant
   const response = await fetch(`${API_BASE_URL}/layout`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify({ layout: layoutData }),
+    body: JSON.stringify(layoutData), // Send the object directly
   });
   const data = await handleResponse(response);
   return data.data.layout;

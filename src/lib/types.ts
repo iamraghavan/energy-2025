@@ -122,3 +122,10 @@ export interface User {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface QuadrantConfig {
+  quadrant1: string | null;
+  quadrant2: string | null;
+  quadrant3: string | null;
+  quadrant4: string | null;
+}

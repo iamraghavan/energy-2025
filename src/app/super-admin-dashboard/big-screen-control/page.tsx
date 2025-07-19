@@ -13,37 +13,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { socket, type QuadrantConfig } from '@/services/socket';
+import { socket } from '@/services/socket';
 import { getLayout, updateLayout } from '@/services/layout-service';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { getSports } from '@/services/sport-service';
-import type { SportAPI } from '@/lib/types';
+import type { SportAPI, QuadrantConfig } from '@/lib/types';
+
+const initialLayout: QuadrantConfig = {
+  quadrant1: null,
+  quadrant2: null,
+  quadrant3: null,
+  quadrant4: null,
+};
 
 export default function BigScreenControlPage() {
   const { toast } = useToast();
   const [sports, setSports] = React.useState<SportAPI[]>([]);
-  const [quadrantOptions, setQuadrantOptions] = React.useState<string[]>(['none']);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [layout, setLayout] = React.useState<(string | null)[]>(['none', 'none', 'none', 'none']);
+  const [layout, setLayout] = React.useState<QuadrantConfig>(initialLayout);
 
-  // Fetch initial data (layout and sports)
   React.useEffect(() => {
     async function fetchInitialData() {
       setIsLoading(true);
       try {
         const [currentLayout, fetchedSports] = await Promise.all([
-          getLayout().catch(() => ({ quadrants: ['none', 'none', 'none', 'none'] })),
+          getLayout().catch(() => initialLayout),
           getSports()
         ]);
 
-        if (currentLayout && currentLayout.quadrants) {
-          setLayout(currentLayout.quadrants);
-        }
-        
+        setLayout(currentLayout || initialLayout);
         setSports(fetchedSports);
-        setQuadrantOptions(['none', ...fetchedSports.map(s => s.name)]);
 
       } catch (error) {
         console.error("Failed to fetch initial data", error);
@@ -59,41 +60,35 @@ export default function BigScreenControlPage() {
     fetchInitialData();
   }, [toast]);
 
-  // Connect to socket on mount
   React.useEffect(() => {
     if (!socket.connected) {
       socket.connect();
     }
   }, []);
 
-
-  const handleLayoutChange = (index: number, value: string) => {
-    const selectedSport = sports.find(sport => sport.name === value);
-    const sportId = selectedSport ? selectedSport.sportId : 'none';
-
-    console.log(`Quadrant ${index + 1} changed to sportId:`, sportId);
-    alert(`Quadrant ${index + 1} set to sportId: ${sportId}`);
-
-    const newLayout = [...layout];
-    newLayout[index] = value === 'none' ? null : value;
+  const handleLayoutChange = (quadrant: keyof QuadrantConfig, sportName: string) => {
+    const newLayout = { ...layout };
+    if (sportName === 'none') {
+        newLayout[quadrant] = null;
+    } else {
+        const selectedSport = sports.find(sport => sport.name === sportName);
+        if (selectedSport) {
+            newLayout[quadrant] = selectedSport.sportId;
+        }
+    }
     setLayout(newLayout);
   };
 
   const publishLayout = async () => {
     setIsSubmitting(true);
-    const payload: QuadrantConfig = {
-      quadrants: layout,
-    };
     
     try {
-        // 1. Persist the layout to the backend
-        await updateLayout(payload);
+        await updateLayout(layout);
 
-        // 2. Emit socket event for real-time update
         if (!socket.connected) {
           socket.connect();
         }
-        socket.emit('layoutUpdate', payload);
+        socket.emit('layoutUpdate', layout);
 
         toast({
             title: 'Layout Published!',
@@ -120,6 +115,12 @@ export default function BigScreenControlPage() {
     );
   }
 
+  const getSportNameFromId = (sportId: string | null) => {
+    if (!sportId) return 'none';
+    const sport = sports.find(s => s.sportId === sportId);
+    return sport ? sport.name : 'none';
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
@@ -142,23 +143,24 @@ export default function BigScreenControlPage() {
         </CardHeader>
         <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="border p-4 rounded-lg flex flex-col gap-4 bg-secondary/50">
+                {(Object.keys(layout) as Array<keyof QuadrantConfig>).map((key, index) => (
+                    <div key={key} className="border p-4 rounded-lg flex flex-col gap-4 bg-secondary/50">
                        <Label htmlFor={`quadrant-${index}`} className="font-semibold flex items-center gap-2 text-capitalize">
                          <Monitor className="w-5 h-5" />
                          Quadrant {index + 1}
                        </Label>
                        <Select
-                         value={layout[index] || 'none'}
-                         onValueChange={(value) => handleLayoutChange(index, value)}
+                         value={getSportNameFromId(layout[key])}
+                         onValueChange={(value) => handleLayoutChange(key, value)}
                        >
                          <SelectTrigger id={`quadrant-${index}`}>
                            <SelectValue placeholder="Select a sport" />
                          </SelectTrigger>
                          <SelectContent>
-                           {quadrantOptions.map((option) => (
-                             <SelectItem key={option} value={option} className="capitalize">
-                               {option}
+                            <SelectItem value="none" className="capitalize">None</SelectItem>
+                           {sports.map((sport) => (
+                             <SelectItem key={sport._id} value={sport.name} className="capitalize">
+                               {sport.name}
                              </SelectItem>
                            ))}
                          </SelectContent>
