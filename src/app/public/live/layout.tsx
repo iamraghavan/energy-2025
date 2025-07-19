@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: 'Live scores dashboard for all ongoing matches.',
 };
 
-export default function PublicLiveLayout({
+export default function LiveLayout({
   children,
 }: {
   children: React.ReactNode;

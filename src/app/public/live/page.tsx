@@ -1,14 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Maximize, Minimize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { getMatches } from '@/services/match-service';
 import { getTeams } from '@/services/team-service';
 import type { MatchAPI, Team } from '@/lib/types';
 import { socket } from '@/services/socket';
-import { Header } from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne: Team | undefined;
@@ -172,10 +172,35 @@ function SportQuadrant({ sportName, matches, isLoading }: SportQuadrantProps) {
 }
 
 
-export default function PublicLivePage() {
+export default function BigScreenPage() {
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [teamsMap, setTeamsMap] = React.useState<Map<string, Team>>(new Map());
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isFullScreen, setIsFullScreen] = React.useState(false);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullScreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullScreen(false);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    };
+  }, []);
 
   const populateMatch = React.useCallback((match: MatchAPI, teams: Map<string, Team>): PopulatedMatch => {
     return {
@@ -245,9 +270,14 @@ export default function PublicLivePage() {
   const sportsToShow = ["Badminton", "Kabaddi", "Volleyball", "Table Tennis"];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4">
-       <Header />
-      <main className="grid grid-cols-1 md:grid-cols-2 grid-rows-2 gap-4 h-[calc(100vh-6rem)] mt-4">
+    <div className="min-h-screen bg-gray-950 text-white p-4 relative">
+       <div className="absolute top-4 right-4 z-10">
+        <Button onClick={toggleFullScreen} variant="ghost" size="icon" className="text-white hover:text-primary hover:bg-white/10">
+          {isFullScreen ? <Minimize className="h-6 w-6" /> : <Maximize className="h-6 w-6" />}
+          <span className="sr-only">Toggle Fullscreen</span>
+        </Button>
+      </div>
+      <main className="grid grid-cols-1 md:grid-cols-2 grid-rows-2 gap-4 h-screen">
         {sportsToShow.map(sport => (
            <SportQuadrant 
                 key={sport} 
