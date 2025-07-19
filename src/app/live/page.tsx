@@ -141,11 +141,11 @@ export default function BigScreenPage() {
     );
   }
 
-  const layoutValues = Object.values(layoutConfig).filter(v => v !== null) as string[];
-  const activeSports = [...new Set(layoutValues)].map(sportId => sportsMap.get(sportId)).filter((s): s is string => !!s);
+  const activeSportIds = Object.values(layoutConfig).filter((sportId): sportId is string => !!sportId);
+  const uniqueActiveSportIds = [...new Set(activeSportIds)];
   
-  const gridCols = activeSports.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
-  const gridRows = activeSports.length > 2 ? 'grid-rows-2' : 'grid-rows-1';
+  const gridCols = uniqueActiveSportIds.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
+  const gridRows = uniqueActiveSportIds.length > 2 ? 'grid-rows-2' : 'grid-rows-1';
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white overflow-hidden">
@@ -153,14 +153,17 @@ export default function BigScreenPage() {
         <main className="flex-1 container mx-auto p-4 flex">
             <div className={`grid ${gridCols} ${gridRows} gap-4 w-full h-full`}>
                 <AnimatePresence>
-                    {activeSports.map((sportName, index) => {
+                    {uniqueActiveSportIds.map((sportId, index) => {
+                        const sportName = sportsMap.get(sportId);
+                        if (!sportName) return null;
+
                         const sportMatches = matches.filter(m => m.sport.toLowerCase() === sportName.toLowerCase());
                         const liveMatches = sportMatches.filter(m => m.status === 'live').sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
                         const upcomingMatches = sportMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').sort((a,b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()).slice(0, 4);
                         
                         return (
                              <motion.div
-                                key={`${sportName}-${index}`}
+                                key={`${sportId}-${index}`}
                                 layout
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
