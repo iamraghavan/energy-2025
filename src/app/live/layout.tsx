@@ -2,8 +2,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Live Matches | ScoreCast',
-  description: 'Live scores for all ongoing matches.',
+  title: 'Big Screen | ScoreCast',
+  description: 'Live scores dashboard for all ongoing matches.',
 };
 
 export default function LiveLayout({
