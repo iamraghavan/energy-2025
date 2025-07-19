@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Tv, Monitor, Send } from 'lucide-react';
+import { Tv, Monitor, Send, Loader2 } from 'lucide-react';
 
 import { sports } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -15,51 +15,44 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { socket, type QuadrantConfig } from '@/services/socket';
+import { getLayout, updateLayout } from '@/services/layout-service';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 
 const quadrantOptions = ['none', ...sports.map(s => s.name)];
-const LOCAL_STORAGE_KEY = 'bigScreenLayout';
 
 export default function BigScreenControlPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [layout, setLayout] = React.useState<(string | null)[]>(['none', 'none', 'none', 'none']);
 
-  // Effect to load saved layout from localStorage on component mount
+  // Fetch initial layout from the backend
   React.useEffect(() => {
-    try {
-      const savedLayout = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (savedLayout) {
-        const parsedLayout = JSON.parse(savedLayout);
-        if (Array.isArray(parsedLayout) && parsedLayout.length === 4) {
-          setLayout(parsedLayout);
+    async function fetchInitialLayout() {
+      try {
+        const currentLayout = await getLayout();
+        if (currentLayout && currentLayout.quadrants) {
+          setLayout(currentLayout.quadrants);
         }
+      } catch (error) {
+        console.error("Failed to fetch layout from server", error);
+        toast({
+          variant: 'destructive',
+          title: 'Could not fetch layout',
+          description: 'Using default local layout. Please publish to sync.',
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to load layout from localStorage", error);
     }
-  }, []);
-
-  // Effect to save layout to localStorage whenever it changes
-  React.useEffect(() => {
-    try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(layout));
-    } catch (error) {
-        console.error("Failed to save layout to localStorage", error);
-    }
-  }, [layout]);
+    fetchInitialLayout();
+  }, [toast]);
 
   // Connect to socket on mount
   React.useEffect(() => {
     if (!socket.connected) {
       socket.connect();
-    }
-    return () => {
-      // Optional: disconnect if not needed elsewhere
-      // if (socket.connected) {
-      //   socket.disconnect();
-      // }
     }
   }, []);
 
@@ -70,17 +63,22 @@ export default function BigScreenControlPage() {
     setLayout(newLayout);
   };
 
-  const publishLayout = () => {
+  const publishLayout = async () => {
     setIsSubmitting(true);
     const payload: QuadrantConfig = {
       quadrants: layout,
     };
     
     try {
+        // 1. Persist the layout to the backend
+        await updateLayout(payload);
+
+        // 2. Emit socket event for real-time update
         if (!socket.connected) {
           socket.connect();
         }
         socket.emit('layoutUpdate', payload);
+
         toast({
             title: 'Layout Published!',
             description: 'The big screen display has been updated.',
@@ -90,12 +88,21 @@ export default function BigScreenControlPage() {
         toast({
             variant: 'destructive',
             title: 'Publish Failed',
-            description: 'Could not connect to the server to update the layout.',
+            description: 'Could not save or broadcast the layout update.',
         });
     } finally {
         setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-48">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-muted-foreground">Loading layout...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -144,7 +151,7 @@ export default function BigScreenControlPage() {
                 ))}
             </div>
             <div className="mt-6 flex justify-end">
-                <Button onClick={publishLayout} disabled={isSubmitting}>
+                <Button onClick={publishLayout} disabled={isSubmitting || isLoading}>
                     <Send className="mr-2 h-4 w-4" />
                     {isSubmitting ? 'Publishing...' : 'Publish Layout'}
                 </Button>
@@ -154,5 +161,3 @@ export default function BigScreenControlPage() {
     </div>
   );
 }
-
-    

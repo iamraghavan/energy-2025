@@ -36,5 +36,3 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(URL
     reconnectionAttempts: 5,
     autoConnect: false, // Set to false to manually control connection
 });
-
-    

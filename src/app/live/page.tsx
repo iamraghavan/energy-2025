@@ -11,6 +11,7 @@ import { Loader2, RadioTower } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
 import { getMatches } from '@/services/match-service';
+import { getLayout } from '@/services/layout-service';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne?: Team;
@@ -37,25 +38,31 @@ export default function BigScreenPage() {
   }, []);
 
   React.useEffect(() => {
-    const fetchAndSetData = async () => {
+    const fetchInitialData = async () => {
         try {
-            const [fetchedTeams, fetchedMatches] = await Promise.all([getTeams(), getMatches()]);
+            const [fetchedTeams, fetchedMatches, fetchedLayout] = await Promise.all([
+                getTeams(), 
+                getMatches(),
+                getLayout().catch(() => defaultLayout) // Use default on error
+            ]);
             const newTeamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
             setTeamsMap(newTeamsMap);
             setMatches(populateMatches(fetchedMatches, newTeamsMap));
+            setLayoutConfig(fetchedLayout || defaultLayout);
         } catch (error) {
             console.error("Failed to fetch initial data", error);
             toast({
                 variant: 'destructive',
                 title: 'Network Error',
-                description: 'Could not load initial data. Some information may be missing.',
+                description: 'Could not load initial data. Displaying default layout.',
             });
+            setLayoutConfig(defaultLayout);
         } finally {
             setIsLoading(false);
         }
     };
     
-    fetchAndSetData();
+    fetchInitialData();
 
     if (!socket.connected) {
       socket.connect();
@@ -63,10 +70,6 @@ export default function BigScreenPage() {
 
     const onLayoutUpdate = (newLayout: QuadrantConfig) => {
       setLayoutConfig(newLayout);
-    };
-    
-    const onCurrentLayout = (currentLayout: QuadrantConfig) => {
-      setLayoutConfig(currentLayout || defaultLayout);
     };
 
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
@@ -92,17 +95,13 @@ export default function BigScreenPage() {
     };
     
     socket.on('layoutUpdate', onLayoutUpdate);
-    socket.on('currentLayout', onCurrentLayout);
     socket.on('matchUpdated', handleMatchUpdate);
     socket.on('matchCreated', handleMatchCreated);
     socket.on('matchDeleted', handleMatchDeleted);
     socket.on('scoreUpdate', handleMatchUpdate);
     
-    socket.emit('getLayout');
-    
     return () => {
       socket.off('layoutUpdate', onLayoutUpdate);
-      socket.off('currentLayout', onCurrentLayout);
       socket.off('matchUpdated', handleMatchUpdate);
       socket.off('matchCreated', handleMatchCreated);
       socket.off('matchDeleted', handleMatchDeleted);
@@ -118,7 +117,7 @@ export default function BigScreenPage() {
                 <div className="flex flex-col w-full items-center justify-center text-center gap-4 p-8">
                     <Loader2 className="w-12 h-12 animate-spin text-primary" />
                     <p className="text-muted-foreground font-semibold">Loading Live Display...</p>
-                    <p className="text-sm text-muted-foreground/50">Waiting for layout from server...</p>
+                    <p className="text-sm text-muted-foreground/50">Fetching layout from server...</p>
                 </div>
             </main>
         </div>
