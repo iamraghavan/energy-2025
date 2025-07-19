@@ -17,7 +17,7 @@ interface PopulatedMatch extends MatchAPI {
   teamTwo?: Team;
 }
 
-// Default layout as a fallback, though the server-pushed layout is preferred.
+// This is now only a fallback for the case where the server has no layout configured.
 const defaultLayout: QuadrantConfig = {
     quadrants: ["Kabaddi", "Volleyball", "Football", "Cricket"],
 };
@@ -67,12 +67,14 @@ export default function BigScreenPage() {
     };
     
     const onCurrentLayout = (currentLayout: QuadrantConfig) => {
+      // If server returns null/undefined layout, use a default.
       setLayoutConfig(currentLayout || defaultLayout);
     };
 
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         setMatches(prev => {
             const index = prev.findIndex(m => m._id === updatedMatch._id);
+            // Use a stable teamsMap from state for population
             const populatedUpdate = populateMatches([updatedMatch], teamsMap)[0];
             if (index > -1) {
                 const newMatches = [...prev];
@@ -99,6 +101,7 @@ export default function BigScreenPage() {
     socket.on('matchDeleted', handleMatchDeleted);
     socket.on('scoreUpdate', handleMatchUpdate);
     
+    // Request the current layout from the server upon connection
     socket.emit('getLayout');
     
     return () => {
@@ -108,6 +111,8 @@ export default function BigScreenPage() {
       socket.off('matchCreated', handleMatchCreated);
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
+      // Disconnecting is optional, depends on whether other pages use the socket
+      // if (socket.connected) socket.disconnect();
     };
   }, [fetchAndSetData, teamsMap, populateMatches]);
   
@@ -119,6 +124,7 @@ export default function BigScreenPage() {
                 <div className="flex flex-col w-full items-center justify-center text-center gap-4 p-8">
                     <Loader2 className="w-12 h-12 animate-spin text-primary" />
                     <p className="text-muted-foreground font-semibold">Loading Live Display...</p>
+                    <p className="text-sm text-muted-foreground/50">Waiting for layout from server...</p>
                 </div>
             </main>
         </div>
@@ -134,20 +140,30 @@ export default function BigScreenPage() {
         <Header />
         <main className="flex-1 container mx-auto p-4 flex">
             <div className={`grid ${gridCols} ${gridRows} gap-4 w-full h-full`}>
-                {activeSports.map((sportName, index) => {
-                    const sportMatches = matches.filter(m => m.sport.toLowerCase() === sportName.toLowerCase());
-                    const liveMatches = sportMatches.filter(m => m.status === 'live').sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-                    const upcomingMatches = sportMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').sort((a,b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()).slice(0, 4);
-                    
-                    return (
-                        <SportQuadrant 
-                            key={`${sportName}-${index}`} 
-                            sportName={sportName}
-                            liveMatches={liveMatches}
-                            upcomingMatches={upcomingMatches}
-                        />
-                    );
-                })}
+                <AnimatePresence>
+                    {activeSports.map((sportName, index) => {
+                        const sportMatches = matches.filter(m => m.sport.toLowerCase() === sportName.toLowerCase());
+                        const liveMatches = sportMatches.filter(m => m.status === 'live').sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+                        const upcomingMatches = sportMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').sort((a,b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()).slice(0, 4);
+                        
+                        return (
+                             <motion.div
+                                key={`${sportName}-${index}`}
+                                layout
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="h-full"
+                             >
+                                <SportQuadrant 
+                                    sportName={sportName}
+                                    liveMatches={liveMatches}
+                                    upcomingMatches={upcomingMatches}
+                                />
+                             </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
             </div>
         </main>
     </div>
@@ -283,5 +299,3 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
     </div>
   );
 }
-
-    
