@@ -275,3 +275,4 @@ function SportQuadrant({ match, isFullScreen = false }: SportQuadrantProps) {
   );
 }
 
+    
