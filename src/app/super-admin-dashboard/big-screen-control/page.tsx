@@ -61,6 +61,7 @@ export default function BigScreenControlPage() {
     const newLayout = [...layout];
     newLayout[index] = value === 'none' ? null : value;
     setLayout(newLayout);
+    alert(`Selected sport: ${value}`);
   };
 
   const publishLayout = async () => {
