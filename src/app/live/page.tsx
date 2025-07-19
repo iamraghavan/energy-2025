@@ -79,8 +79,6 @@ export default function BigScreenPage() {
       socket.connect();
     }
     
-    const onConnect = () => socket.emit('getLayout');
-    const onCurrentLayout = (newLayout: QuadrantConfig) => setLayoutConfig(newLayout);
     const onLayoutUpdate = (newLayout: QuadrantConfig) => {
         setLayoutConfig(newLayout);
     };
@@ -107,8 +105,6 @@ export default function BigScreenPage() {
         setMatches(prev => prev.filter(m => m._id !== matchId));
     };
 
-    socket.on('connect', onConnect);
-    socket.on('currentLayout', onCurrentLayout);
     socket.on('layoutUpdate', onLayoutUpdate);
     socket.on('matchUpdated', handleMatchUpdate);
     socket.on('matchCreated', handleMatchCreated);
@@ -116,8 +112,6 @@ export default function BigScreenPage() {
     socket.on('scoreUpdate', handleMatchUpdate);
     
     return () => {
-      socket.off('connect', onConnect);
-      socket.off('currentLayout', onCurrentLayout);
       socket.off('layoutUpdate', onLayoutUpdate);
       socket.off('matchUpdated', handleMatchUpdate);
       socket.off('matchCreated', handleMatchCreated);

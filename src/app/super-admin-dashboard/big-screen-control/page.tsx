@@ -42,7 +42,7 @@ export default function BigScreenControlPage() {
           getLayout().catch(() => initialLayout),
           getSports()
         ]);
-
+        
         setLayout(currentLayout || initialLayout);
         setSports(fetchedSports);
 
@@ -59,7 +59,7 @@ export default function BigScreenControlPage() {
     }
     fetchInitialData();
   }, [toast]);
-
+  
   React.useEffect(() => {
     if (!socket.connected) {
       socket.connect();
@@ -80,12 +80,14 @@ export default function BigScreenControlPage() {
     setIsSubmitting(true);
     
     try {
-        const updatedLayout = await updateLayout(layout);
-
+        const updatedLayoutResponse = await updateLayout(layout);
+        
         if (!socket.connected) {
           socket.connect();
         }
-        socket.emit('layoutUpdate', updatedLayout);
+        
+        // Ensure we emit only the layout object
+        socket.emit('layoutUpdate', updatedLayoutResponse.data.layout);
 
         toast({
             title: 'Layout Published!',
