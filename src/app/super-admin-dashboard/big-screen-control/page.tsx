@@ -76,7 +76,7 @@ export default function BigScreenControlPage() {
     setLayout(newLayout);
   };
 
-  const publishLayout = async () => {
+  const publishLayout = React.useCallback(async () => {
     setIsSubmitting(true);
     
     try {
@@ -101,7 +101,7 @@ export default function BigScreenControlPage() {
     } finally {
         setIsSubmitting(false);
     }
-  };
+  }, [layout, toast]);
 
   if (isLoading) {
     return (
@@ -140,7 +140,7 @@ export default function BigScreenControlPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {(Object.keys(layout) as Array<keyof QuadrantConfig>).map((key, index) => (
                     <div key={key} className="border p-4 rounded-lg flex flex-col gap-4 bg-secondary/50">
-                       <Label htmlFor={`quadrant-${index}`} className="font-semibold flex items-center gap-2 text-capitalize">
+                       <Label htmlFor={`quadrant-${index}`} className="font-semibold flex items-center gap-2 capitalize">
                          <Monitor className="w-5 h-5" />
                          Quadrant {index + 1}
                        </Label>
