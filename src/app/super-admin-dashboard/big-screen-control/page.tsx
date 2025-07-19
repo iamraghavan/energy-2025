@@ -80,12 +80,12 @@ export default function BigScreenControlPage() {
     setIsSubmitting(true);
     
     try {
-        await updateLayout(layout);
+        const updatedLayout = await updateLayout(layout);
 
         if (!socket.connected) {
           socket.connect();
         }
-        socket.emit('layoutUpdate', layout);
+        socket.emit('layoutUpdate', updatedLayout);
 
         toast({
             title: 'Layout Published!',
