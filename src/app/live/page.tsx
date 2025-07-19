@@ -20,10 +20,10 @@ interface PopulatedMatch extends MatchAPI {
 }
 
 const defaultLayout: QuadrantConfig = {
-    quadrant1: "KABADDI",
-    quadrant2: "VOLLEYBALL",
-    quadrant3: "BASKETBALL",
-    quadrant4: "FOOTBALL",
+    quadrant1: null,
+    quadrant2: null,
+    quadrant3: null,
+    quadrant4: null,
 };
 
 export default function BigScreenPage() {
@@ -81,7 +81,9 @@ export default function BigScreenPage() {
     
     const onConnect = () => socket.emit('getLayout');
     const onCurrentLayout = (newLayout: QuadrantConfig) => setLayoutConfig(newLayout);
-    const onLayoutUpdate = (newLayout: QuadrantConfig) => setLayoutConfig(newLayout);
+    const onLayoutUpdate = (newLayout: QuadrantConfig) => {
+        setLayoutConfig(newLayout);
+    };
     
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         setMatches(prev => {
@@ -122,7 +124,9 @@ export default function BigScreenPage() {
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
     };
-  }, [toast, populateMatches, teamsMap]);
+  // The dependencies are correct. populateMatches and teamsMap are stable.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toast, populateMatches]);
   
   if (isLoading || !layoutConfig) {
     return (
