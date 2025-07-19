@@ -4,7 +4,6 @@
 import * as React from 'react';
 import { Tv, Monitor, Send, Loader2 } from 'lucide-react';
 
-import { sports } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -18,35 +17,46 @@ import { socket, type QuadrantConfig } from '@/services/socket';
 import { getLayout, updateLayout } from '@/services/layout-service';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
-
-const quadrantOptions = ['none', ...sports.map(s => s.name)];
+import { getSports } from '@/services/sport-service';
+import type { SportAPI } from '@/lib/types';
 
 export default function BigScreenControlPage() {
   const { toast } = useToast();
+  const [sports, setSports] = React.useState<SportAPI[]>([]);
+  const [quadrantOptions, setQuadrantOptions] = React.useState<string[]>(['none']);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [layout, setLayout] = React.useState<(string | null)[]>(['none', 'none', 'none', 'none']);
 
-  // Fetch initial layout from the backend
+  // Fetch initial data (layout and sports)
   React.useEffect(() => {
-    async function fetchInitialLayout() {
+    async function fetchInitialData() {
+      setIsLoading(true);
       try {
-        const currentLayout = await getLayout();
+        const [currentLayout, fetchedSports] = await Promise.all([
+          getLayout().catch(() => ({ quadrants: ['none', 'none', 'none', 'none'] })),
+          getSports()
+        ]);
+
         if (currentLayout && currentLayout.quadrants) {
           setLayout(currentLayout.quadrants);
         }
+        
+        setSports(fetchedSports);
+        setQuadrantOptions(['none', ...fetchedSports.map(s => s.name)]);
+
       } catch (error) {
-        console.error("Failed to fetch layout from server", error);
+        console.error("Failed to fetch initial data", error);
         toast({
           variant: 'destructive',
-          title: 'Could not fetch layout',
-          description: 'Using default local layout. Please publish to sync.',
+          title: 'Could not fetch initial data',
+          description: 'Could not load layout or sports. Please check the connection and try again.',
         });
       } finally {
         setIsLoading(false);
       }
     }
-    fetchInitialLayout();
+    fetchInitialData();
   }, [toast]);
 
   // Connect to socket on mount
@@ -61,7 +71,6 @@ export default function BigScreenControlPage() {
     const newLayout = [...layout];
     newLayout[index] = value === 'none' ? null : value;
     setLayout(newLayout);
-    alert(`Selected sport: ${value}`);
   };
 
   const publishLayout = async () => {
@@ -100,7 +109,7 @@ export default function BigScreenControlPage() {
     return (
       <div className="flex justify-center items-center h-48">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2 text-muted-foreground">Loading layout...</p>
+        <p className="ml-2 text-muted-foreground">Loading layout & sports...</p>
       </div>
     );
   }
