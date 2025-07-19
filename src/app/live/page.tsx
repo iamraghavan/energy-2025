@@ -133,6 +133,7 @@ export default function BigScreenPage() {
               height={200}
               className="opacity-20"
               priority
+              data-ai-hint="logo"
           />
           <h2 className="text-3xl font-bold">No Matches Are Currently Live</h2>
           {nextMatch ? (
@@ -277,5 +278,3 @@ function SportQuadrant({ match, isFullScreen = false }: SportQuadrantProps) {
     </div>
   );
 }
-
-    
