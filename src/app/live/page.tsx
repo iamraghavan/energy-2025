@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { getTeams } from '@/services/team-service';
-import type { Team, MatchAPI, QuadrantConfig, SportAPI } from '@/lib/types';
+import type { Team, MatchAPI, QuadrantConfig, SportAPI, PopulatedMatch } from '@/lib/types';
 import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
@@ -13,11 +13,6 @@ import { Separator } from '@/components/ui/separator';
 import { getMatches } from '@/services/match-service';
 import { getLayout } from '@/services/layout-service';
 import { getSports } from '@/services/sport-service';
-
-interface PopulatedMatch extends MatchAPI {
-  teamOne?: Team;
-  teamTwo?: Team;
-}
 
 const defaultLayout: QuadrantConfig = {
     quadrant1: null,
@@ -85,8 +80,9 @@ export default function BigScreenPage() {
     
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         setMatches(prev => {
+            const currentTeamsMap = new Map(teamsMap);
             const index = prev.findIndex(m => m._id === updatedMatch._id);
-            const populatedUpdate = populateMatches([updatedMatch], teamsMap)[0];
+            const populatedUpdate = populateMatches([updatedMatch], currentTeamsMap)[0];
             if (index > -1) {
                 const newMatches = [...prev];
                 newMatches[index] = populatedUpdate;
@@ -97,7 +93,8 @@ export default function BigScreenPage() {
     };
     
     const handleMatchCreated = (newMatch: MatchAPI) => {
-        const populatedNewMatch = populateMatches([newMatch], teamsMap)[0];
+        const currentTeamsMap = new Map(teamsMap);
+        const populatedNewMatch = populateMatches([newMatch], currentTeamsMap)[0];
         setMatches(prev => [populatedNewMatch, ...prev]);
     };
 
@@ -118,7 +115,7 @@ export default function BigScreenPage() {
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
     };
-  }, [toast, populateMatches, teamsMap]);
+  }, [toast, populateMatches]);
   
   if (isLoading || !layoutConfig) {
     return (
@@ -309,3 +306,5 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
     </div>
   );
 }
+
+    
