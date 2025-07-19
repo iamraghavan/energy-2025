@@ -195,3 +195,5 @@ export default function ProtectedSuperAdminLayout({
 
   return <SuperAdminDashboardLayout>{children}</SuperAdminDashboardLayout>;
 }
+
+    

@@ -50,6 +50,19 @@ export default function BigScreenControlPage() {
     }
   }, [layout]);
 
+  // Connect to socket on mount
+  React.useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
+    return () => {
+      // Optional: disconnect if not needed elsewhere
+      // if (socket.connected) {
+      //   socket.disconnect();
+      // }
+    }
+  }, []);
+
 
   const handleLayoutChange = (index: number, value: string) => {
     const newLayout = [...layout];
@@ -108,7 +121,7 @@ export default function BigScreenControlPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Array.from({ length: 4 }).map((_, index) => (
                     <div key={index} className="border p-4 rounded-lg flex flex-col gap-4 bg-secondary/50">
-                       <Label htmlFor={`quadrant-${index}`} className="font-semibold flex items-center gap-2">
+                       <Label htmlFor={`quadrant-${index}`} className="font-semibold flex items-center gap-2 text-capitalize">
                          <Monitor className="w-5 h-5" />
                          Quadrant {index + 1}
                        </Label>
@@ -141,3 +154,5 @@ export default function BigScreenControlPage() {
     </div>
   );
 }
+
+    

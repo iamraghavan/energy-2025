@@ -11,14 +11,13 @@ import { Loader2, RadioTower } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
 import { getMatches } from '@/services/match-service';
-import { sports } from '@/lib/data';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne?: Team;
   teamTwo?: Team;
 }
 
-// Default layout as a fallback
+// Default layout as a fallback, though the server-pushed layout is preferred.
 const defaultLayout: QuadrantConfig = {
     quadrants: ["Kabaddi", "Volleyball", "Football", "Cricket"],
 };
@@ -38,26 +37,26 @@ export default function BigScreenPage() {
     }));
   }, []);
 
-  React.useEffect(() => {
-    async function fetchInitialData() {
-        try {
-            const [fetchedTeams, fetchedMatches] = await Promise.all([getTeams(), getMatches()]);
-            const newTeamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
-            setTeamsMap(newTeamsMap);
-            setMatches(populateMatches(fetchedMatches, newTeamsMap));
-        } catch (error) {
-            console.error("Failed to fetch initial data", error);
-            toast({
-                variant: 'destructive',
-                title: 'Network Error',
-                description: 'Could not load initial data. Some information may be missing.',
-            });
-        } finally {
-            setIsLoading(false);
-        }
+  const fetchAndSetData = React.useCallback(async () => {
+    try {
+        const [fetchedTeams, fetchedMatches] = await Promise.all([getTeams(), getMatches()]);
+        const newTeamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
+        setTeamsMap(newTeamsMap);
+        setMatches(populateMatches(fetchedMatches, newTeamsMap));
+    } catch (error) {
+        console.error("Failed to fetch initial data", error);
+        toast({
+            variant: 'destructive',
+            title: 'Network Error',
+            description: 'Could not load initial data. Some information may be missing.',
+        });
+    } finally {
+        setIsLoading(false);
     }
-    
-    fetchInitialData();
+  }, [toast, populateMatches]);
+
+  React.useEffect(() => {
+    fetchAndSetData();
 
     if (!socket.connected) {
       socket.connect();
@@ -83,7 +82,7 @@ export default function BigScreenPage() {
             return [...prev, populatedUpdate];
         });
     };
-
+    
     const handleMatchCreated = (newMatch: MatchAPI) => {
         const populatedNewMatch = populateMatches([newMatch], teamsMap)[0];
         setMatches(prev => [populatedNewMatch, ...prev]);
@@ -110,7 +109,7 @@ export default function BigScreenPage() {
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
     };
-  }, [toast, populateMatches, teamsMap]);
+  }, [fetchAndSetData, teamsMap, populateMatches]);
   
   if (isLoading || !layoutConfig) {
     return (
@@ -135,14 +134,14 @@ export default function BigScreenPage() {
         <Header />
         <main className="flex-1 container mx-auto p-4 flex">
             <div className={`grid ${gridCols} ${gridRows} gap-4 w-full h-full`}>
-                {activeSports.map((sportName) => {
+                {activeSports.map((sportName, index) => {
                     const sportMatches = matches.filter(m => m.sport.toLowerCase() === sportName.toLowerCase());
                     const liveMatches = sportMatches.filter(m => m.status === 'live').sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
                     const upcomingMatches = sportMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').sort((a,b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()).slice(0, 4);
                     
                     return (
                         <SportQuadrant 
-                            key={sportName} 
+                            key={`${sportName}-${index}`} 
                             sportName={sportName}
                             liveMatches={liveMatches}
                             upcomingMatches={upcomingMatches}
@@ -284,3 +283,5 @@ function UpcomingMatchCard({ match }: { match: PopulatedMatch }) {
     </div>
   );
 }
+
+    

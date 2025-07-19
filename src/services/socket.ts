@@ -34,4 +34,7 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(URL
     transports: ["websocket"],
     reconnection: true,
     reconnectionAttempts: 5,
+    autoConnect: false, // Set to false to manually control connection
 });
+
+    
