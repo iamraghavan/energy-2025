@@ -124,9 +124,7 @@ export default function BigScreenPage() {
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
     };
-  // The dependencies are correct. populateMatches and teamsMap are stable.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast, populateMatches]);
+  }, [toast, populateMatches, teamsMap]);
   
   if (isLoading || !layoutConfig) {
     return (

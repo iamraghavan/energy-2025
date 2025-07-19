@@ -1,3 +1,4 @@
+
 import type { SportAPI } from '@/lib/types';
 
 const API_BASE_URL = 'https://two025-energy-event-backend.onrender.com/api';
@@ -35,7 +36,6 @@ export const getSports = async (): Promise<SportAPI[]> => {
   
   const data = await handleResponse(response);
   
-  // The API returns sports grouped by gender, so we need to flatten them.
   const allSports: SportAPI[] = [];
   if (data.data.menSports) {
     allSports.push(...data.data.menSports);
@@ -44,7 +44,6 @@ export const getSports = async (): Promise<SportAPI[]> => {
     allSports.push(...data.data.womenSports);
   }
 
-  // Use a Map to ensure unique sports based on their name, preferring the one from menSports if names are identical.
   const uniqueSportsMap = new Map<string, SportAPI>();
   allSports.forEach(sport => {
     if (!uniqueSportsMap.has(sport.name)) {

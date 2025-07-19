@@ -66,15 +66,12 @@ export default function BigScreenControlPage() {
     }
   }, []);
 
-  const handleLayoutChange = (quadrant: keyof QuadrantConfig, sportName: string) => {
+  const handleLayoutChange = (quadrant: keyof QuadrantConfig, sportId: string) => {
     const newLayout = { ...layout };
-    if (sportName === 'none') {
+    if (sportId === 'none') {
         newLayout[quadrant] = null;
     } else {
-        const selectedSport = sports.find(sport => sport.name === sportName);
-        if (selectedSport) {
-            newLayout[quadrant] = selectedSport.sportId;
-        }
+        newLayout[quadrant] = sportId;
     }
     setLayout(newLayout);
   };
@@ -115,10 +112,8 @@ export default function BigScreenControlPage() {
     );
   }
 
-  const getSportNameFromId = (sportId: string | null) => {
-    if (!sportId) return 'none';
-    const sport = sports.find(s => s.sportId === sportId);
-    return sport ? sport.name : 'none';
+  const getSportId = (sportId: string | null) => {
+    return sportId || 'none';
   };
 
   return (
@@ -150,7 +145,7 @@ export default function BigScreenControlPage() {
                          Quadrant {index + 1}
                        </Label>
                        <Select
-                         value={getSportNameFromId(layout[key])}
+                         value={getSportId(layout[key])}
                          onValueChange={(value) => handleLayoutChange(key, value)}
                        >
                          <SelectTrigger id={`quadrant-${index}`}>
@@ -159,7 +154,7 @@ export default function BigScreenControlPage() {
                          <SelectContent>
                             <SelectItem value="none" className="capitalize">None</SelectItem>
                            {sports.map((sport) => (
-                             <SelectItem key={sport._id} value={sport.name} className="capitalize">
+                             <SelectItem key={sport.sportId} value={sport.sportId} className="capitalize">
                                {sport.name}
                              </SelectItem>
                            ))}

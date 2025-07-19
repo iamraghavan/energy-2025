@@ -15,7 +15,6 @@ const getHeaders = () => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       const user: User = JSON.parse(storedUser);
-      // Admin actions should use the user's API key
       if (user.apiKey) {
         headers['x-api-key'] = user.apiKey;
         return headers;
@@ -25,7 +24,6 @@ const getHeaders = () => {
      console.error("Could not parse user from localStorage for API key", e)
   }
   
-  // Fallback to static key for public GET requests
   headers['x-api-key'] = STATIC_API_KEY;
   return headers;
 };
@@ -49,14 +47,13 @@ async function handleResponse(response: Response) {
 }
 
 // Fetches the current layout configuration.
-// Uses the static key as this should be a public endpoint.
 export const getLayout = async (): Promise<QuadrantConfig> => {
   const response = await fetch(`${API_BASE_URL}/layout`, {
     headers: {
         'Content-Type': 'application/json',
         'x-api-key': STATIC_API_KEY,
     },
-    cache: 'no-store', // Always get the latest layout
+    cache: 'no-store',
   });
   const data = await handleResponse(response);
   // The layout data is nested under a `layout` key in the response
@@ -64,12 +61,11 @@ export const getLayout = async (): Promise<QuadrantConfig> => {
 };
 
 // Updates the layout configuration.
-// Uses the dynamic admin API key.
 export const updateLayout = async (layoutData: QuadrantConfig): Promise<QuadrantConfig> => {
   const response = await fetch(`${API_BASE_URL}/layout`, {
     method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(layoutData), // Send the object directly
+    headers: getHeaders(), // Uses admin API key
+    body: JSON.stringify(layoutData),
   });
   const data = await handleResponse(response);
   return data.data.layout;
