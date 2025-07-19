@@ -10,15 +10,30 @@ const getHeaders = () => {
   };
 };
 
+async function handleResponse(response: Response) {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.indexOf('application/json') !== -1) {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+      return data;
+    } else {
+      const text = await response.text();
+       if (!response.ok) {
+        throw new Error(text || `HTTP error! status: ${response.status}`);
+      }
+      return { data: text };
+    }
+}
+
 export const getSports = async (): Promise<SportAPI[]> => {
   const response = await fetch(`${API_BASE_URL}/sports`, {
     headers: getHeaders(),
     cache: 'no-store',
   });
-  if (!response.ok) {
-    throw new Error('Failed to fetch sports');
-  }
-  const data = await response.json();
+  
+  const data = await handleResponse(response);
   
   // The API returns sports grouped by gender, so we need to flatten them.
   const allSports: SportAPI[] = [];
