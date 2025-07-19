@@ -17,7 +17,6 @@ interface PopulatedMatch extends MatchAPI {
   teamTwo?: Team;
 }
 
-// This is now only a fallback for the case where the server has no layout configured.
 const defaultLayout: QuadrantConfig = {
     quadrants: ["Kabaddi", "Volleyball", "Football", "Cricket"],
 };
@@ -37,25 +36,25 @@ export default function BigScreenPage() {
     }));
   }, []);
 
-  const fetchAndSetData = React.useCallback(async () => {
-    try {
-        const [fetchedTeams, fetchedMatches] = await Promise.all([getTeams(), getMatches()]);
-        const newTeamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
-        setTeamsMap(newTeamsMap);
-        setMatches(populateMatches(fetchedMatches, newTeamsMap));
-    } catch (error) {
-        console.error("Failed to fetch initial data", error);
-        toast({
-            variant: 'destructive',
-            title: 'Network Error',
-            description: 'Could not load initial data. Some information may be missing.',
-        });
-    } finally {
-        setIsLoading(false);
-    }
-  }, [toast, populateMatches]);
-
   React.useEffect(() => {
+    const fetchAndSetData = async () => {
+        try {
+            const [fetchedTeams, fetchedMatches] = await Promise.all([getTeams(), getMatches()]);
+            const newTeamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
+            setTeamsMap(newTeamsMap);
+            setMatches(populateMatches(fetchedMatches, newTeamsMap));
+        } catch (error) {
+            console.error("Failed to fetch initial data", error);
+            toast({
+                variant: 'destructive',
+                title: 'Network Error',
+                description: 'Could not load initial data. Some information may be missing.',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
     fetchAndSetData();
 
     if (!socket.connected) {
@@ -67,14 +66,12 @@ export default function BigScreenPage() {
     };
     
     const onCurrentLayout = (currentLayout: QuadrantConfig) => {
-      // If server returns null/undefined layout, use a default.
       setLayoutConfig(currentLayout || defaultLayout);
     };
 
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         setMatches(prev => {
             const index = prev.findIndex(m => m._id === updatedMatch._id);
-            // Use a stable teamsMap from state for population
             const populatedUpdate = populateMatches([updatedMatch], teamsMap)[0];
             if (index > -1) {
                 const newMatches = [...prev];
@@ -101,7 +98,6 @@ export default function BigScreenPage() {
     socket.on('matchDeleted', handleMatchDeleted);
     socket.on('scoreUpdate', handleMatchUpdate);
     
-    // Request the current layout from the server upon connection
     socket.emit('getLayout');
     
     return () => {
@@ -111,10 +107,8 @@ export default function BigScreenPage() {
       socket.off('matchCreated', handleMatchCreated);
       socket.off('matchDeleted', handleMatchDeleted);
       socket.off('scoreUpdate', handleMatchUpdate);
-      // Disconnecting is optional, depends on whether other pages use the socket
-      // if (socket.connected) socket.disconnect();
     };
-  }, [fetchAndSetData, teamsMap, populateMatches]);
+  }, [toast, populateMatches, teamsMap]);
   
   if (isLoading || !layoutConfig) {
     return (
