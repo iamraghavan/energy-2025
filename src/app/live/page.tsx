@@ -13,6 +13,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getMatches } from '@/services/match-service';
 import { CountdownTimer } from '@/components/common/countdown-timer';
 import { Button } from '@/components/ui/button';
+import { UpcomingMatchCard } from '@/components/sports/upcoming-match-card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function BigScreenPage() {
   const [teamsMap, setTeamsMap] = React.useState<Map<string, Team>>(new Map());
@@ -147,7 +149,7 @@ export default function BigScreenPage() {
 
     if (liveCount === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-center text-white/50 gap-8">
+        <div className="flex flex-col items-center justify-center h-full text-center text-white/80 gap-8">
           <Image 
               src="https://firebasestorage.googleapis.com/v0/b/egspec-website.appspot.com/o/egspec%2Fenergy-2025%2Fenergy-logo.png?alt=media&token=49e75a63-950b-4ed2-a0f7-075ba54ace2e"
               alt="Energy 2025 Logo"
@@ -159,12 +161,19 @@ export default function BigScreenPage() {
           />
           <h2 className="text-3xl font-bold">No Matches Are Currently Live</h2>
           {nextMatch ? (
-              <div>
-                  <p className="text-xl mb-4">Next match starts in:</p>
-                  <CountdownTimer targetDate={nextMatch.scheduledAt} />
+              <div className="flex flex-col items-center gap-6 w-full max-w-lg">
+                  <div className='text-center'>
+                    <p className="text-xl mb-2">Next match starts in:</p>
+                    <CountdownTimer targetDate={nextMatch.scheduledAt} />
+                  </div>
+                  <UpcomingMatchCard match={nextMatch} teamOne={nextMatch.teamOne} teamTwo={nextMatch.teamTwo} />
               </div>
           ) : (
-              <p className="text-xl">Check back soon for upcoming matches!</p>
+             <Card className="bg-gray-800/30 border-white/10 mt-4">
+                <CardContent className="p-6">
+                    <p className="text-xl text-white/60">Check back soon for upcoming matches!</p>
+                </CardContent>
+             </Card>
           )}
         </div>
       );
@@ -307,3 +316,5 @@ function SportQuadrant({ match, isFullScreen = false }: SportQuadrantProps) {
     </div>
   );
 }
+
+    

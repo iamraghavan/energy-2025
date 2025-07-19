@@ -42,7 +42,7 @@ export default function Home() {
         const teamsMap = new Map<string, Team>(fetchedTeams.map(team => [team._id, team]));
         setTeams(teamsMap);
 
-        const sortedMatches = fetchedMatches.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+        const sortedMatches = fetchedMatches.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
         setMatches(sortedMatches);
 
       } catch (error) {
@@ -244,3 +244,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

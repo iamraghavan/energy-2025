@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import type { MatchAPI, Team } from '@/lib/types';
@@ -15,8 +16,8 @@ interface UpcomingMatchCardProps {
 }
 
 export function UpcomingMatchCard({ match, teamOne, teamTwo }: UpcomingMatchCardProps) {
-  const team1Name = teamOne?.name || 'Team A';
-  const team2Name = teamTwo?.name || 'Team B';
+  const team1Name = teamOne?.name || 'TBD';
+  const team2Name = teamTwo?.name || 'TBD';
   const { toast } = useToast();
 
   const handleShare = async () => {
@@ -45,9 +46,13 @@ export function UpcomingMatchCard({ match, teamOne, teamTwo }: UpcomingMatchCard
         });
     }
   };
+  
+  if(!teamOne || !teamTwo) {
+    return null;
+  }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-card/50">
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
         <h3 className="font-semibold text-sm text-muted-foreground">{match.sport}</h3>
         <Badge variant="outline" className="capitalize">Upcoming</Badge>
@@ -60,7 +65,7 @@ export function UpcomingMatchCard({ match, teamOne, teamTwo }: UpcomingMatchCard
         </div>
         <Separator />
       </CardContent>
-      <CardFooter className="flex-col sm:flex-row text-xs text-muted-foreground gap-x-4 gap-y-2 justify-between items-center px-4 py-2">
+      <CardFooter className="flex-col sm:flex-row text-xs text-muted-foreground gap-x-4 gap-y-2 justify-between items-center px-4 py-3">
           <div className="flex flex-col sm:flex-row gap-x-4 gap-y-1 w-full">
             <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3" />
@@ -80,3 +85,5 @@ export function UpcomingMatchCard({ match, teamOne, teamTwo }: UpcomingMatchCard
     </Card>
   );
 }
+
+    
