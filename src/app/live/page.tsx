@@ -79,19 +79,10 @@ export default function BigScreenPage() {
       socket.connect();
     }
     
-    // For initial load or reconnection
-    socket.on('connect', () => {
-      socket.emit('getLayout');
-    });
-
-    socket.on('currentLayout', (newLayout: QuadrantConfig) => {
-        setLayoutConfig(newLayout);
-    });
-
-    socket.on('layoutUpdate', (newLayout: QuadrantConfig) => {
-      setLayoutConfig(newLayout);
-    });
-
+    const onConnect = () => socket.emit('getLayout');
+    const onCurrentLayout = (newLayout: QuadrantConfig) => setLayoutConfig(newLayout);
+    const onLayoutUpdate = (newLayout: QuadrantConfig) => setLayoutConfig(newLayout);
+    
     const handleMatchUpdate = (updatedMatch: MatchAPI) => {
         setMatches(prev => {
             const index = prev.findIndex(m => m._id === updatedMatch._id);
@@ -113,16 +104,19 @@ export default function BigScreenPage() {
     const handleMatchDeleted = ({ matchId }: { matchId: string }) => {
         setMatches(prev => prev.filter(m => m._id !== matchId));
     };
-    
+
+    socket.on('connect', onConnect);
+    socket.on('currentLayout', onCurrentLayout);
+    socket.on('layoutUpdate', onLayoutUpdate);
     socket.on('matchUpdated', handleMatchUpdate);
     socket.on('matchCreated', handleMatchCreated);
     socket.on('matchDeleted', handleMatchDeleted);
     socket.on('scoreUpdate', handleMatchUpdate);
     
     return () => {
-      socket.off('connect');
-      socket.off('currentLayout');
-      socket.off('layoutUpdate');
+      socket.off('connect', onConnect);
+      socket.off('currentLayout', onCurrentLayout);
+      socket.off('layoutUpdate', onLayoutUpdate);
       socket.off('matchUpdated', handleMatchUpdate);
       socket.off('matchCreated', handleMatchCreated);
       socket.off('matchDeleted', handleMatchDeleted);
