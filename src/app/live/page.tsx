@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { getTeams } from '@/services/team-service';
-import type { Team, MatchAPI, QuadrantConfig } from '@/lib/types';
+import type { Team, MatchAPI, QuadrantConfig, SportAPI } from '@/lib/types';
 import { socket } from '@/services/socket';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
 import { getMatches } from '@/services/match-service';
 import { getLayout } from '@/services/layout-service';
+import { getSports } from '@/services/sport-service';
 
 interface PopulatedMatch extends MatchAPI {
   teamOne?: Team;
@@ -28,6 +29,7 @@ const defaultLayout: QuadrantConfig = {
 export default function BigScreenPage() {
   const [layoutConfig, setLayoutConfig] = React.useState<QuadrantConfig | null>(null);
   const [teamsMap, setTeamsMap] = React.useState<Map<string, Team>>(new Map());
+  const [sportsMap, setSportsMap] = React.useState<Map<string, SportAPI>>(new Map());
   const [matches, setMatches] = React.useState<PopulatedMatch[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const { toast } = useToast();
@@ -43,14 +45,18 @@ export default function BigScreenPage() {
   React.useEffect(() => {
     const fetchInitialData = async () => {
         try {
-            const [fetchedTeams, fetchedMatches, fetchedLayout] = await Promise.all([
+            const [fetchedTeams, fetchedMatches, fetchedLayout, fetchedSports] = await Promise.all([
                 getTeams(), 
                 getMatches(),
                 getLayout().catch(() => defaultLayout),
+                getSports(),
             ]);
             
             const newTeamsMap = new Map<string, Team>(fetchedTeams.map((team) => [team._id, team]));
             setTeamsMap(newTeamsMap);
+
+            const newSportsMap = new Map<string, SportAPI>(fetchedSports.map(sport => [sport.sportId, sport]));
+            setSportsMap(newSportsMap);
 
             setMatches(populateMatches(fetchedMatches, newTeamsMap));
             setLayoutConfig(fetchedLayout || defaultLayout);
@@ -129,11 +135,11 @@ export default function BigScreenPage() {
     );
   }
 
-  const activeSportNames = Object.values(layoutConfig).filter((sportName): sportName is string => !!sportName);
-  const uniqueActiveSportNames = [...new Set(activeSportNames)];
+  const activeSportIds = Object.values(layoutConfig).filter((sportId): sportId is string => !!sportId);
+  const uniqueActiveSportIds = [...new Set(activeSportIds)];
   
-  const gridCols = uniqueActiveSportNames.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
-  const gridRows = uniqueActiveSportNames.length > 2 ? 'grid-rows-2' : 'grid-rows-1';
+  const gridCols = uniqueActiveSportIds.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
+  const gridRows = uniqueActiveSportIds.length > 2 ? 'grid-rows-2' : 'grid-rows-1';
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white overflow-hidden">
@@ -141,7 +147,11 @@ export default function BigScreenPage() {
         <main className="flex-1 container mx-auto p-4 flex">
             <div className={`grid ${gridCols} ${gridRows} gap-4 w-full h-full`}>
                 <AnimatePresence>
-                    {uniqueActiveSportNames.map((sportName, index) => {
+                    {uniqueActiveSportIds.map((sportId, index) => {
+                        const sport = sportsMap.get(sportId);
+                        if (!sport) return null;
+
+                        const sportName = sport.name;
                         const sportMatches = matches.filter(m => m.sport.toLowerCase() === sportName.toLowerCase());
                         const liveMatches = sportMatches.filter(m => m.status === 'live').sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
                         const upcomingMatches = sportMatches.filter(m => m.status === 'scheduled' || m.status === 'upcoming').sort((a,b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()).slice(0, 4);

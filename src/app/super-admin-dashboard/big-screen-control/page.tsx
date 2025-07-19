@@ -66,12 +66,12 @@ export default function BigScreenControlPage() {
     }
   }, []);
 
-  const handleLayoutChange = (quadrant: keyof QuadrantConfig, sportName: string) => {
+  const handleLayoutChange = (quadrant: keyof QuadrantConfig, sportId: string) => {
     const newLayout = { ...layout };
-    if (sportName === 'none') {
+    if (sportId === 'none') {
         newLayout[quadrant] = null;
     } else {
-        newLayout[quadrant] = sportName;
+        newLayout[quadrant] = sportId;
     }
     setLayout(newLayout);
   };
@@ -86,7 +86,9 @@ export default function BigScreenControlPage() {
           socket.connect();
         }
         
-        socket.emit('layoutUpdate', updatedLayoutResponse.data.layout);
+        // Ensure we emit the correct, nested layout object
+        const finalLayout = updatedLayoutResponse.data.layout;
+        socket.emit('layoutUpdate', finalLayout);
 
         toast({
             title: 'Layout Published!',
@@ -113,8 +115,8 @@ export default function BigScreenControlPage() {
     );
   }
 
-  const getSportValue = (sportName: string | null) => {
-    return sportName || 'none';
+  const getSportValue = (sportId: string | null) => {
+    return sportId || 'none';
   };
 
   return (
@@ -155,7 +157,7 @@ export default function BigScreenControlPage() {
                          <SelectContent>
                             <SelectItem value="none" className="capitalize">None</SelectItem>
                            {sports.map((sport) => (
-                             <SelectItem key={sport._id} value={sport.name} className="capitalize">
+                             <SelectItem key={sport.sportId} value={sport.sportId} className="capitalize">
                                {sport.name}
                              </SelectItem>
                            ))}
