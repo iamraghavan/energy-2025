@@ -20,11 +20,13 @@ export default function BigScreenPage() {
   const { toast } = useToast();
 
   const populateMatches = React.useCallback((matchesToPopulate: MatchAPI[], teams: Map<string, Team>): PopulatedMatch[] => {
-    return matchesToPopulate.map(match => ({
-      ...match,
-      teamOne: teams.get(match.teamA),
-      teamTwo: teams.get(match.teamB),
-    }));
+    return matchesToPopulate
+      .map(match => ({
+        ...match,
+        teamOne: teams.get(match.teamA),
+        teamTwo: teams.get(match.teamB),
+      }))
+      .filter(m => m.teamOne && m.teamTwo) as PopulatedMatch[];
   }, []);
 
   React.useEffect(() => {
@@ -130,6 +132,7 @@ export default function BigScreenPage() {
               width={200}
               height={200}
               className="opacity-20"
+              priority
           />
           <h2 className="text-3xl font-bold">No Matches Are Currently Live</h2>
           {nextMatch ? (
