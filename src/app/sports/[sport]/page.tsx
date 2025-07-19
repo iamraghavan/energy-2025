@@ -129,7 +129,7 @@ export default function SportPage() {
   const upcomingMatches = matches.filter((m) => m.status === 'scheduled' || m.status === 'upcoming');
   const completedMatches = matches.filter((m) => m.status === 'completed');
   
-  const participatingTeams = Array.from(teams.values()).filter(team => team.sport.name.toLowerCase() === sportData.name.toLowerCase());
+  const participatingTeams = Array.from(teams.values()).filter(team => team.sport && sportData && team.sport.name.toLowerCase() === sportData.name.toLowerCase());
 
 
   const renderMatchList = (matchList: MatchAPI[], emptyMessage: string) => {
