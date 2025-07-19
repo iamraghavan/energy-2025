@@ -66,12 +66,12 @@ export default function BigScreenControlPage() {
     }
   }, []);
 
-  const handleLayoutChange = (quadrant: keyof QuadrantConfig, sportId: string) => {
+  const handleLayoutChange = (quadrant: keyof QuadrantConfig, sportName: string) => {
     const newLayout = { ...layout };
-    if (sportId === 'none') {
+    if (sportName === 'none') {
         newLayout[quadrant] = null;
     } else {
-        newLayout[quadrant] = sportId;
+        newLayout[quadrant] = sportName;
     }
     setLayout(newLayout);
   };
@@ -86,7 +86,6 @@ export default function BigScreenControlPage() {
           socket.connect();
         }
         
-        // Ensure we emit only the layout object
         socket.emit('layoutUpdate', updatedLayoutResponse.data.layout);
 
         toast({
@@ -114,8 +113,8 @@ export default function BigScreenControlPage() {
     );
   }
 
-  const getSportId = (sportId: string | null) => {
-    return sportId || 'none';
+  const getSportValue = (sportName: string | null) => {
+    return sportName || 'none';
   };
 
   return (
@@ -147,7 +146,7 @@ export default function BigScreenControlPage() {
                          Quadrant {index + 1}
                        </Label>
                        <Select
-                         value={getSportId(layout[key])}
+                         value={getSportValue(layout[key])}
                          onValueChange={(value) => handleLayoutChange(key, value)}
                        >
                          <SelectTrigger id={`quadrant-${index}`}>
@@ -156,7 +155,7 @@ export default function BigScreenControlPage() {
                          <SelectContent>
                             <SelectItem value="none" className="capitalize">None</SelectItem>
                            {sports.map((sport) => (
-                             <SelectItem key={sport.sportId} value={sport.sportId} className="capitalize">
+                             <SelectItem key={sport._id} value={sport.name} className="capitalize">
                                {sport.name}
                              </SelectItem>
                            ))}

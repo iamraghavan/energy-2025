@@ -61,12 +61,12 @@ export const getLayout = async (): Promise<QuadrantConfig> => {
 };
 
 // Updates the layout configuration.
-export const updateLayout = async (layoutData: QuadrantConfig): Promise<QuadrantConfig> => {
+export const updateLayout = async (layoutData: QuadrantConfig) => {
   const response = await fetch(`${API_BASE_URL}/layout`, {
     method: 'POST',
     headers: getHeaders(), // Uses admin API key
     body: JSON.stringify(layoutData),
   });
   const data = await handleResponse(response);
-  return data.data.layout;
+  return data;
 };
